@@ -1,0 +1,752 @@
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.container {
+    max-width: 650px;
+    margin: 20px auto;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 2rem;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+}
+
+.wizard {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.step {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    max-height: 1000px;
+    overflow: hidden;
+}
+
+.step.hidden {
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    border: none;
+    pointer-events: none;
+}
+
+.step.active {
+    animation: slideDown 0.6s ease-out forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+input[type="number"] {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    background-color: #f7fafc;
+}
+
+.time-input-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.time-input-group input[type="number"],
+.time-input-group input[type="range"] {
+    width: 50%;
+    margin-bottom: 0;
+}
+
+.slider-container {
+    width: 50%;
+    position: relative;
+}
+
+.slider-container input[type="range"] {
+    width: 100%;
+    height: 10px;
+    -webkit-appearance: none;
+    background: #e2e8f0;
+    outline: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.slider-value {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+input[type="number"]:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+    background-color: #fff;
+}
+
+.next-btn, .reset-btn {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.next-btn:hover, .reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+.next-btn:active, .reset-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+}
+
+.reset-btn {
+    background: linear-gradient(90deg, #f56565, #e53e3e);
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
+}
+
+.reset-btn:hover {
+    box-shadow: 0 6px 15px rgba(229, 62, 62, 0.4);
+}
+
+.radio-options {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.radio-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    padding-left: 30px;
+    user-select: none;
+}
+
+.radio-options input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.radio-options label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cbd5e0;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.radio-options label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    width: 10px;
+    height: 10px;
+    background: #667eea;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s;
+}
+
+.radio-options input[type="radio"]:checked + label::before {
+    border-color: #667eea;
+}
+
+.radio-options input[type="radio"]:checked + label::after {
+    transform: scale(1);
+}
+
+#breakTimeContainer {
+    margin-top: 15px;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    max-height: 200px;
+    overflow: hidden;
+}
+
+#breakTimeContainer.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+}
+
+.time-display {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.time-item {
+    flex: 1;
+    text-align: center;
+    background: linear-gradient(135deg, #f6f9fc, #f0f4f8);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s;
+}
+
+.time-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+}
+
+.time-item h3 {
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.time {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2d3748;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.summary {
+    background-color: #f7fafc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.summary p {
+    font-size: 16px;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.completed-step {
+    position: relative;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.completed-step::before {
+    content: '✓';
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.step-number {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    margin-right: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.step-heading {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+@media (max-width: 680px) {
+    .container {
+        margin: 20px 15px;
+        padding: 20px;
+    }
+    
+    .time-display {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Timer</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Work Timer Calculator</h1>
+        <div class="wizard">
+            <div class="step active" id="step1">
+                <div class="step-heading">
+                    <span class="step-number">1</span> Work Duration
+                </div>
+                <label>How long do you need to work today?</label>
+                <div class="time-input-group">
+                    <div class="slider-container">
+                        <input type="range" id="totalWorkHoursSlider" min="0" max="12" value="8" step="1">
+                        <div class="slider-value"><span id="totalWorkHoursValue">8</span> hours</div>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="totalWorkMinutesSlider" min="0" max="59" value="0" step="5">
+                        <div class="slider-value"><span id="totalWorkMinutesValue">0</span> minutes</div>
+                    </div>
+                </div>
+                <input type="hidden" id="totalWorkHours" value="8">
+                <input type="hidden" id="totalWorkMinutes" value="0">
+                <button id="nextStep1" class="next-btn">Continue</button>
+            </div>
+            
+            <div class="step hidden" id="step2">
+                <div class="step-heading">
+                    <span class="step-number">2</span> Current Progress
+                </div>
+                <label>How long have you already worked?</label>
+                <div class="time-input-group">
+                    <div class="slider-container">
+                        <input type="range" id="workedHoursSlider" min="0" max="12" value="0" step="1">
+                        <div class="slider-value"><span id="workedHoursValue">0</span> hours</div>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="workedMinutesSlider" min="0" max="59" value="0" step="5">
+                        <div class="slider-value"><span id="workedMinutesValue">0</span> minutes</div>
+                    </div>
+                </div>
+                <input type="hidden" id="workedHours" value="0">
+                <input type="hidden" id="workedMinutes" value="0">
+                <button id="nextStep2" class="next-btn">Continue</button>
+            </div>
+            
+            <div class="step hidden" id="step3">
+                <div class="step-heading">
+                    <span class="step-number">3</span> Break Information
+                </div>
+                <label>Will you have any breaks in this time?</label>
+                <div class="radio-options">
+                    <input type="radio" id="breaksYes" name="breaks" value="yes">
+                    <label for="breaksYes">Yes</label>
+                    
+                    <input type="radio" id="breaksNo" name="breaks" value="no">
+                    <label for="breaksNo">No</label>
+                </div>
+                <div id="breakTimeContainer" class="hidden">
+                    <label>How long will your breaks be?</label>
+                    <div class="time-input-group">
+                        <div class="slider-container">
+                            <input type="range" id="breakHoursSlider" min="0" max="3" value="0" step="1">
+                            <div class="slider-value"><span id="breakHoursValue">0</span> hours</div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="breakMinutesSlider" min="0" max="59" value="30" step="5">
+                            <div class="slider-value"><span id="breakMinutesValue">30</span> minutes</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="breakHours" value="0">
+                    <input type="hidden" id="breakMinutes" value="30">
+                </div>
+                <button id="calculateBtn" class="next-btn">Calculate Clock Out Time</button>
+            </div>
+            
+            <div class="step hidden" id="result">
+                <div class="step-heading">
+                    <span class="step-number">✓</span> Your Results
+                </div>
+                <div class="time-display">
+                    <div class="time-item">
+                        <h3>Current Time</h3>
+                        <div id="currentTime" class="time">--:--</div>
+                    </div>
+                    <div class="time-item">
+                        <h3>Clock Out Time</h3>
+                        <div id="clockOutTime" class="time">--:--</div>
+                    </div>
+                </div>
+                <div class="summary">
+                    <p id="summaryText"></p>
+                </div>
+                <button id="resetBtn" class="reset-btn">Start Over</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const steps = {
+        step1: document.getElementById('step1'),
+        step2: document.getElementById('step2'),
+        step3: document.getElementById('step3'),
+        result: document.getElementById('result')
+    };
+    
+    const inputs = {
+        totalWorkHours: document.getElementById('totalWorkHours'),
+        totalWorkMinutes: document.getElementById('totalWorkMinutes'),
+        workedHours: document.getElementById('workedHours'),
+        workedMinutes: document.getElementById('workedMinutes'),
+        breakHours: document.getElementById('breakHours'),
+        breakMinutes: document.getElementById('breakMinutes')
+    };
+    
+    const sliders = {
+        totalWorkHoursSlider: document.getElementById('totalWorkHoursSlider'),
+        totalWorkMinutesSlider: document.getElementById('totalWorkMinutesSlider'),
+        workedHoursSlider: document.getElementById('workedHoursSlider'),
+        workedMinutesSlider: document.getElementById('workedMinutesSlider'),
+        breakHoursSlider: document.getElementById('breakHoursSlider'),
+        breakMinutesSlider: document.getElementById('breakMinutesSlider')
+    };
+    
+    const sliderValues = {
+        totalWorkHoursValue: document.getElementById('totalWorkHoursValue'),
+        totalWorkMinutesValue: document.getElementById('totalWorkMinutesValue'),
+        workedHoursValue: document.getElementById('workedHoursValue'),
+        workedMinutesValue: document.getElementById('workedMinutesValue'),
+        breakHoursValue: document.getElementById('breakHoursValue'),
+        breakMinutesValue: document.getElementById('breakMinutesValue')
+    };
+    
+    const resetBtn = document.getElementById('resetBtn');
+    
+    const breakTimeContainer = document.getElementById('breakTimeContainer');
+    const breakOptions = document.querySelectorAll('input[name="breaks"]');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const clockOutTimeDisplay = document.getElementById('clockOutTime');
+    const summaryText = document.getElementById('summaryText');
+    
+    // Connect sliders to their values
+    function setupSlider(slider, valueDisplay, hiddenInput) {
+        slider.addEventListener('input', function() {
+            valueDisplay.textContent = this.value;
+            hiddenInput.value = this.value;
+            
+            // Trigger calculation
+            processCurrentStep();
+        });
+    }
+    
+    // Setup all sliders
+    setupSlider(sliders.totalWorkHoursSlider, sliderValues.totalWorkHoursValue, inputs.totalWorkHours);
+    setupSlider(sliders.totalWorkMinutesSlider, sliderValues.totalWorkMinutesValue, inputs.totalWorkMinutes);
+    setupSlider(sliders.workedHoursSlider, sliderValues.workedHoursValue, inputs.workedHours);
+    setupSlider(sliders.workedMinutesSlider, sliderValues.workedMinutesValue, inputs.workedMinutes);
+    setupSlider(sliders.breakHoursSlider, sliderValues.breakHoursValue, inputs.breakHours);
+    setupSlider(sliders.breakMinutesSlider, sliderValues.breakMinutesValue, inputs.breakMinutes);
+    
+    // Update current time every second
+    function updateCurrentTime() {
+        const now = new Date();
+        currentTimeDisplay.textContent = formatTime(now);
+        setTimeout(updateCurrentTime, 1000);
+    }
+    
+    // Format date object to HH:MM format
+    function formatTime(date) {
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        
+        return `${hours}:${minutes} ${ampm}`;
+    }
+    
+    // Show next step and animate it
+    function showNextStep(currentStep, nextStep) {
+        // Keep current step visible but mark as completed
+        currentStep.classList.add('completed-step');
+        
+        // Show the next step below
+        setTimeout(() => {
+            nextStep.classList.remove('hidden');
+            nextStep.classList.add('active');
+            
+            // Scroll to the next step
+            nextStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+    
+    // Convert hours and minutes inputs to decimal hours
+    function getDecimalHours(hoursInput, minutesInput) {
+        const hours = parseFloat(hoursInput.value) || 0;
+        const minutes = parseFloat(minutesInput.value) || 0;
+        return hours + (minutes / 60);
+    }
+    
+    // Process the current step and proceed if valid
+    function processCurrentStep() {
+        if (steps.step1.classList.contains('active') && !steps.step1.classList.contains('completed-step')) {
+            const totalWorkTime = getDecimalHours(inputs.totalWorkHours, inputs.totalWorkMinutes);
+            
+            if (totalWorkTime > 0) {
+                showNextStep(steps.step1, steps.step2);
+            }
+        } 
+        else if (steps.step2.classList.contains('active') && !steps.step2.classList.contains('completed-step')) {
+            const workedAlready = getDecimalHours(inputs.workedHours, inputs.workedMinutes);
+            
+            if (workedAlready >= 0) {
+                showNextStep(steps.step2, steps.step3);
+            }
+        }
+        else if (steps.step3.classList.contains('active') && document.querySelector('input[name="breaks"]:checked')) {
+            calculateResults();
+        }
+    }
+    
+    // Show/hide break time input based on radio selection
+    breakOptions.forEach(option => {
+        option.addEventListener('change', function() {
+            if (this.value === 'yes') {
+                breakTimeContainer.classList.remove('hidden');
+            } else {
+                breakTimeContainer.classList.add('hidden');
+                inputs.breakHours.value = 0;
+                inputs.breakMinutes.value = 0;
+            }
+            
+            // Auto calculate with a small delay
+            setTimeout(() => {
+                calculateResults();
+            }, 300);
+        });
+    });
+    
+    // Calculate results and show final step
+    function calculateResults() {
+        const totalWorkHours = getDecimalHours(inputs.totalWorkHours, inputs.totalWorkMinutes);
+        const workedAlreadyHours = getDecimalHours(inputs.workedHours, inputs.workedMinutes);
+        
+        let breakHours = 0;
+        const hasBreaks = document.querySelector('input[name="breaks"]:checked')?.value === 'yes';
+        
+        if (hasBreaks) {
+            breakHours = getDecimalHours(inputs.breakHours, inputs.breakMinutes);
+        }
+        
+        // Calculate remaining work hours
+        const remainingWorkHours = totalWorkHours - workedAlreadyHours;
+        
+        if (remainingWorkHours <= 0) {
+            clockOutTimeDisplay.textContent = 'Now!';
+            summaryText.textContent = `You've already worked ${workedAlreadyHours.toFixed(2)} hours out of the needed ${totalWorkHours.toFixed(2)} hours.`;
+            showNextStep(steps.step3, steps.result);
+            return;
+        }
+        
+        // Calculate clock out time
+        const now = new Date();
+        const clockOutTime = new Date(now.getTime() + (remainingWorkHours + breakHours) * 60 * 60 * 1000);
+        
+        // Update displays
+        updateCurrentTime();
+        clockOutTimeDisplay.textContent = formatTime(clockOutTime);
+        
+        // Format hours and minutes for summary
+        function formatHoursMinutes(decimalHours) {
+            const hours = Math.floor(decimalHours);
+            const minutes = Math.round((decimalHours - hours) * 60);
+            if (minutes === 0) return `${hours} hour${hours !== 1 ? 's' : ''}`;
+            return `${hours} hour${hours !== 1 ? 's' : ''} and ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        }
+        
+        // Create summary text
+        let summary = `You need to work ${formatHoursMinutes(totalWorkHours)} today. `;
+        summary += `You have already worked ${formatHoursMinutes(workedAlreadyHours)}. `;
+        
+        if (hasBreaks && breakHours > 0) {
+            summary += `You will take ${formatHoursMinutes(breakHours)} of breaks. `;
+        }
+        
+        summary += `You have ${formatHoursMinutes(remainingWorkHours)} of work remaining.`;
+        summaryText.textContent = summary;
+        
+        showNextStep(steps.step3, steps.result);
+    }
+    
+    // Reset button functionality
+    resetBtn.addEventListener('click', function() {
+        // Reset sliders to default values
+        sliders.totalWorkHoursSlider.value = 8;
+        sliders.totalWorkMinutesSlider.value = 0;
+        sliders.workedHoursSlider.value = 0;
+        sliders.workedMinutesSlider.value = 0;
+        sliders.breakHoursSlider.value = 0;
+        sliders.breakMinutesSlider.value = 30;
+        
+        // Update slider value displays
+        sliderValues.totalWorkHoursValue.textContent = 8;
+        sliderValues.totalWorkMinutesValue.textContent = 0;
+        sliderValues.workedHoursValue.textContent = 0;
+        sliderValues.workedMinutesValue.textContent = 0;
+        sliderValues.breakHoursValue.textContent = 0;
+        sliderValues.breakMinutesValue.textContent = 30;
+        
+        // Reset hidden inputs
+        inputs.totalWorkHours.value = 8;
+        inputs.totalWorkMinutes.value = 0;
+        inputs.workedHours.value = 0;
+        inputs.workedMinutes.value = 0;
+        inputs.breakHours.value = 0;
+        inputs.breakMinutes.value = 30;
+        
+        // Uncheck radio buttons
+        breakOptions.forEach(option => {
+            option.checked = false;
+        });
+        
+        // Hide break time container
+        breakTimeContainer.classList.add('hidden');
+        
+        // Reset displays
+        clockOutTimeDisplay.textContent = '--:--';
+        summaryText.textContent = '';
+        
+        // Remove completed-step class
+        for (let key in steps) {
+            steps[key].classList.remove('completed-step');
+        }
+        
+        // Hide all steps except first
+        steps.step2.classList.add('hidden');
+        steps.step2.classList.remove('active');
+        steps.step3.classList.add('hidden');
+        steps.step3.classList.remove('active');
+        steps.result.classList.add('hidden');
+        steps.result.classList.remove('active');
+        
+        // Show first step
+        steps.step1.classList.remove('hidden');
+        steps.step1.classList.add('active');
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // Initialize
+    updateCurrentTime();
+});
+</script>
