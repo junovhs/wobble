@@ -1,0 +1,86 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Image Color Analysis</h1>
+    </header>
+    <main>
+        <div class="upload-container">
+            <div id="drop-area">
+                <p>Click here or press Ctrl+V to paste an image</p>
+                <input type="file" id="fileInput" accept="image/*" hidden>
+            </div>
+        </div>
+        
+        <div id="analysis-container" class="hidden">
+            <div class="image-preview">
+                <h2>Original Image</h2>
+                <div id="image-display"></div>
+            </div>
+            
+            <div class="analysis-tools">
+                <h2>Analysis Results</h2>
+                
+                <div class="scopes-container">
+                    <div class="scope-panel">
+                        <h3>Histogram</h3>
+                        <div class="canvas-container">
+                            <canvas id="histogram-canvas"></canvas>
+                        </div>
+                        <div class="channel-toggles">
+                            <label><input type="checkbox" data-channel="rgb" checked> RGB</label>
+                            <label><input type="checkbox" data-channel="r"> Red</label>
+                            <label><input type="checkbox" data-channel="g"> Green</label>
+                            <label><input type="checkbox" data-channel="b"> Blue</label>
+                            <label><input type="checkbox" data-channel="luminance"> Luminance</label>
+                        </div>
+                    </div>
+                    
+                    <div class="scope-panel">
+                        <h3>Waveform</h3>
+                        <div class="canvas-container">
+                            <canvas id="waveform-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="scope-panel">
+                        <h3>Vectorscope</h3>
+                        <div class="canvas-container">
+                            <canvas id="vectorscope-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="scope-panel">
+                        <h3>Statistics</h3>
+                        <div id="color-stats"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="suggestions">
+                <h2>Suggestions</h2>
+                <div id="suggestions-content"></div>
+            </div>
+        </div>
+    </main>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js"
+        }
+    }
+    </script>
+    <script src="config.js" type="module"></script>
+    <script src="histogram.js" type="module"></script>
+    <script src="waveform.js" type="module"></script>
+    <script src="vectorscope.js" type="module"></script>
+    <script src="statistics.js" type="module"></script>
+    <script src="app.js" type="module"></script>
+</body>
+</html>
