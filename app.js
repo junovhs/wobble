@@ -1,5 +1,6 @@
 // Import dependencies
 import { fetchProjects, fetchProjectContent } from './githubApi.js';
+import { basePath } from './config.js'; // Import basePath
 import {
     renderNav,
     showError,
@@ -15,11 +16,35 @@ import {
 // DOM Elements
 const projectNavElement = document.getElementById('project-nav'); // Renamed to avoid conflict
 const themeToggleButton = document.getElementById('theme-toggle');
+const appElement = document.getElementById('app'); // Needed for link interception
 
 // State
 let projects = [];
 let currentProject = null;
 let isLoading = false; // Prevent concurrent loads
+
+
+/**
+ * Extracts the project route part (e.g., "my-project") from the full pathname.
+ * Handles the base path.
+ * @returns {string|null} The route part or null if it's the base path or invalid.
+ */
+function getRouteFromPathname() {
+    const path = window.location.pathname;
+    const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+
+    if (path.startsWith(normalizedBasePath)) {
+        const routePart = path.substring(normalizedBasePath.length);
+        // Return null for the root/base path itself, otherwise return the route part
+        return routePart === '' ? null : routePart;
+    } else if (path === basePath) {
+        // Handle '/wobble' without trailing slash as root
+        return null;
+    }
+    // If path doesn't start with basePath (shouldn't happen on GH pages but good practice)
+    console.warn(`Pathname "${path}" does not match expected base path "${basePath}".`);
+    return null; // Or handle as an error/redirect
+}
 
 
 /**
@@ -35,21 +60,22 @@ async function loadProject(projectId) {
           console.log("No project ID provided, showing welcome screen.");
           showWelcomeScreen();
           currentProject = null;
-          updateNavActiveState(null);
-          if (window.location.hash) window.location.hash = ''; // Clear hash
+          updateNavActiveState(null); // Update nav styling
+          // No need to clear hash, path is handled by history API
           return;
      }
      // Find project data (already fetched)
      const project = projects.find(p => p.id === projectId);
 
      if (!project) {
-        console.warn(`Project with id "${projectId}" not found in fetched list.`);
-        showError(`Project '${projectId.replace('proj.', '')}' not found. It might have been removed or renamed.`);
-        currentProject = null;
-        updateNavActiveState(null);
-        // Clear hash if it points to a non-existent project
-        if (window.location.hash === `#${projectId}`) window.location.hash = '';
-        return;
+          console.warn(`Project with id "${projectId}" not found in fetched list.`);
+          // Extract readable name from projectId
+          const readableName = projectId.startsWith('proj.') ? projectId.substring(5) : projectId;
+          showError(`Project '${readableName}' not found. It might have been removed, renamed, or the URL is incorrect.`);
+          currentProject = null;
+          updateNavActiveState(null);
+          // Don't manipulate history here, let the browser/user handle invalid paths
+          return;
      }
 
      // If already showing this project, do nothing
@@ -58,7 +84,7 @@ async function loadProject(projectId) {
           // Ensure frame is visible if welcome screen was shown before
           if (!document.getElementById('welcome-screen').classList.contains('hidden')) {
                hideWelcomeScreen();
-               displayContentFrame(true, contentFrame?.srcdoc !== '');
+               displayContentFrame(true, !!contentFrame?.srcdoc);
           }
           return;
      }
@@ -75,7 +101,7 @@ async function loadProject(projectId) {
      try {
           const content = await fetchProjectContent(project.path);
           await setFrameContent(content, project); // setFrameContent handles showing the frame on success/error
-          // Update nav state again, potentially including iframe theme
+          // Update nav state again
           updateNavActiveState(currentProject.id, content.type === 'markdown');
      } catch (error) {
           console.error(`Unhandled error loading project ${projectId}:`, error);
@@ -83,8 +109,7 @@ async function loadProject(projectId) {
           displayContentFrame(false);
           currentProject = null; // Reset current project on error
           updateNavActiveState(null); // Update nav styling
-          // Clear hash if loading failed critically
-           if (window.location.hash === `#${projectId}`) window.location.hash = '';
+          // Don't manipulate history here, let the browser/user handle invalid paths
      } finally {
           isLoading = false;
      }
@@ -92,24 +117,21 @@ async function loadProject(projectId) {
 
 
 /**
- * Handles hash changes in the URL to navigate projects.
+ * Handles route changes based on the current pathname (called on load, popstate, and link clicks).
  */
-function handleHashChange() {
-    const projectId = window.location.hash.substring(1);
-    console.log(`Hash changed to: #${projectId}`);
-    // Only load if the hash points to a different project than the current one, or if no project is current
-    if (projectId && projectId !== (currentProject?.id || '')) {
+function handleRouteChange() {
+    const routePart = getRouteFromPathname();
+    console.log(`Route changed/detected: "${routePart || '(root)'}" from path: ${window.location.pathname}`);
+
+    // Map route part back to projectId (Option A)
+    const projectId = routePart ? `proj.${routePart}` : null;
+
+    // Load project only if the derived projectId is different from the current one
+    if (projectId !== (currentProject?.id || null)) {
         loadProject(projectId);
-    } else if (!projectId && currentProject) {
-        // Hash cleared, show welcome screen
-        loadProject(null); // Use loadProject(null) to handle state update and UI
-    } else if (!projectId && !currentProject) {
-         // Hash cleared or empty initially, and no project loaded, ensure welcome screen is shown
-         showWelcomeScreen();
-         updateNavActiveState(null);
-         hideError();
     }
 }
+
 
 /**
  * Toggles between light and dark themes.
@@ -165,21 +187,33 @@ async function initialize() {
          renderNav(projects, null); // Render nav without active item initially
     }
 
+    // --- Routing Setup ---
+    window.addEventListener('popstate', handleRouteChange); // Handle browser back/forward
 
-    // --- Initial Load / Routing ---
-    // Add listeners before initial load check
-    window.addEventListener('hashchange', handleHashChange);
-    projectNavElement.addEventListener('click', (event) => {
-        const targetLink = event.target.closest('a'); // Find nearest anchor tag
-        if (targetLink && targetLink.dataset.projectId) {
-             // Let the hashchange listener handle the loadProject call naturally
-            console.log(`Nav link clicked for project: ${targetLink.dataset.projectId}`);
-            // No preventDefault needed as we rely on hash change
+    // Add navigation link interceptor (delegate to app container)
+    appElement.addEventListener('click', (event) => {
+        const targetLink = event.target.closest('a');
+
+        // Check if it's an internal navigation link managed by our router
+        if (targetLink && targetLink.pathname.startsWith(basePath)) {
+            // Ignore links specifically designed to open in new tabs or external links
+             if (targetLink.target === '_blank' || targetLink.origin !== window.location.origin) {
+                return;
+            }
+
+            event.preventDefault(); // Prevent default browser navigation
+            console.log(`Intercepted navigation to: ${targetLink.href}`);
+
+            // Update URL if it's different
+            if (targetLink.href !== window.location.href) {
+                history.pushState({}, '', targetLink.href); // Update URL bar
+                handleRouteChange(); // Trigger content load for the new state
+            }
         }
     });
 
-    // Trigger initial load based on hash *after* event listeners are set up
-    handleHashChange(); // Load project based on current hash or show welcome
+    // Trigger initial load based on current path *after* event listeners are set up
+    handleRouteChange(); // Load project based on current path or show welcome
 
     isLoading = false;
     console.log('Initialization complete.');
