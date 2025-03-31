@@ -1,6 +1,9 @@
 // ui.js
 // Handles UI updates and DOM manipulation
 
+// Import config only if needed, basePath is needed here for link generation
+import { basePath } from './config.js';
+
 // DOM Elements (cache them)
 const projectNav = document.getElementById('project-nav');
 const contentFrame = document.getElementById('content-frame');
@@ -32,8 +35,10 @@ export function renderNav(projects, currentProject) {
     projects.forEach(project => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `#${project.id}`;
-        a.textContent = project.name;
+        // Generate path-based URL (Option A mapping: /basePath/projectNameSuffix)
+        const projectUrlSuffix = project.id.substring(5); // e.g., "example-html" from "proj.example-html"
+        a.href = `${basePath}/${projectUrlSuffix}`; // e.g., /wobble/example-html
+        a.textContent = project.name; // User-friendly name like "example html"
         a.dataset.projectId = project.id; // Store project ID
         if (currentProject && currentProject.id === project.id) {
             a.classList.add('active');
@@ -120,16 +125,28 @@ export function hideError() {
 
 /**
  * Updates the 'active' class on the navigation links.
- * Also updates the theme attribute on srcdoc iframes.
+ * Also updates the theme attribute on srcdoc iframes if necessary.
  * @param {string|null} currentProjectId - The ID of the currently active project, or null.
  * @param {boolean} isSrcDoc - Indicates if the current content is from srcdoc (markdown).
  */
 export function updateNavActiveState(currentProjectId, isSrcDoc = false) {
     if (!projectNav) return;
     const links = projectNav.querySelectorAll('a');
+
+    // Determine the expected active path suffix from the projectId
+    let activePathSuffix = null;
+    if (currentProjectId && currentProjectId.startsWith('proj.')) {
+        activePathSuffix = currentProjectId.substring(5); // e.g., "example-html"
+    }
+
     links.forEach(link => {
-        if (currentProjectId && link.dataset.projectId === currentProjectId) {
-            link.classList.add('active');
+        // Check if the link's pathname suffix matches the active project's suffix
+        const linkPathSuffix = link.pathname.startsWith(basePath + '/')
+            ? link.pathname.substring(basePath.length + 1)
+            : null;
+
+        if (activePathSuffix && linkPathSuffix === activePathSuffix) {
+           link.classList.add('active');
         } else {
             link.classList.remove('active');
         }
@@ -139,7 +156,7 @@ export function updateNavActiveState(currentProjectId, isSrcDoc = false) {
      if (isSrcDoc && contentFrame && contentFrame.contentDocument) {
           try {
             const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
-            if (iframeDoc && iframeDoc.body) {
+            if(iframeDoc && iframeDoc.body) {
                  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
                  iframeDoc.documentElement.setAttribute('data-theme', currentTheme); // Apply to html element
                  iframeDoc.body.setAttribute('data-theme', currentTheme); // Apply to body as well for compatibility
@@ -164,8 +181,9 @@ export function updateNavActiveState(currentProjectId, isSrcDoc = false) {
 export function applyTheme(theme) {
     const newTheme = theme === 'dark' ? 'dark' : 'light'; // Sanitize
     document.documentElement.setAttribute('data-theme', newTheme);
-    // Update theme for any active srcdoc iframe immediately
-    updateNavActiveState(null, contentFrame?.srcdoc !== ''); // Pass null for projectId, check if srcdoc exists
+     // Check if the current content is srcdoc and update its theme
+     const isCurrentContentSrcDoc = !!(contentFrame && contentFrame.srcdoc);
+     if (isCurrentContentSrcDoc) updateNavActiveState(null, true); // Call with isSrcDoc=true
 }
 
 
@@ -210,7 +228,7 @@ export function setFrameContent(content, project) {
     // Use a small delay before setting src/srcdoc to ensure the 'hidden' class takes effect
      return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
         if (content.type === 'html') {
-            console.log(`Setting iframe source to: ${content.url}`);
+            console.log(`Setting iframe source to: ${content.url}`); // e.g., './pages/proj.example-html/index.html'
              // Inject CSS to hide potential GitHub headers in the iframe
              contentFrame.onload = () => {
                 console.log("Iframe loaded:", content.url);
@@ -243,7 +261,11 @@ export function setFrameContent(content, project) {
                  displayContentFrame(false); // Hide broken iframe
             }
             contentFrame.removeAttribute('srcdoc'); // Ensure srcdoc is not set
-            contentFrame.src = content.url;
+            // Make URL relative to the *base path* of the application, not the current window path
+            // Assuming content.url is like './pages/proj.example-html/index.html'
+            // It needs to be resolved relative to the application root for history API routing.
+            const resolvedUrl = new URL(content.url, `${window.location.origin}${basePath}/`).pathname;
+            contentFrame.src = resolvedUrl; // e.g., /wobble/pages/proj.example-html/index.html
             // Visibility is handled by onload/onerror
 
         } else if (content.type === 'markdown') {
