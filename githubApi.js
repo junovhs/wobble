@@ -1,16 +1,15 @@
 // githubApi.js
 // Handles interactions with the GitHub API
 
-import { githubOwner, githubRepo, pagesFolder, basePath } from './config.js';
+import { githubOwner, githubRepo, pagesFolder } from './config.js';
 
 const GITHUB_API_BASE = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/`;
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 /**
- * Fetches directory contents from the GitHub API.
- * @param {string} path - The path relative to the repository root (e.g., 'pages' or 'pages/cat.art').
- * @returns {Promise<Array>} A promise that resolves to an array of directory items.
- * @throws {Error} If the fetch fails or returns a non-OK status (excluding 404 for the initial fetch).
+ * Recursively fetches directory contents from the GitHub API.
+ * @param {string} path - The API path to fetch (relative to repo root).
+ * @returns {Promise<Array|object>} Array of items or error object.
  */
 async function fetchDirectoryContents(path) {
     const apiUrl = GITHUB_API_BASE + path;
@@ -18,209 +17,160 @@ async function fetchDirectoryContents(path) {
     try {
         const response = await fetch(apiUrl);
         if (!response.ok) {
-            // Allow 404 specifically for the *initial* call to fetchProjects
-            // but throw for subsequent calls (e.g., fetching a category's content)
-            if (response.status === 404 && path !== pagesFolder) {
-                 console.warn(`Directory not found: ${apiUrl}`);
-                 return []; // Return empty array if a sub-directory isn't found
-            }
-            // Handle common errors for the initial fetch (or any fetch)
-            if (response.status === 404 && path === pagesFolder) {
-                console.warn(`Configured 'pagesFolder' ("${pagesFolder || 'Repo Root'}") not found at ${apiUrl}.`);
-                throw { error: true, status: 404, message: `Project folder ('${pagesFolder || 'Repo Root'}') not found in repo '${githubOwner}/${githubRepo}'. Check 'pagesFolder' in config.js and your repository structure.` };
+            if (response.status === 404) {
+                console.warn(`Directory not found at ${apiUrl}.`);
+                return { error: true, status: 404, message: `Folder ('${path}') not found.` };
             } else if (response.status === 403) {
-                 console.warn(`Rate limit exceeded or private repo? URL: ${apiUrl}`);
-                 throw { error: true, status: 403, message: 'GitHub API rate limit likely exceeded or repository is private. Try again later or check repository permissions.' };
+                console.warn(`Rate limit exceeded or private repo? URL: ${apiUrl}`);
+                return { error: true, status: 403, message: 'GitHub API rate limit likely exceeded or repository is private.' };
             } else {
-                // Throw for other errors
-                throw new Error(`GitHub API Error: ${response.status} - ${response.statusText} for path ${path}`);
+                throw new Error(`GitHub API Error: ${response.status} - ${response.statusText}`);
             }
         }
         const items = await response.json();
-        // Ensure items is an array
+        // Ensure items is an array (API returns object for single file, array for directory)
         return Array.isArray(items) ? items : [items];
     } catch (error) {
-         // Re-throw specific error objects or wrap generic errors
-         if (error.error) throw error; // Re-throw specific error objects
-         console.error(`Error fetching directory ${path}:`, error);
-         throw new Error(`Failed to fetch directory contents for '${path}'. ${error.message}`);
+        console.error(`Error fetching directory contents for path "${path}":`, error);
+        return { error: true, message: `Failed to fetch contents for '${path}'. ${error.message}` };
     }
 }
 
-
 /**
- * Generates a user-friendly name from an ID (e.g., "proj.my-project" -> "My Project").
- * @param {string} id - The project or category ID.
- * @param {string} type - 'project' or 'category'.
- * @returns {string} The formatted name.
+ * Processes fetched items, identifying projects and categories, and recursively fetching categories.
+ * @param {Array} items - Array of file/directory items from GitHub API.
+ * @param {string} currentPath - The path prefix for these items (e.g., 'pages' or 'pages/cat.art').
+ * @returns {Promise<Array>} A promise resolving to an array of processed project/category objects.
  */
-function formatName(id, type) {
-    const prefix = type === 'project' ? 'proj.' : 'cat.';
-    return id.substring(prefix.length)
-             .replace(/[-_]/g, ' ')
-             .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
-}
+async function processDirectoryItems(items, currentPath) {
+    const processedItems = [];
 
-/**
- * Generates the client-side route path for a project.
- * @param {string} projectPath - The full path from the repo root (e.g., "pages/cat.art/proj.color").
- * @returns {string} The route path (e.g., "/wobble/art/color").
- */
-function generateRoutePath(projectPath) {
-    // Remove the base 'pages/' folder and the 'proj.'/'cat.' prefixes from segments
-    const parts = projectPath.substring(pagesFolder.length + 1).split('/'); // +1 for the '/'
-    const routeSegments = parts.map(part => {
-        if (part.startsWith('proj.') || part.startsWith('cat.')) {
-            return part.substring(part.indexOf('.') + 1);
+    for (const item of items) {
+        if (item.type === 'dir') {
+            if (item.name.startsWith('proj.')) {
+                // It's a project directory
+                processedItems.push({
+                    type: 'project',
+                    id: item.name, // Use the full folder name as ID
+                    name: item.name.substring(5).replace(/[-_]/g, ' '), // User-friendly name
+                    path: item.path, // Full path from repo root
+                    url: item.url // API URL for the directory contents
+                });
+            } else if (item.name.startsWith('cat.')) {
+                // It's a category directory, fetch its contents recursively
+                console.log(`Found category: ${item.name}, fetching contents...`);
+                const categoryPath = item.path;
+                const categoryContents = await fetchDirectoryContents(categoryPath);
+
+                if (categoryContents.error) {
+                     console.warn(`Skipping category '${item.name}' due to fetch error: ${categoryContents.message}`);
+                     // Optionally add an error node or just skip
+                     continue;
+                }
+
+                 const children = await processDirectoryItems(categoryContents, categoryPath);
+                 // Only add category if it has children (projects or sub-categories)
+                 if (children.length > 0) {
+                     processedItems.push({
+                         type: 'category',
+                         id: item.name,
+                         name: item.name.substring(4).replace(/[-_]/g, ' '),
+                         path: item.path,
+                         children: children.sort((a, b) => a.name.localeCompare(b.name)) // Sort children
+                     });
+                 } else {
+                    console.log(`Category '${item.name}' is empty or contains no valid projects/subcategories. Skipping.`);
+                 }
+            }
+            // Ignore other directories not starting with proj. or cat.
         }
-        return part; // Should not happen if structure is correct
-    });
-    // Ensure base path ends with '/' if it's not just '/'
-    const normalizedBasePath = basePath === '/' ? '/' : (basePath.endsWith('/') ? basePath : basePath + '/');
-    return normalizedBasePath + routeSegments.join('/');
+        // Ignore files at the root of 'pages' or within category folders unless needed later
+    }
+    return processedItems;
 }
-
 
 /**
  * Fetches the list of projects and categories from the specified pages folder.
- * Handles nested categories.
- * @returns {Promise<Array>} A promise that resolves to a hierarchical array of project/category objects or an error object.
- * @throws {Error} If a non-404/403 network or API error occurs during the initial fetch.
+ * Structures the result hierarchically based on `cat.` folders.
+ * @returns {Promise<Array|object>} A promise that resolves to an array of project/category objects or an error object.
  */
 export async function fetchProjects() {
     console.log('Fetching projects and categories from GitHub API...');
-    let navStructure = [];
+    const rootPath = pagesFolder || ''; // Use pagesFolder or repo root
+    const initialItems = await fetchDirectoryContents(rootPath);
+
+    // Handle initial fetch errors (e.g., pagesFolder not found, rate limit)
+    if (initialItems.error) {
+        // Add specific message for 404 on the root folder fetch
+        if (initialItems.status === 404) {
+            initialItems.message = `Configured 'pagesFolder' ("${pagesFolder || 'Repo Root'}") not found in repo '${githubOwner}/${githubRepo}'. Check 'pagesFolder' in config.js and your repository structure.`;
+        }
+        return initialItems; // Return the error object
+    }
 
     try {
-        // Fetch top-level items in the pagesFolder
-        const topLevelItems = await fetchDirectoryContents(pagesFolder);
-
-        // Process top-level items concurrently
-        const processingPromises = topLevelItems.map(async (item) => {
-            if (item.type === 'dir') {
-                if (item.name.startsWith('proj.')) {
-                    // Top-level project
-                    return {
-                        type: 'project',
-                        id: item.name,
-                        name: formatName(item.name, 'project'),
-                        path: item.path, // Full path like 'pages/proj.my-project'
-                        url: item.url,
-                        routePath: generateRoutePath(item.path) // e.g., /wobble/my-project
-                    };
-                } else if (item.name.startsWith('cat.')) {
-                    // Category folder - fetch its contents
-                    console.log(`Found category: ${item.name}, fetching contents...`);
-                    const categoryItems = await fetchDirectoryContents(item.path);
-                    const categoryProjects = categoryItems
-                        .filter(subItem => subItem.type === 'dir' && subItem.name.startsWith('proj.'))
-                        .map(projItem => ({
-                            type: 'project',
-                            id: projItem.name,
-                            name: formatName(projItem.name, 'project'),
-                            path: projItem.path, // Full path like 'pages/cat.art/proj.color'
-                            url: projItem.url,
-                            routePath: generateRoutePath(projItem.path) // e.g., /wobble/art/color
-                        }))
-                        .sort((a, b) => a.name.localeCompare(b.name)); // Sort projects within category
-
-                    if (categoryProjects.length > 0) {
-                        return {
-                            type: 'category',
-                            id: item.name,
-                            name: formatName(item.name, 'category'),
-                            projects: categoryProjects
-                        };
-                    } else {
-                         console.log(`Category ${item.name} has no 'proj.' subfolders.`);
-                         return null; // Skip empty categories
-                    }
-                }
-            }
-            return null; // Ignore files and non-prefixed folders at top level
-        });
-
-        // Wait for all processing to complete
-        const results = await Promise.all(processingPromises);
-
-        // Filter out null results (non-project/non-category items, empty categories)
-        navStructure = results.filter(item => item !== null);
-
-        // Sort top-level items (categories and projects mixed)
-        navStructure.sort((a, b) => a.name.localeCompare(b.name));
-
-        console.log('Navigation structure:', navStructure);
-
+        const structuredItems = await processDirectoryItems(initialItems, rootPath);
+        // Sort top-level items alphabetically by name
+        structuredItems.sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Projects and categories structured:', structuredItems);
+        return structuredItems;
     } catch (error) {
-        // Catch specific errors thrown by fetchDirectoryContents or other errors
-        if (error.error) {
-             console.error('Error fetching projects:', error.message);
-             return error; // Return the specific error object { error: true, status?, message }
-        } else {
-             console.error('Unexpected error fetching projects:', error);
-             return { error: true, message: `Failed to fetch projects. ${error.message}` };
-        }
+         console.error('Error processing directory items:', error);
+         return { error: true, message: `Failed to process project structure. ${error.message}` };
     }
-    return navStructure; // Return the hierarchical structure
 }
-
 
 /**
  * Fetches the content of a specific project directory.
  * Looks for standard files like index.html, README.md.
- * @param {string} projectPath - The full path to the project folder from the repo root (e.g., 'pages/cat.art/proj.color').
+ * @param {string} projectPath - The full path to the project folder from the repo root.
  * @returns {Promise<object>} A promise that resolves to a content object { type: 'html'|'markdown'|'empty'|'error', data/url: string }.
  */
 export async function fetchProjectContent(projectPath) {
     console.log(`Fetching content for project path: ${projectPath}`);
+    const apiUrl = GITHUB_API_BASE + projectPath;
     let content = { type: 'empty', data: 'No suitable content file found (index.html or README.md).' };
 
     try {
-        // Fetch directory contents for the specific project path
-        const projectItems = await fetchDirectoryContents(projectPath);
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`GitHub API Error: ${response.status} fetching directory ${projectPath}`);
+        const items = await response.json();
+
+        // Ensure items is an array
+        const directoryItems = Array.isArray(items) ? items : [items];
 
         // Prioritize index.html
-        const indexHtml = projectItems.find(item => item.name.toLowerCase() === 'index.html' && item.type === 'file');
+        const indexHtml = directoryItems.find(item => item.name.toLowerCase() === 'index.html' && item.type === 'file');
         if (indexHtml) {
-            console.log('Found index.html');
-            // Construct the relative URL path for serving via iframe src
-            // Path needs to be relative to the *application root* (index.html/404.html)
-            const relativeUrl = `./${indexHtml.path}`; // e.g., ./pages/cat.art/proj.color/index.html
-            content = { type: 'html', url: relativeUrl };
-            console.log(`index.html relative URL for iframe: ${content.url}`);
-            return content;
+             console.log('Found index.html');
+            // Construct the relative URL path for serving
+            content = { type: 'html', url: `./${indexHtml.path}` };
+
+             console.log(`index.html relative URL: ${content.url}`);
+             return content;
         }
 
         // Fallback to README.md
-        const readmeMd = projectItems.find(item => item.name.toLowerCase() === 'readme.md' && item.type === 'file');
+        const readmeMd = directoryItems.find(item => item.name.toLowerCase() === 'readme.md' && item.type === 'file');
         if (readmeMd) {
             console.log('Found README.md, fetching content...');
-            // Fetching raw content using download_url
+            // Import marked dynamically only when needed
+            const { marked } = await import('marked');
             const readmeResponse = await fetch(readmeMd.download_url);
             if (!readmeResponse.ok) throw new Error(`Failed to download README.md from ${readmeMd.download_url} - Status: ${readmeResponse.status}`);
             const markdown = await readmeResponse.text();
-
-            // Dynamically import marked only when needed
-            const { marked } = await import('marked');
-            const html = marked(markdown); // Convert markdown to HTML
-
+            const html = marked.parse(markdown); // Use marked.parse
             content = { type: 'markdown', data: html };
             console.log('README.md processed.');
             return content;
         }
 
-        console.log('No index.html or README.md found in', projectPath);
+         console.log('No index.html or README.md found in', projectPath);
+
 
     } catch (error) {
-         // Check if it's one of our specific error objects from fetchDirectoryContents
-         if (error.error) {
-              console.error(`Error fetching content for ${projectPath}:`, error.message);
-              content = { type: 'error', data: `Error loading project content for '${projectPath}'. ${error.message}` };
-         } else {
-            // Generic error
-             console.error(`Unexpected error fetching content for ${projectPath}:`, error);
-             content = { type: 'error', data: `Error loading project content for '${projectPath}'. ${error.message}` };
-         }
+        console.error(`Error fetching content for ${projectPath}:`, error);
+        content = { type: 'error', data: `Error loading project content for '${projectPath}'. ${error.message}` };
     }
 
     return content;

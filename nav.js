@@ -1,178 +1,181 @@
 // nav.js
-// Handles rendering and interaction for the sidebar navigation
+// Handles rendering and state updates for the navigation sidebar
 
 import { basePath } from './config.js';
 
-// DOM Elements
-const projectNav = document.getElementById('project-nav');
-
-// State for expanded categories
-const expandedCategories = new Set();
+const projectNav = document.getElementById('project-nav'); // Cache nav element
+const contentFrame = document.getElementById('content-frame'); // Needed for theme updates
 
 /**
- * Toggles the expansion state of a category.
- * @param {string} categoryId - The ID of the category (e.g., "cat.art").
- * @param {HTMLButtonElement} button - The button element that was clicked.
+ * Recursively renders navigation items (projects and categories).
+ * @param {HTMLElement} parentElement - The UL element to append items to.
+ * @param {Array} items - Array of project/category objects.
+ * @param {object|null} currentProject - The currently active project object.
+ * @param {number} level - The current nesting level (0 for top level).
  */
-function toggleCategory(categoryId, button) {
-    const subList = button.nextElementSibling; // Assuming <ul> follows the button
-    const icon = button.querySelector('.category-icon');
-
-    if (expandedCategories.has(categoryId)) {
-        expandedCategories.delete(categoryId);
-        if (subList) subList.style.display = 'none';
-        if (icon) icon.classList.remove('expanded');
-        button.setAttribute('aria-expanded', 'false');
-    } else {
-        expandedCategories.add(categoryId);
-        if (subList) subList.style.display = 'block';
-        if (icon) icon.classList.add('expanded');
-        button.setAttribute('aria-expanded', 'true');
-    }
-    // Optional: Save state to sessionStorage/localStorage
-}
-
-/**
- * Recursively renders navigation items (categories and projects).
- * @param {Array} items - Array of project or category objects.
- * @param {HTMLElement} parentElement - The HTML element (ul) to append items to.
- * @param {string|null} currentProjectId - The ID of the currently active project.
- * @param {number} level - The nesting level (0 for top level).
- */
-function renderNavItems(items, parentElement, currentProjectId, level = 0) {
+function renderNavItems(parentElement, items, currentProject, level = 0) {
     items.forEach(item => {
-        const li = document.createElement('li');
-        li.classList.add(`nav-level-${level}`);
+        if (item.type === 'category') {
+            const categoryLi = document.createElement('li');
+            categoryLi.classList.add('category-item');
 
-        if (item.type === 'project') {
+            // Header (clickable)
+            const headerDiv = document.createElement('div');
+            headerDiv.classList.add('category-header');
+            headerDiv.setAttribute('role', 'button');
+            headerDiv.setAttribute('aria-expanded', 'false'); // Start collapsed
+            headerDiv.setAttribute('tabindex', '0'); // Make focusable
+            headerDiv.dataset.categoryId = item.id; // Store category ID if needed
+
+            // Toggle Icon (e.g., SVG chevron)
+            const iconSpan = document.createElement('span');
+            iconSpan.classList.add('category-toggle-icon');
+            // Simple SVG Chevron - replace with more complex if needed
+            iconSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 10 8 6 12"></polyline></svg>`;
+            headerDiv.appendChild(iconSpan);
+
+            // Category Name
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('category-name');
+            nameSpan.textContent = item.name;
+            headerDiv.appendChild(nameSpan);
+
+            categoryLi.appendChild(headerDiv);
+
+            // Children List (initially hidden)
+            const childrenUl = document.createElement('ul');
+            childrenUl.classList.add('category-children');
+            // Recursively render children
+            renderNavItems(childrenUl, item.children, currentProject, level + 1);
+            categoryLi.appendChild(childrenUl);
+
+            // Toggle Functionality
+            headerDiv.addEventListener('click', () => {
+                const isExpanded = headerDiv.getAttribute('aria-expanded') === 'true';
+                headerDiv.setAttribute('aria-expanded', !isExpanded);
+                childrenUl.classList.toggle('expanded', !isExpanded); // Use class to toggle max-height
+            });
+             // Allow Enter/Space key to toggle
+            headerDiv.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    headerDiv.click();
+                }
+            });
+
+
+            parentElement.appendChild(categoryLi);
+
+        } else if (item.type === 'project') {
+            const li = document.createElement('li');
+            li.classList.add('project-link'); // Add class for potential styling
             const a = document.createElement('a');
-            a.href = item.routePath; // Use pre-generated route path
+            // Generate path-based URL
+            const projectUrlSuffix = item.id.substring(5); // e.g., "example-html" from "proj.example-html"
+            a.href = `${basePath}/${projectUrlSuffix}`;
             a.textContent = item.name;
-            a.dataset.projectId = item.id; // Store project ID for identification
-            if (currentProjectId === item.id) {
+            a.dataset.projectId = item.id; // Store project ID
+
+            // Check if this project is the currently active one
+            if (currentProject && currentProject.id === item.id) {
                 a.classList.add('active');
+                // Expand ancestor categories if this item is active on initial load
+                 let parent = li.closest('.category-item');
+                 while(parent) {
+                     const header = parent.querySelector('.category-header');
+                     const childrenList = parent.querySelector('.category-children');
+                     if(header && childrenList && header.getAttribute('aria-expanded') === 'false') {
+                        header.setAttribute('aria-expanded', 'true');
+                        childrenList.classList.add('expanded');
+                     }
+                     parent = parent.parentElement.closest('.category-item'); // Move up hierarchy
+                 }
             }
+
             li.appendChild(a);
-        } else if (item.type === 'category') {
-            // Use a button for accessibility and event handling
-            const button = document.createElement('button');
-            button.classList.add('category-toggle');
-            button.setAttribute('aria-expanded', expandedCategories.has(item.id) ? 'true' : 'false');
-            button.setAttribute('aria-controls', `category-${item.id}-list`); // For accessibility
-
-            // Add icon and text
-            button.innerHTML = `
-                <svg class="category-icon ${expandedCategories.has(item.id) ? 'expanded' : ''}" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                <span>${item.name}</span>
-            `;
-
-            button.addEventListener('click', () => toggleCategory(item.id, button));
-            li.appendChild(button);
-
-            const subUl = document.createElement('ul');
-            subUl.id = `category-${item.id}-list`;
-            subUl.style.display = expandedCategories.has(item.id) ? 'block' : 'none'; // Initial state
-            renderNavItems(item.projects, subUl, currentProjectId, level + 1); // Recursive call for nested projects
-            li.appendChild(subUl);
+            parentElement.appendChild(li);
         }
-        parentElement.appendChild(li);
     });
 }
+
 
 /**
  * Renders the entire project navigation sidebar.
- * @param {Array} navStructure - Hierarchical array of project and category objects.
- * @param {string|null} currentProjectId - The ID of the currently selected project object.
+ * @param {Array} projects - Array of project/category objects (potentially nested).
+ * @param {object|null} currentProject - The currently selected project object.
  */
-export function renderNav(navStructure, currentProjectId) {
+export function renderNav(projects, currentProject) {
     if (!projectNav) return;
     projectNav.innerHTML = ''; // Clear previous nav
 
-    if (!navStructure || navStructure.length === 0) {
-        // Message is handled in app.js based on fetch results
+    if (!projects || projects.length === 0) {
+        projectNav.innerHTML = '<p class="nav-message">No projects found.</p>';
         return;
     }
 
-    const topUl = document.createElement('ul');
-    renderNavItems(navStructure, topUl, currentProjectId, 0); // Start rendering at level 0
-    projectNav.appendChild(topUl);
+    const ul = document.createElement('ul');
+    renderNavItems(ul, projects, currentProject); // Use recursive renderer
+    projectNav.appendChild(ul);
 }
 
 
 /**
- * Flattens the hierarchical navigation structure into a flat list of projects.
- * Useful for searching for a project by ID or routePath.
- * @param {Array} navStructure - The hierarchical navigation structure.
- * @returns {Array} A flat array of project objects.
- */
-export function flattenProjects(navStructure) {
-    let flatList = [];
-    navStructure.forEach(item => {
-        if (item.type === 'project') {
-            flatList.push(item);
-        } else if (item.type === 'category' && item.projects) {
-            // Recursively flatten projects within categories
-            flatList = flatList.concat(item.projects); // Assumes projects in categories are always type 'project'
-        }
-    });
-    return flatList;
-}
-
-
-/**
- * Updates the 'active' class on the navigation links.
+ * Updates the 'active' class on navigation links and ensures ancestors are expanded.
  * Also updates the theme attribute on srcdoc iframes if necessary.
  * @param {string|null} currentProjectId - The ID of the currently active project, or null.
- * @param {boolean} isSrcDoc - Indicates if the current content is from srcdoc (markdown).
+ * @param {boolean} [isSrcDoc=false] - Indicates if the current content is from srcdoc (markdown).
  */
 export function updateNavActiveState(currentProjectId, isSrcDoc = false) {
     if (!projectNav) return;
-    const links = projectNav.querySelectorAll('a[data-project-id]'); // Select only project links
+    const links = projectNav.querySelectorAll('a[data-project-id]');
+    let activeLinkElement = null;
 
-    // Deactivate all links first
+    // Remove active class from all links first
     links.forEach(link => link.classList.remove('active'));
 
-    // Activate the current one if found
+    // Find and activate the current link
     if (currentProjectId) {
-        const activeLink = projectNav.querySelector(`a[data-project-id="${currentProjectId}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active');
+        // Use dataset.projectId for reliable selection
+        activeLinkElement = projectNav.querySelector(`a[data-project-id="${currentProjectId}"]`);
+        if (activeLinkElement) {
+            activeLinkElement.classList.add('active');
 
-            // Ensure parent categories are expanded if the active link is inside a collapsed one
-            let parent = activeLink.closest('ul');
-            while (parent && parent.id && parent.id.startsWith('category-')) {
-                 const categoryId = parent.id.substring(9, parent.id.lastIndexOf('-list')); // Extract cat.id
-                 const toggleButton = parent.previousElementSibling; // The button controlling this ul
-                 if (toggleButton && toggleButton.classList.contains('category-toggle') && !expandedCategories.has(categoryId)) {
-                     // Programmatically toggle if not already expanded
-                     toggleCategory(categoryId, toggleButton);
-                     console.log(`Auto-expanded category ${categoryId} for active project.`);
+            // Expand ancestor categories
+             let parentLi = activeLinkElement.closest('li'); // Start from the link's li
+             let categoryItem = parentLi ? parentLi.closest('.category-item') : null;
+             while (categoryItem) {
+                 const header = categoryItem.querySelector('.category-header');
+                 const childrenList = categoryItem.querySelector('.category-children');
+                 if (header && childrenList && header.getAttribute('aria-expanded') === 'false') {
+                     header.setAttribute('aria-expanded', 'true');
+                     childrenList.classList.add('expanded');
                  }
-                 // Move up to the next potential parent category list
-                 parent = parent.closest('li.nav-level-') ?.parentElement ?.closest('ul');
-            }
+                  // Move up to the next parent category item
+                 categoryItem = categoryItem.parentElement.closest('.category-item');
+             }
         } else {
-            console.warn(`Could not find nav link for active project ID: ${currentProjectId}`);
+            console.warn(`Could not find nav link element for project ID: ${currentProjectId}`);
         }
     }
 
-    // --- Update iframe theme logic (remains the same as before) ---
-    const contentFrame = document.getElementById('content-frame'); // Need to get reference here
-
-    if (isSrcDoc && contentFrame && contentFrame.contentDocument) {
-        try {
+    // Update iframe theme if it's srcdoc
+     if (isSrcDoc && contentFrame && contentFrame.contentDocument) {
+          try {
             const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
-            if (iframeDoc && iframeDoc.body) {
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                iframeDoc.documentElement.setAttribute('data-theme', currentTheme); // Apply to html element
-                iframeDoc.body.setAttribute('data-theme', currentTheme); // Apply to body as well for compatibility
-                console.log("Updated srcdoc iframe theme to:", currentTheme);
+            if(iframeDoc && iframeDoc.documentElement) { // Check documentElement
+                 const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                 iframeDoc.documentElement.setAttribute('data-theme', currentTheme); // Apply to html element
+                // Body might not exist immediately, but applying to html is often enough
+                 if (iframeDoc.body) {
+                    iframeDoc.body.setAttribute('data-theme', currentTheme);
+                 }
+                 console.log("Updated srcdoc iframe theme to:", currentTheme);
+            } else {
+                console.warn("Could not access srcdoc iframe documentElement to update theme.");
             }
-        } catch (e) {
-            console.warn("Could not update srcdoc iframe theme:", e.message);
-        }
-    } else if (!isSrcDoc && contentFrame && contentFrame.contentWindow) {
-        // Attempt to send a message post-load (needs listener in iframe)
-        // Or try direct access if same-origin (unlikely for different projects)
-    }
+          } catch (e) {
+               console.warn("Could not update srcdoc iframe theme (cross-origin or timing issue?):", e.message);
+          }
+     }
+     // Theme update for HTML iframe content is generally not feasible due to cross-origin
 }

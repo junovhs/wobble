@@ -12,131 +12,133 @@ import {
     toggleSidebarCollapse,
     initializeSidebarState
 } from './ui.js';
-// Import new nav functions
-import { renderNav, updateNavActiveState, flattenProjects } from './nav.js';
+// Import navigation specific functions
+import { renderNav, updateNavActiveState } from './nav.js';
 
 // DOM Elements
 const projectNavElement = document.getElementById('project-nav');
 const themeToggleButton = document.getElementById('theme-toggle');
 const sidebarToggleButton = document.getElementById('sidebar-toggle');
-const appElement = document.getElementById('app');
+const appElement = document.getElementById('app'); // Needed for link interception and collapse class
+const contentFrame = document.getElementById('content-frame'); // Cache content frame
+const welcomeScreen = document.getElementById('welcome-screen'); // Cache welcome screen
 
 // State
-let navStructure = []; // Hierarchical structure from fetchProjects
-let flatProjectList = []; // Flat list generated from navStructure
+let projects = []; // Can be nested now
 let currentProject = null;
-let isLoading = false;
+let isLoading = false; // Prevent concurrent loads
 
 /**
- * Extracts the project route part (e.g., "category/my-project") from the full pathname.
+ * Recursively searches the nested projects array for a project by its ID.
+ * @param {Array} items - The array of projects/categories to search.
+ * @param {string} id - The project ID to find.
+ * @returns {object|null} The project object or null if not found.
+ */
+function findProjectById(items, id) {
+    for (const item of items) {
+        if (item.type === 'project' && item.id === id) {
+            return item;
+        }
+        if (item.type === 'category' && item.children) {
+            const foundInChildren = findProjectById(item.children, id);
+            if (foundInChildren) {
+                return foundInChildren;
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * Extracts the project route part (e.g., "my-project") from the full pathname.
  * Handles the base path.
- * @returns {string|null} The route part relative to the base path, or null if it's the base path.
+ * @returns {string|null} The route part or null if it's the base path or invalid.
  */
 function getRouteFromPathname() {
     const path = window.location.pathname;
-    // Ensure base path ends with '/' if it's not just '/'
-    const normalizedBasePath = basePath === '/' ? '/' : (basePath.endsWith('/') ? basePath : basePath + '/');
+    const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
 
     if (path.startsWith(normalizedBasePath)) {
         const routePart = path.substring(normalizedBasePath.length);
         // Return null for the root/base path itself, otherwise return the route part
         return routePart === '' ? null : routePart;
-    } else if (path === basePath && basePath !== '/') {
-         // Handle case like /wobble (no trailing slash) as root
-         return null;
+    } else if (path === basePath) {
+        // Handle '/wobble' without trailing slash as root
+        return null;
     }
     // If path doesn't start with basePath (shouldn't happen on GH pages but good practice)
-    // Or if it's the absolute root '/' and basePath is not '/'
-    console.warn(`Pathname "${path}" does not align with expected base path "${basePath}". Treating as root.`);
-    return null; // Treat unexpected paths as root/welcome screen
-}
-
-/**
- * Finds a project object in the potentially nested structure by its route path suffix.
- * @param {string} routeSuffix - The part of the path after the basePath (e.g., "art/color").
- * @param {Array} structure - The hierarchical navigation structure.
- * @returns {object|null} The found project object or null.
- */
-function findProjectByRouteSuffix(routeSuffix, structure) {
-    if (!routeSuffix || !structure) return null;
-
-     // Use the pre-generated flat list for efficient lookup
-     // Need to match routeSuffix against the part of project.routePath *after* the basePath
-     const normalizedBasePath = basePath === '/' ? '/' : (basePath.endsWith('/') ? basePath : basePath + '/');
-     const expectedRoutePath = normalizedBasePath + routeSuffix;
-
-     return flatProjectList.find(p => p.routePath === expectedRoutePath);
+    console.warn(`Pathname "${path}" does not match expected base path "${basePath}".`);
+    return null; // Or handle as an error/redirect
 }
 
 /**
  * Loads and displays the selected project's content.
- * @param {string|null} routeSuffix - The route suffix (e.g., "art/color") or null for the welcome screen.
+ * @param {string} projectId - The ID of the project to load (e.g., "proj.my-project").
  */
-async function loadProject(routeSuffix) {
+async function loadProject(projectId) {
      if (isLoading) {
-          console.log("Already loading a project, aborting new request for route:", routeSuffix);
+          console.log("Already loading a project, aborting new request for:", projectId);
           return;
      }
-     if (!routeSuffix) {
-          console.log("No route suffix provided, showing welcome screen.");
+     if (!projectId) {
+          console.log("No project ID provided, showing welcome screen.");
           showWelcomeScreen();
           currentProject = null;
           updateNavActiveState(null); // Update nav styling
-          // No need to manipulate history, path should be at root
+          // No need to clear hash, path is handled by history API
           return;
      }
 
-     isLoading = true;
-     hideError(); // Clear previous errors
+     // Find project data using recursive search
+     // const project = projects.find(p => p.id === projectId); // Old flat search
+     const project = findProjectById(projects, projectId); // New nested search
 
-     console.log(`Attempting to load project for route suffix: ${routeSuffix}`);
-     // Find project data using the route suffix
-     const project = findProjectByRouteSuffix(routeSuffix, navStructure);
-
-     if (!project) {
-          console.warn(`Project for route suffix "${routeSuffix}" not found.`);
-          showError(`Project '${routeSuffix.replace('/', ' / ')}' not found. It might have been removed, renamed, or the URL is incorrect.`);
-          hideWelcomeScreen(); // Ensure welcome is hidden
+     if (!project || project.type !== 'project') { // Ensure it's a project, not category
+          console.warn(`Project with id "${projectId}" not found or is not a project type.`);
+          // Extract readable name from projectId
+          const readableName = projectId.startsWith('proj.') ? projectId.substring(5).replace(/[-_]/g, ' ') : projectId;
+          showError(`Project '${readableName}' not found. It might have been removed, renamed, or the URL is incorrect.`);
+          hideWelcomeScreen(); // Hide welcome if shown
           displayContentFrame(false); // Hide frame
           currentProject = null;
           updateNavActiveState(null);
-          isLoading = false;
           // Don't manipulate history here, let the browser/user handle invalid paths
           return;
      }
 
-     // If already showing this project, do nothing extra but ensure frame is visible
-     if (currentProject?.id === project.id) {
-          console.log(`Project ${project.name} (ID: ${project.id}) is already loaded.`);
-          if (!document.getElementById('welcome-screen').classList.contains('hidden')) {
+     // If already showing this project, do nothing special (unless welcome was visible)
+     if (currentProject?.id === projectId) {
+          console.log(`Project ${projectId} is already loaded.`);
+          // Ensure frame is visible if welcome screen was shown before
+          if (!welcomeScreen.classList.contains('hidden')) {
                hideWelcomeScreen();
-               // SetFrameContent would have handled showing the frame initially
-               // displayContentFrame(true, !!contentFrame?.srcdoc); // Re-ensure visibility? setFrame handles this.
+               displayContentFrame(true, !!contentFrame?.srcdoc);
           }
-           isLoading = false; // Was already loaded
           return;
      }
 
      console.log(`Loading project: ${project.name} (ID: ${project.id})`);
+     isLoading = true;
+     hideError(); // Clear previous errors
      hideWelcomeScreen(); // Hide welcome screen
      displayContentFrame(false); // Hide frame while loading
 
-     currentProject = project; // Set current project immediately
+     currentProject = project;
      updateNavActiveState(currentProject.id); // Update nav highlighting immediately
 
      try {
-          const content = await fetchProjectContent(project.path); // Fetch using the *full* path
-          await setFrameContent(content, project); // setFrameContent handles showing the frame on success/error
-          // Update nav state again, passing whether it's srcdoc for theme updates
+          const content = await fetchProjectContent(project.path);
+          await setFrameContent(content, project); // setFrameContent handles showing the frame
+          // Update nav state again - determines if theme needs update for srcdoc
           const isSrcDoc = content.type === 'markdown';
           updateNavActiveState(currentProject.id, isSrcDoc);
      } catch (error) {
-          console.error(`Unhandled error loading project ${project.id}:`, error);
+          console.error(`Unhandled error loading project ${projectId}:`, error);
           showError(`Failed to load project '${project.name}': ${error.message}`);
           displayContentFrame(false);
           currentProject = null; // Reset current project on error
           updateNavActiveState(null); // Update nav styling
-          // Don't manipulate history here
+          // Don't manipulate history here, let the browser/user handle invalid paths
      } finally {
           isLoading = false;
      }
@@ -146,22 +148,15 @@ async function loadProject(routeSuffix) {
  * Handles route changes based on the current pathname (called on load, popstate, and link clicks).
  */
 function handleRouteChange() {
-    const routeSuffix = getRouteFromPathname();
-    console.log(`Route changed/detected. Suffix: "${routeSuffix || '(root)'}" from path: ${window.location.pathname}`);
+    const routePart = getRouteFromPathname();
+    console.log(`Route changed/detected: "${routePart || '(root)'}" from path: ${window.location.pathname}`);
 
-    // Load project only if the derived route suffix is different from the current one
-    // Need to handle null/undefined cases carefully
-    const currentProjectRouteSuffix = currentProject ? getRouteFromPathname() : null; // Get suffix for current project if it exists
+    // Map route part back to projectId (Option A)
+    const projectId = routePart ? `proj.${routePart}` : null;
 
-    if (routeSuffix !== currentProjectRouteSuffix) {
-         loadProject(routeSuffix);
-    } else {
-         console.log("Route suffix matches current project, no load needed.");
-         // Ensure welcome screen is hidden if we are on a project route but somehow it became visible
-         if (routeSuffix && !welcomeScreen.classList.contains('hidden')) {
-             hideWelcomeScreen();
-             // Frame visibility is handled by loadProject/setFrameContent initially
-         }
+    // Load project only if the derived projectId is different from the current one
+    if (projectId !== (currentProject?.id || null)) {
+        loadProject(projectId);
     }
 }
 
@@ -172,7 +167,8 @@ function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme); // applyTheme handles updating iframe if needed
+    applyTheme(newTheme);
+     // Re-apply theme to srcdoc iframe if needed, handled within applyTheme->updateNavActiveState
 }
 
 /**
@@ -180,7 +176,7 @@ function toggleTheme() {
  */
 async function initialize() {
     console.log('Initializing application...');
-    isLoading = true; // Prevent route changes during init
+    isLoading = true; // Prevent hash changes during init
 
     // --- Sidebar Collapse Setup ---
     if (sidebarToggleButton) {
@@ -194,11 +190,7 @@ async function initialize() {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-    if (themeToggleButton) {
-         themeToggleButton.addEventListener('click', toggleTheme);
-    } else {
-        console.warn("Theme toggle button not found.");
-    }
+    themeToggleButton.addEventListener('click', toggleTheme);
 
     // --- Fetch Projects and Render Nav ---
     const fetchedData = await fetchProjects();
@@ -206,22 +198,21 @@ async function initialize() {
     // Check if fetchProjects returned an error object
     if (fetchedData.error) {
          showError(fetchedData.message);
-         projectNavElement.innerHTML = `<p class="nav-message">Error loading projects.</p>`;
+         // Display specific message for 404 or other errors
+         projectNavElement.innerHTML = `<p class="nav-message">${fetchedData.message.includes('404') ? 'Could not find projects folder.' : 'Error loading projects.'}</p>`;
          showWelcomeScreen(); // Show welcome screen below error
          isLoading = false;
          return; // Stop initialization if projects can't be loaded
     }
 
-    // Store fetched structure and generate flat list
-    navStructure = fetchedData;
-    flatProjectList = flattenProjects(navStructure); // Use helper from nav.js
+    // Store fetched projects (potentially nested)
+    projects = fetchedData;
 
     // Render initial nav
-    if (navStructure.length === 0) {
+    if (projects.length === 0) {
         projectNavElement.innerHTML = '<p class="nav-message">No projects found.</p>';
-        // showError("No projects (folders starting with 'proj.') found in the configured 'pages' directory."); // Optional content area message
     } else {
-         renderNav(navStructure, null); // Render nav without active item initially
+         renderNav(projects, null); // Render potentially nested nav
     }
 
     // --- Routing Setup ---
@@ -229,12 +220,10 @@ async function initialize() {
 
     // Add navigation link interceptor (delegate to app container)
     appElement.addEventListener('click', (event) => {
-        const targetLink = event.target.closest('a'); // Check links within the app
+        const targetLink = event.target.closest('a');
 
-         // Check if it's an internal navigation link managed by our router
-         // It should have a data-project-id or be within the sidebar nav
-         // And its href should start with the basePath
-         if (targetLink && targetLink.closest('#sidebar') && targetLink.pathname.startsWith(basePath)) {
+        // Check if it's an internal navigation link managed by our router
+        if (targetLink && targetLink.pathname.startsWith(basePath)) {
             // Ignore links specifically designed to open in new tabs or external links
              if (targetLink.target === '_blank' || targetLink.origin !== window.location.origin) {
                 return;
@@ -249,11 +238,6 @@ async function initialize() {
                 handleRouteChange(); // Trigger content load for the new state
             }
         }
-        // Allow clicks on category toggles (buttons) to pass through
-        else if (event.target.closest('button.category-toggle')) {
-             return;
-        }
-        // Potentially handle other link clicks within the app if needed
     });
 
     // Trigger initial load based on current path *after* event listeners are set up

@@ -9,11 +9,9 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --nav-hover-bg: #e2e6ea;
   --nav-active-bg: #d6dbe0;
-  --category-hover-bg: #e9ecef; 
   --sidebar-width-expanded: 250px;
   --sidebar-width-collapsed: 60px;
   --header-height: 60px;
-  --footer-height: 60px; 
   --transition-speed: 0.3s;
   --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -29,7 +27,6 @@
   --shadow-color: rgba(255, 255, 255, 0.1);
   --nav-hover-bg: #333333;
   --nav-active-bg: #444444;
-   --category-hover-bg: #2f2f2f;
 }
 
 *, *::before, *::after {
@@ -38,16 +35,12 @@
   box-sizing: border-box;
 }
 
-html {
-  font-size: 16px; 
-}
-
 body {
   font-family: var(--font-family);
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
-  overflow: hidden; 
+  overflow: hidden;
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
@@ -66,21 +59,21 @@ body {
   transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed);
   box-shadow: 2px 0 5px var(--shadow-color);
   z-index: 100;
-  overflow: hidden; 
+  overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
 
 #sidebar header {
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
   padding: 0 15px;
   height: var(--header-height);
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
   transition: border-color var(--transition-speed), padding var(--transition-speed) var(--transition-easing);
-  position: relative; 
+  position: relative;
   gap: 10px;
 }
 
@@ -88,11 +81,39 @@ body {
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--accent-color);
-  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed);
+  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing);
   white-space: nowrap;
   overflow: hidden;
   flex-grow: 1;
   min-width: 0;
+}
+
+.theme-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing);
+  flex-shrink: 0;
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+[data-theme="light"] .theme-button .moon { display: none; }
+[data-theme="dark"] .theme-button .sun { display: none; }
+
+.theme-button svg {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .sidebar-toggle-button {
@@ -108,9 +129,10 @@ body {
   transform: rotate(0deg);
   border-radius: 4px;
   flex-shrink: 0;
-  position: relative; 
+  position: relative;
   width: 30px;
   height: 30px;
+  margin-right: 5px;
 }
 
 .sidebar-toggle-button:hover {
@@ -142,21 +164,15 @@ body {
 
 #project-nav ul {
   list-style: none;
-  padding-left: 0; 
-}
-
-#project-nav li {
-  
 }
 
 #project-nav li a {
   display: flex;
   align-items: center;
-  padding: 8px 15px; 
+  padding: 10px 15px; 
   text-decoration: none;
   color: var(--text-color);
   font-weight: 500;
-  font-size: 0.95rem;
   border-left: 3px solid transparent;
   transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
   white-space: nowrap;
@@ -175,61 +191,95 @@ body {
   font-weight: 600;
 }
 
-#project-nav button.category-toggle {
+.category-item {
+  /* Container for category header + children list */
+}
+
+.category-header {
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 10px 15px; 
-  background: none;
-  border: none;
-  border-left: 3px solid transparent; 
-  text-align: left;
+  padding: 10px 10px 10px 15px; 
   cursor: pointer;
-  font-family: inherit;
-  font-size: 1rem; 
   font-weight: 600;
   color: var(--text-color);
-  transition: background-color var(--transition-speed), color var(--transition-speed);
+  transition: background-color var(--transition-speed);
+  user-select: none; 
+  position: relative;
+}
+
+.category-header:hover {
+  background-color: var(--nav-hover-bg);
+}
+
+.category-toggle-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  transition: transform var(--transition-speed) ease-in-out;
+  flex-shrink: 0;
+  /* SVG embedded or use ::before */
+}
+
+.category-header[aria-expanded="false"] .category-toggle-icon {
+  transform: rotate(0deg);
+}
+
+.category-header[aria-expanded="true"] .category-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.category-name {
+  flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-#project-nav button.category-toggle:hover {
-  background-color: var(--category-hover-bg);
-}
-
-#project-nav button.category-toggle .category-icon {
-  margin-right: 8px;
-  transition: transform var(--transition-speed) ease-in-out;
-  flex-shrink: 0;
-  stroke: currentColor; 
-}
-
-#project-nav button.category-toggle .category-icon.expanded {
-  transform: rotate(90deg);
-}
-
-#project-nav .nav-level-1 {
-  
-}
-
-#project-nav .nav-level-1 > a,
-#project-nav .nav-level-1 > button.category-toggle {
-   padding-left: 30px; 
-}
-
-#project-nav .nav-level-2 {
-   
-}
-#project-nav .nav-level-2 > a,
-#project-nav .nav-level-2 > button.category-toggle {
-    padding-left: 45px; 
-}
-
-#project-nav ul ul {
+.category-children {
+  list-style: none;
   padding-left: 0; 
-  /* display: none; managed by JS */
+  overflow: hidden;
+  max-height: 0; 
+  transition: max-height 0.3s ease-in-out;
+  /* background-color: rgba(0,0,0,0.02); Darken slightly? */
+}
+
+.category-children.expanded {
+  max-height: 1000px; 
+}
+
+.category-children .project-link a {
+  padding-left: 35px; 
+  font-weight: 400; 
+  border-left: none; 
+  position: relative; 
+}
+
+.category-children .project-link a::before {
+    content: '';
+    position: absolute;
+    left: 20px; 
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--border-color); 
+    border-radius: 50%;
+    transition: background-color var(--transition-speed);
+}
+
+.category-children .project-link a:hover::before {
+  background-color: var(--accent-color);
+}
+
+.category-children .project-link a.active {
+  background-color: var(--nav-active-bg);
+  color: var(--accent-color);
+  font-weight: 500; 
+}
+
+.category-children .project-link a.active::before {
+    background-color: var(--accent-color);
 }
 
 .nav-message {
@@ -237,61 +287,8 @@ body {
   text-align: center;
   color: var(--text-color);
   font-style: italic;
+  opacity: 0.8;
 }
-
-
-#sidebar-footer {
-  position: relative; 
-  padding: 15px 0;
-  text-align: center;
-  border-top: 1px solid var(--border-color);
-  background-color: var(--primary-color);
-  flex-shrink: 0;
-  transition: opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed), border-color var(--transition-speed), background-color var(--transition-speed);
-  visibility: visible;
-  opacity: 1;
-  height: var(--footer-height); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-}
-
-#sidebar-footer.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    height: 0; 
-    padding: 0;
-    border-top: none;
-}
-
-.theme-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  display: inline-flex; 
-  align-items: center;
-  justify-content: center;
-  color: var(--text-color);
-  transition: color var(--transition-speed);
-  position: relative; 
-  width: 30px;
-  height: 30px;
-}
-
-[data-theme="light"] #sidebar-footer .theme-button .moon { display: none; }
-[data-theme="dark"] #sidebar-footer .theme-button .sun { display: none; }
-
-.theme-button svg {
-  width: 20px;
-  height: 20px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
 
 /* ========== Content Area ========== */
 #content-area {
@@ -299,9 +296,7 @@ body {
   position: relative;
   background-color: var(--bg-color);
   transition: background-color var(--transition-speed), margin-left var(--transition-speed) var(--transition-easing);
-  overflow: auto; 
-  display: flex; 
-  flex-direction: column; 
+  overflow: hidden;
 }
 
 #welcome-screen {
@@ -309,20 +304,24 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-grow: 1; 
+  height: 100%;
   text-align: center;
   padding: 20px;
   color: var(--text-color);
   opacity: 1;
   transition: opacity var(--transition-speed);
-  background-color: var(--bg-color); 
-  /* Removed absolute positioning */
+  background-color: var(--bg-color);
+  z-index: 50;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 #welcome-screen.hidden {
   opacity: 0;
   pointer-events: none;
-  display: none; 
+  z-index: -1;
 }
 
 #welcome-screen h2 {
@@ -343,152 +342,46 @@ body {
   font-family: monospace;
 }
 
-.error-message-box {
-    padding: 20px;
-    margin: 20px; 
-    color: var(--text-color);
-    text-align: center;
-    background-color: var(--secondary-color);
-    border: 2px solid #dc3545;
-    border-radius: 8px;
-    max-width: calc(100% - 40px); 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 60; 
-    display: none; 
-    order: 1; 
-    flex-shrink: 0; 
-}
-
-
 #content-frame {
   width: 100%;
-  flex-grow: 1; 
+  height: 100%;
   border: none;
   display: block;
   opacity: 1;
   transition: opacity var(--transition-speed);
-  order: 2; 
 }
 
 #content-frame.hidden {
   opacity: 0;
   pointer-events: none;
-  flex-grow: 0; 
-  height: 0;
-  display: none; 
 }
-
-.markdown-body {
-  font-family: var(--font-family);
-  padding: 25px;
-  line-height: 1.7;
-  margin: 0;
-  background-color: var(--bg-color); 
-  color: var(--text-color);
-  transition: background-color 0.2s, color 0.2s;
-  box-sizing: border-box; 
-  max-width: 900px; 
-  margin-left: auto; 
-  margin-right: auto;
-}
-
-.markdown-body pre,
-.markdown-body code {
-  font-family: monospace;
-  font-size: 0.9em;
-}
-
-.markdown-body pre {
-  padding: 1em;
-  border-radius: 5px;
-  overflow-x: auto;
-  background-color: var(--secondary-color);
-  border: 1px solid var(--border-color);
-}
-
-.markdown-body code:not(pre > code) {
-  background-color: var(--secondary-color);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-}
-
-.markdown-body blockquote {
-  border-left: 4px solid var(--border-color);
-  padding-left: 1em;
-  margin-left: 0;
-  color: var(--text-color); 
-  opacity: 0.8;
-}
-[data-theme="dark"] .markdown-body blockquote { color: #adb5bd; border-left-color: var(--border-color); } 
-
-.markdown-body img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
-}
-
-.markdown-body a {
-  color: var(--accent-color);
-  text-decoration: none;
-}
-.markdown-body a:hover { text-decoration: underline; }
-
-
-.markdown-body hr {
-  border: none;
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 1.5em 0;
-}
-
-.markdown-body table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
-  border: 1px solid var(--border-color);
-}
-
-.markdown-body th,
-.markdown-body td {
-  border: 1px solid var(--border-color);
-  padding: 0.6em 0.8em;
-  text-align: left;
-}
-
-.markdown-body th {
-  background-color: var(--secondary-color);
-  font-weight: 600;
-}
-
 
 /* ========== Collapsed Sidebar Styles (Applied via JS by adding class to #app) ========== */
 @media (min-width: 769px) {
   #app.sidebar-collapsed #sidebar {
     width: var(--sidebar-width-collapsed);
-    /* overflow: visible; Allow hover effects? No, keep hidden */
   }
 
   #app.sidebar-collapsed #sidebar header {
-    /* Header itself can remain, but content fades */
-    padding: 0; 
-    border-bottom: none; 
-    height: var(--header-height); 
+    justify-content: center;
+    padding: 0 5px;
+    gap: 5px;
   }
 
   #app.sidebar-collapsed #sidebar h1 {
     opacity: 0;
     visibility: hidden;
     width: 0;
+    position: absolute;
     pointer-events: none;
   }
 
+  #app.sidebar-collapsed #sidebar .theme-button,
   #app.sidebar-collapsed #sidebar .sidebar-toggle-button {
-    /* Center the button */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0; 
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    margin: 0;
   }
 
   #app.sidebar-collapsed #project-nav {
@@ -497,7 +390,9 @@ body {
     pointer-events: none;
   }
 
-   /* Footer is handled by .hidden class added by JS */
+  #app.sidebar-collapsed .category-header {
+       display: none;
+   }
 }
 
 /* ========== Responsive Adjustments ========== */
@@ -508,18 +403,16 @@ body {
 
   #sidebar {
     width: 100%;
-    height: auto; 
-    max-height: 40vh; 
+    height: auto;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 5px var(--shadow-color);
     z-index: 200;
-    overflow-y: auto; 
-    flex-direction: column; 
+    overflow: visible;
   }
 
   .sidebar-toggle-button {
-    display: none; 
+    display: none;
   }
 
   #sidebar header {
@@ -527,10 +420,6 @@ body {
     justify-content: space-between;
     padding: 0 15px;
     gap: 10px;
-    position: sticky; 
-    top: 0;
-    background: var(--primary-color); 
-    z-index: 1; 
   }
 
   #sidebar h1 {
@@ -542,68 +431,81 @@ body {
     flex-grow: 1;
   }
 
+  #sidebar .theme-button {
+    opacity: 1;
+    visibility: visible;
+  }
+
   #project-nav {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    overflow-y: auto; 
-    overflow-x: hidden;
-    white-space: normal; 
-    padding: 10px 0;
-    display: block; 
-    border-top: none; 
-    flex-grow: 1; 
+    overflow-y: hidden;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 5px 0;
+    display: flex; 
+    border-top: 1px solid var(--border-color);
   }
 
-   #project-nav li a,
-   #project-nav button.category-toggle {
-       padding: 10px 15px;
-       font-size: 1rem;
-   }
-   #project-nav .nav-level-1 > a,
-   #project-nav .nav-level-1 > button.category-toggle {
-        padding-left: 25px;
-   }
-    #project-nav .nav-level-2 > a,
-    #project-nav .nav-level-2 > button.category-toggle {
-         padding-left: 40px;
-    }
-
-  #sidebar-footer {
-    position: sticky; 
-    bottom: 0;
-    background: var(--primary-color); 
-    z-index: 1; 
-    height: 50px; 
+  #project-nav > ul {
+    display: flex; 
+    width: max-content; 
   }
-  #sidebar-footer.hidden {
-      /* Don't hide footer on mobile even if preference was 'collapsed' */
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      height: 50px;
-      padding: 15px 0;
-      border-top: 1px solid var(--border-color);
-      display: flex; 
+
+  #project-nav > ul > li,
+  #project-nav > ul > .category-item {
+    flex-shrink: 0; 
+  }
+
+  .category-header {
+    padding: 8px 12px; 
+  }
+  .category-toggle-icon {
+    display: none; 
+  }
+  .category-children {
+    display: none; 
+     /* Could potentially implement a different mobile dropdown/modal later */
+  }
+  .category-children .project-link a {
+    padding: 8px 12px; 
+    border-left: none;
+  }
+   .category-children .project-link a::before {
+       display: none; 
+   }
+
+  #project-nav li a {
+    padding: 8px 12px;
+    border-left: none; 
+    border-bottom: 3px solid transparent; 
+  }
+
+  #project-nav li a.active {
+    border-left-color: transparent; 
+    border-bottom-color: var(--accent-color); 
+    background-color: transparent; 
   }
 
   #content-area {
-    height: auto; 
-    flex-grow: 1; 
-    overflow: auto; 
+    height: auto;
+    flex-grow: 1;
   }
 
   #welcome-screen {
     padding: 30px 15px;
-    /* Removed absolute/transform */
-    min-height: 200px; 
+    position: static;
+    transform: none;
+    height: auto;
+    min-height: 300px;
   }
 
-  #welcome-screen h2 { font-size: 1.5rem; }
-  #welcome-screen p { font-size: 1rem; }
+  #welcome-screen h2 {
+    font-size: 1.5rem;
+  }
 
-  .error-message-box {
-      margin: 15px;
-      padding: 15px;
+  #welcome-screen p {
+    font-size: 1rem;
   }
 }
