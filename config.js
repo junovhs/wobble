@@ -4,10 +4,17 @@
 // Replace with your GitHub username and repository name
 export const githubOwner = 'junovhs';
 export const githubRepo  = 'wobble'; // The repository *hosting* this showcase app
+export const githubBranch = 'main'; // The default branch
+
+// Base URL for raw content access
+export const githubRawBaseUrl = `https://raw.githubusercontent.com/${githubOwner}/${githubRepo}/${githubBranch}/`;
+
+// Path to the file listing project folders relative to the repo root
+export const projectsListFile = 'config/project_paths.txt';
 
 // Folder within the repository where project folders are located
-// This should contain directories named like "proj.my-project-name"
-export const pagesFolder = 'pages'; // Keep 'pages' unless the folder structure in 'wobble' is different
+// (Still useful for context, though paths are absolute in the list file)
+export const pagesFolder = 'pages';
 
 // Base path for the application when hosted on GitHub Pages
 // Typically '/<repository-name>/' or '/' if using a custom domain

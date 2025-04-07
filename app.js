@@ -2,27 +2,52 @@
 import { fetchProjects, fetchProjectContent } from './githubApi.js';
 import { basePath } from './config.js'; // Import basePath
 import {
-    renderNav,
     showError,
     hideError,
     showWelcomeScreen,
     hideWelcomeScreen,
-    updateNavActiveState,
     applyTheme,
     displayContentFrame,
-    setFrameContent
+    setFrameContent,
+    toggleSidebarCollapse,
+    initializeSidebarState
 } from './ui.js';
+// Import navigation specific functions
+import { renderNav, updateNavActiveState } from './nav.js';
 
 // DOM Elements
-const projectNavElement = document.getElementById('project-nav'); // Renamed to avoid conflict
+const projectNavElement = document.getElementById('project-nav');
 const themeToggleButton = document.getElementById('theme-toggle');
-const appElement = document.getElementById('app'); // Needed for link interception
+const sidebarToggleButton = document.getElementById('sidebar-toggle');
+const appElement = document.getElementById('app'); // Needed for link interception and collapse class
+const contentFrame = document.getElementById('content-frame'); // Cache content frame
+const welcomeScreen = document.getElementById('welcome-screen'); // Cache welcome screen
 
 // State
-let projects = [];
+let projects = []; // Can be nested now
 let currentProject = null;
 let isLoading = false; // Prevent concurrent loads
 
+/**
+ * Recursively searches the nested projects array for a project by its ID.
+ * @param {Array} items - The array of projects/categories to search.
+ * @param {string} id - The project ID to find.
+ * @returns {object|null} The project object or null if not found.
+ */
+function findProjectById(items, id) {
+    for (const item of items) {
+        if (item.type === 'project' && item.id === id) {
+            return item;
+        }
+        if (item.type === 'category' && item.children) {
+            const foundInChildren = findProjectById(item.children, id);
+            if (foundInChildren) {
+                return foundInChildren;
+            }
+        }
+    }
+    return null;
+}
 
 /**
  * Extracts the project route part (e.g., "my-project") from the full pathname.
@@ -46,7 +71,6 @@ function getRouteFromPathname() {
     return null; // Or handle as an error/redirect
 }
 
-
 /**
  * Loads and displays the selected project's content.
  * @param {string} projectId - The ID of the project to load (e.g., "proj.my-project").
@@ -64,25 +88,29 @@ async function loadProject(projectId) {
           // No need to clear hash, path is handled by history API
           return;
      }
-     // Find project data (already fetched)
-     const project = projects.find(p => p.id === projectId);
 
-     if (!project) {
-          console.warn(`Project with id "${projectId}" not found in fetched list.`);
+     // Find project data using recursive search
+     // const project = projects.find(p => p.id === projectId); // Old flat search
+     const project = findProjectById(projects, projectId); // New nested search
+
+     if (!project || project.type !== 'project') { // Ensure it's a project, not category
+          console.warn(`Project with id "${projectId}" not found or is not a project type.`);
           // Extract readable name from projectId
-          const readableName = projectId.startsWith('proj.') ? projectId.substring(5) : projectId;
+          const readableName = projectId.startsWith('proj.') ? projectId.substring(5).replace(/[-_]/g, ' ') : projectId;
           showError(`Project '${readableName}' not found. It might have been removed, renamed, or the URL is incorrect.`);
+          hideWelcomeScreen(); // Hide welcome if shown
+          displayContentFrame(false); // Hide frame
           currentProject = null;
           updateNavActiveState(null);
           // Don't manipulate history here, let the browser/user handle invalid paths
           return;
      }
 
-     // If already showing this project, do nothing
+     // If already showing this project, do nothing special (unless welcome was visible)
      if (currentProject?.id === projectId) {
           console.log(`Project ${projectId} is already loaded.`);
           // Ensure frame is visible if welcome screen was shown before
-          if (!document.getElementById('welcome-screen').classList.contains('hidden')) {
+          if (!welcomeScreen.classList.contains('hidden')) {
                hideWelcomeScreen();
                displayContentFrame(true, !!contentFrame?.srcdoc);
           }
@@ -100,9 +128,10 @@ async function loadProject(projectId) {
 
      try {
           const content = await fetchProjectContent(project.path);
-          await setFrameContent(content, project); // setFrameContent handles showing the frame on success/error
-          // Update nav state again
-          updateNavActiveState(currentProject.id, content.type === 'markdown');
+          await setFrameContent(content, project); // setFrameContent handles showing the frame
+          // Update nav state again - determines if theme needs update for srcdoc
+          const isSrcDoc = content.type === 'markdown';
+          updateNavActiveState(currentProject.id, isSrcDoc);
      } catch (error) {
           console.error(`Unhandled error loading project ${projectId}:`, error);
           showError(`Failed to load project '${project.name}': ${error.message}`);
@@ -114,7 +143,6 @@ async function loadProject(projectId) {
           isLoading = false;
      }
 }
-
 
 /**
  * Handles route changes based on the current pathname (called on load, popstate, and link clicks).
@@ -132,7 +160,6 @@ function handleRouteChange() {
     }
 }
 
-
 /**
  * Toggles between light and dark themes.
  */
@@ -144,13 +171,20 @@ function toggleTheme() {
      // Re-apply theme to srcdoc iframe if needed, handled within applyTheme->updateNavActiveState
 }
 
-
 /**
  * Initializes the application.
  */
 async function initialize() {
     console.log('Initializing application...');
     isLoading = true; // Prevent hash changes during init
+
+    // --- Sidebar Collapse Setup ---
+    if (sidebarToggleButton) {
+        sidebarToggleButton.addEventListener('click', () => toggleSidebarCollapse());
+        initializeSidebarState(); // Apply saved preference on load
+    } else {
+        console.warn("Sidebar toggle button not found.");
+    }
 
     // --- Theme Setup ---
     const savedTheme = localStorage.getItem('theme');
@@ -164,27 +198,21 @@ async function initialize() {
     // Check if fetchProjects returned an error object
     if (fetchedData.error) {
          showError(fetchedData.message);
-         // Display specific message for 404
-         if(fetchedData.status === 404) {
-              projectNavElement.innerHTML = `<p style="padding: 15px; text-align: center; color: var(--text-color);">Could not find projects folder.</p>`;
-         } else {
-             projectNavElement.innerHTML = `<p style="padding: 15px; text-align: center; color: var(--text-color);">Error loading projects.</p>`;
-         }
+         // Display specific message for 404 or other errors
+         projectNavElement.innerHTML = `<p class="nav-message">${fetchedData.message.includes('404') ? 'Could not find projects folder.' : 'Error loading projects.'}</p>`;
          showWelcomeScreen(); // Show welcome screen below error
          isLoading = false;
          return; // Stop initialization if projects can't be loaded
     }
 
-    // Store fetched projects
+    // Store fetched projects (potentially nested)
     projects = fetchedData;
 
     // Render initial nav
     if (projects.length === 0) {
-        projectNavElement.innerHTML = '<p style="padding: 15px; text-align: center; color: var(--text-color);">No projects found.</p>';
-        // Optionally show a specific message in the content area too
-        // showError("No projects (folders starting with 'proj.') found in the configured 'pages' directory.");
+        projectNavElement.innerHTML = '<p class="nav-message">No projects found.</p>';
     } else {
-         renderNav(projects, null); // Render nav without active item initially
+         renderNav(projects, null); // Render potentially nested nav
     }
 
     // --- Routing Setup ---

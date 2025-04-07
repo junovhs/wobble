@@ -1,0 +1,232 @@
+--- a/404.html
++++ b/404.html
+@@ -38,10 +38,10 @@
+         <aside id="sidebar">
+             <header>
+                 <h1>My Projects</h1>
+-                <button id="theme-toggle" class="theme-button">
+-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+-                      <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+-                    </svg>
+-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+-                      <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd" />
+-                    </svg>
+-                </button>
+                 <button id="sidebar-toggle" class="sidebar-toggle-button" title="Collapse sidebar">
+                     <svg class="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                     <svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                 </button>
+             </header>
+             <nav id="project-nav"></nav>
++            <footer id="sidebar-footer">
++                <button id="theme-toggle" class="theme-button">
++                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
++                      <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
++                    </svg>
++                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
++                      <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd" />
++                    </svg>
++                </button>
++            </footer>
+         </aside>
+         <main id="content-area">
+             <div id="welcome-screen">
+                 <h2>Welcome!</h2>
+                 <p>Select a project from the sidebar to view it.</p>
+                 <p>Add new projects by creating folders starting with <code>proj.</code> in the <code>junovhs/wobble</code> repository.</p>
+             </div>
+             <iframe id="content-frame" title="Project Content"></iframe>
+         </main>
+     </div>
+
+--- a/style.css
++++ b/style.css
+@@ -44,10 +44,10 @@
+ /* ========== Sidebar ========== */
+ #sidebar {
+   width: var(--sidebar-width-expanded);
+   background-color: var(--primary-color);
+   border-right: 1px solid var(--border-color);
+   display: flex;
+   flex-direction: column;
+   transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed);
+   box-shadow: 2px 0 5px var(--shadow-color);
+   z-index: 100;
+   overflow: hidden; /* Keep content clipped */
+   position: relative;
+   flex-shrink: 0;
+ }
+ 
+ #sidebar header {
+   display: flex;
+   justify-content: space-between; /* Space between H1 and toggle */
+   align-items: center;
+   padding: 0 15px;
+   height: var(--header-height);
+   border-bottom: 1px solid var(--border-color);
+   flex-shrink: 0;
+   transition: border-color var(--transition-speed), padding var(--transition-speed) var(--transition-easing);
+   position: relative; /* Keep for positioning child elements if needed */
+   gap: 10px;
+ }
+ 
+ #sidebar h1 {
+   font-size: 1.3rem;
+   font-weight: 600;
+   color: var(--accent-color);
+-  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing);
++  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed);
+   white-space: nowrap;
+   overflow: hidden;
+   flex-grow: 1;
+   min-width: 0;
+ }
+ 
+-.theme-button {
+-  background: none;
+-  border: none;
+-  cursor: pointer;
+-  padding: 5px;
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  color: var(--text-color);
+-  transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing);
+-  flex-shrink: 0;
+-  position: relative;
+-  width: 30px;
+-  height: 30px;
+-}
+ 
+ .sidebar-toggle-button {
+   background: none;
+   border: none;
+   cursor: pointer;
+   padding: 5px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: var(--text-color);
+   transition: color var(--transition-speed), background-color var(--transition-speed), transform var(--transition-speed) var(--transition-easing);
+   transform: rotate(0deg);
+   border-radius: 4px;
+   flex-shrink: 0;
+   position: relative; /* Relative to header flow initially */
+   width: 30px;
+   height: 30px;
+-  margin-right: 5px;
++} /* Remove fixed margin-right */
+ 
+ /* Sidebar Footer and Theme Toggle */
++#sidebar-footer {
++  position: relative; /* Takes space in flex column */
++  padding: 15px 0;
++  text-align: center;
++  border-top: 1px solid var(--border-color);
++  background-color: var(--primary-color);
++  flex-shrink: 0;
++  transition: opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed), border-color var(--transition-speed), background-color var(--transition-speed);
++  visibility: visible;
++  opacity: 1;
++}
++
++.theme-button {
++  background: none;
++  border: none;
++  cursor: pointer;
++  padding: 5px;
++  display: inline-flex; /* Keep it inline for centering */
++  align-items: center;
++  justify-content: center;
++  color: var(--text-color);
++  transition: color var(--transition-speed);
++  position: relative; /* For icon positioning */
++  width: 30px;
++  height: 30px;
++}
++
++[data-theme="light"] #sidebar-footer .theme-button .moon { display: none; }
++[data-theme="dark"] #sidebar-footer .theme-button .sun { display: none; }
+ 
+ /* ========== Collapsed Sidebar Styles (Applied via JS by adding class to #app) ========== */
+ @media (min-width: 769px) {
+   #app.sidebar-collapsed #sidebar {
+     width: var(--sidebar-width-collapsed);
++    overflow: visible; /* Allow hover effects on centered button if needed */
+   }
+ 
+   #app.sidebar-collapsed #sidebar header {
+-    justify-content: center;
+-    padding: 0 5px;
+-    gap: 5px;
++    /* Header itself can remain, but content fades */
++    padding: 0; /* Remove padding to help center toggle */
++    border-bottom: none; /* Hide border when collapsed */
+   }
+ 
+   #app.sidebar-collapsed #sidebar h1 {
+     opacity: 0;
+     visibility: hidden;
+     width: 0;
+-    position: absolute;
+     pointer-events: none;
+   }
+ 
+-  #app.sidebar-collapsed #sidebar .theme-button,
+   #app.sidebar-collapsed #sidebar .sidebar-toggle-button {
+-    opacity: 1;
+-    visibility: visible;
+-    position: relative;
+-    margin: 0;
++    /* Center the button */
++    position: absolute;
++    top: 50%;
++    left: 50%;
++    transform: translate(-50%, -50%);
++    margin: 0; /* Reset any margins */
+   }
+ 
+   #app.sidebar-collapsed #project-nav {
+     opacity: 0;
+     visibility: hidden;
+     pointer-events: none;
++  }
++
++  #app.sidebar-collapsed #sidebar-footer {
++    opacity: 0;
++    visibility: hidden;
++    pointer-events: none;
++    border-top: none; /* Hide border when collapsed */
+   }
+ }
+
+--- a/ui.js
++++ b/ui.js
+@@ -11,6 +11,7 @@
+ const contentFrame = document.getElementById('content-frame');
+ const welcomeScreen = document.getElementById('welcome-screen');
+ const themeToggleButton = document.getElementById('theme-toggle');
+ const sidebarToggleButton = document.getElementById('sidebar-toggle'); // New button
+ const sidebarHeader = document.querySelector('#sidebar header'); // For potential future use
++const sidebarFooter = document.getElementById('sidebar-footer'); // Sidebar footer
+ const appElement = document.getElementById('app'); // For theme attribute and collapse class
+ 
+ let errorContainer = null; // Cache error container element
+@@ -446,7 +447,7 @@
+         shouldBeCollapsed = !forceState;
+     }
+ 
+     if (shouldBeCollapsed) {
+-        appElement.classList.add('sidebar-collapsed');
++        appElement.classList.add('sidebar-collapsed');
+         sidebarToggleButton.setAttribute('title', 'Expand sidebar');
++        if (sidebarFooter) sidebarFooter.classList.add('hidden'); // Hide footer
+         localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'true');
+         console.log('Sidebar collapsed');
+     } else {
+         appElement.classList.remove('sidebar-collapsed');
+         sidebarToggleButton.setAttribute('title', 'Collapse sidebar');
++        if (sidebarFooter) sidebarFooter.classList.remove('hidden'); // Show footer
+         localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'false');
+         console.log('Sidebar expanded');
+     }

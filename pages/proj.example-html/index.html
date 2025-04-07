@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Example Project</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #e0f7fa; /* Light cyan background */
+            color: #006064; /* Dark cyan text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 40px); /* Adjust for padding */
+            text-align: center;
+        }
+        h1 {
+            color: #004d40; /* Darker teal */
+        }
+        p {
+            max-width: 600px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #00796b; /* Teal */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #004d40;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>HTML Example Project</h1>
+    <p>This is a simple example of a project contained entirely within an <code>index.html</code> file inside a <code>proj.</code> folder.</p>
+    <p>The main application loads this file into an iframe.</p>
+    <button id="myButton">Click Me!</button>
+    <div id="message"></div>
+
+    <script>
+        const button = document.getElementById('myButton');
+        const messageDiv = document.getElementById('message');
+        let clickCount = 0;
+
+        button.addEventListener('click', () => {
+            clickCount++;
+            messageDiv.textContent = `Button clicked ${clickCount} times!`;
+        });
+    </script>
+</body>
+</html>
+

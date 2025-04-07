@@ -1,0 +1,8 @@
+# Configuration file for Project Showcase project paths.
+# Each line should contain the full relative path from the repository root
+# to a *project* folder (must end in /proj.*).
+# Lines starting with # and empty lines are ignored.
+
+pages/proj.example-html
+pages/proj.example-markdown
+pages/proj.Youtube-strategy

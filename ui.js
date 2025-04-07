@@ -1,57 +1,24 @@
 // ui.js
-// Handles UI updates and DOM manipulation
+// Handles UI updates and DOM manipulation (excluding navigation rendering)
 
-// Import config only if needed, basePath is needed here for link generation
+// Import config only if needed, basePath is needed here for iframe url resolution
 import { basePath } from './config.js';
 
 // DOM Elements (cache them)
-const projectNav = document.getElementById('project-nav');
 const contentFrame = document.getElementById('content-frame');
 const welcomeScreen = document.getElementById('welcome-screen');
 const themeToggleButton = document.getElementById('theme-toggle');
+const sidebarToggleButton = document.getElementById('sidebar-toggle'); // New button
 const sidebarHeader = document.querySelector('#sidebar header'); // For potential future use
-const appElement = document.getElementById('app'); // For theme attribute
+const sidebarFooter = document.getElementById('sidebar-footer'); // Sidebar footer
+const appElement = document.getElementById('app'); // For theme attribute and collapse class
 
 let errorContainer = null; // Cache error container element
+const SIDEBAR_COLLAPSED_KEY = 'sidebarCollapsed'; // localStorage key
 
 /**
- * Renders the project navigation sidebar.
- * @param {Array} projects - Array of project objects.
- * @param {object|null} currentProject - The currently selected project object.
+ * Displays the initial welcome message.
  */
-export function renderNav(projects, currentProject) {
-    if (!projectNav) return;
-    projectNav.innerHTML = ''; // Clear previous nav
-
-    if (!projects || projects.length === 0) {
-        // Keep the "No projects found." message logic within the calling function (app.js)
-        // based on the result of fetchProjects, including potential error messages.
-        // This function just renders what it's given.
-        // projectNav.innerHTML = '<p style="padding: 15px; text-align: center; color: var(--text-color);">No projects found.</p>';
-        return;
-    }
-
-    const ul = document.createElement('ul');
-    projects.forEach(project => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        // Generate path-based URL (Option A mapping: /basePath/projectNameSuffix)
-        const projectUrlSuffix = project.id.substring(5); // e.g., "example-html" from "proj.example-html"
-        a.href = `${basePath}/${projectUrlSuffix}`; // e.g., /wobble/example-html
-        a.textContent = project.name; // User-friendly name like "example html"
-        a.dataset.projectId = project.id; // Store project ID
-        if (currentProject && currentProject.id === project.id) {
-            a.classList.add('active');
-        }
-        li.appendChild(a);
-        ul.appendChild(li);
-    });
-    projectNav.appendChild(ul);
-}
-
-/**
-* Displays the initial welcome message.
-*/
 export function showWelcomeScreen() {
     if(welcomeScreen) welcomeScreen.classList.remove('hidden');
     if(contentFrame) contentFrame.classList.add('hidden');
@@ -64,7 +31,6 @@ export function showWelcomeScreen() {
 export function hideWelcomeScreen() {
      if(welcomeScreen) welcomeScreen.classList.add('hidden');
 }
-
 
 /**
  * Displays an error message in a dedicated container within the content area.
@@ -124,68 +90,35 @@ export function hideError() {
 }
 
 /**
- * Updates the 'active' class on the navigation links.
- * Also updates the theme attribute on srcdoc iframes if necessary.
- * @param {string|null} currentProjectId - The ID of the currently active project, or null.
- * @param {boolean} isSrcDoc - Indicates if the current content is from srcdoc (markdown).
- */
-export function updateNavActiveState(currentProjectId, isSrcDoc = false) {
-    if (!projectNav) return;
-    const links = projectNav.querySelectorAll('a');
-
-    // Determine the expected active path suffix from the projectId
-    let activePathSuffix = null;
-    if (currentProjectId && currentProjectId.startsWith('proj.')) {
-        activePathSuffix = currentProjectId.substring(5); // e.g., "example-html"
-    }
-
-    links.forEach(link => {
-        // Check if the link's pathname suffix matches the active project's suffix
-        const linkPathSuffix = link.pathname.startsWith(basePath + '/')
-            ? link.pathname.substring(basePath.length + 1)
-            : null;
-
-        if (activePathSuffix && linkPathSuffix === activePathSuffix) {
-           link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
-
-    // Update iframe theme if it's srcdoc
-     if (isSrcDoc && contentFrame && contentFrame.contentDocument) {
-          try {
-            const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
-            if(iframeDoc && iframeDoc.body) {
-                 const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                 iframeDoc.documentElement.setAttribute('data-theme', currentTheme); // Apply to html element
-                 iframeDoc.body.setAttribute('data-theme', currentTheme); // Apply to body as well for compatibility
-                 console.log("Updated srcdoc iframe theme to:", currentTheme);
-            }
-          } catch (e) {
-               console.warn("Could not update srcdoc iframe theme:", e.message);
-          }
-     }
-     // Update theme for HTML iframe content if possible (less reliable due to cross-origin)
-     else if (!isSrcDoc && contentFrame && contentFrame.contentWindow) {
-        // Attempt to send a message post-load (needs listener in iframe)
-        // Or try direct access if same-origin (unlikely for different projects)
-     }
-}
-
-
-/**
  * Applies the chosen theme (light/dark) to the document.
+ * Handles updating icons via CSS data attributes.
  * @param {'light' | 'dark'} theme - The theme to apply.
  */
 export function applyTheme(theme) {
     const newTheme = theme === 'dark' ? 'dark' : 'light'; // Sanitize
     document.documentElement.setAttribute('data-theme', newTheme);
-     // Check if the current content is srcdoc and update its theme
-     const isCurrentContentSrcDoc = !!(contentFrame && contentFrame.srcdoc);
-     if (isCurrentContentSrcDoc) updateNavActiveState(null, true); // Call with isSrcDoc=true
-}
+    console.log(`Theme applied: ${newTheme}`);
 
+    // CSS handles icon visibility based on [data-theme] attribute
+
+    // Update srcdoc iframe theme if needed
+    const isCurrentContentSrcDoc = !!(contentFrame && contentFrame.srcdoc);
+    if (isCurrentContentSrcDoc) {
+        // Re-apply theme logic to srcdoc iframe
+        try {
+            const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
+            if (iframeDoc && iframeDoc.documentElement) {
+                iframeDoc.documentElement.setAttribute('data-theme', newTheme);
+                if (iframeDoc.body) {
+                     iframeDoc.body.setAttribute('data-theme', newTheme); // Apply to body as well
+                }
+                console.log("Updated srcdoc iframe theme to:", newTheme);
+            }
+        } catch (e) {
+            console.warn("Could not update srcdoc iframe theme:", e.message);
+        }
+    }
+}
 
 /**
  * Shows/Hides the content iframe.
@@ -210,7 +143,6 @@ export function displayContentFrame(show, isSrcDoc = false) {
         contentFrame.src = 'about:blank';
     }
 }
-
 
 /**
  * Sets the content of the iframe (either src or srcdoc).
@@ -335,5 +267,72 @@ export function setFrameContent(content, project) {
              showError(`Unknown content type received for project '${project.name}'.`);
              displayContentFrame(false);
         }
+     });
+}
+
+/**
+ * Toggles the collapsed state of the sidebar.
+ * @param {boolean} [forceState] - Optional. If true, forces sidebar open. If false, forces closed. If undefined, toggles.
+ */
+export function toggleSidebarCollapse(forceState) {
+    if (!appElement || !sidebarToggleButton) return;
+
+     // Do not allow collapsing on small screens where the layout changes
+     if (window.innerWidth <= 768) {
+          console.log("Sidebar collapse ignored on small screen.");
+          appElement.classList.remove('sidebar-collapsed'); // Ensure it's not collapsed
+          localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'false'); // Reset preference
+          return;
+     }
+
+    const shouldBeCollapsed = forceState === undefined
+        ? !appElement.classList.contains('sidebar-collapsed')
+        : !forceState; // If forceState is true (open), shouldBeCollapsed is false.
+
+    if (shouldBeCollapsed) {
+        appElement.classList.add('sidebar-collapsed');
+        sidebarToggleButton.setAttribute('title', 'Expand sidebar');
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'true');
+        console.log('Sidebar collapsed');
+    } else {
+        appElement.classList.remove('sidebar-collapsed');
+        sidebarToggleButton.setAttribute('title', 'Collapse sidebar');
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'false');
+        console.log('Sidebar expanded');
+    }
+     // CSS handles icon switching based on presence of 'sidebar-collapsed' class on #app
+}
+
+/**
+ * Initializes the sidebar state based on localStorage preference.
+ * Handles window resize events to prevent collapsed state on small screens.
+ */
+export function initializeSidebarState() {
+     const applyInitialState = () => {
+          // Don't apply collapse on small screens initially
+          if (window.innerWidth <= 768) {
+               if (appElement.classList.contains('sidebar-collapsed')) {
+                    toggleSidebarCollapse(true); // Force open
+               }
+               return;
+          }
+          const savedState = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+          // Default to expanded (false) if no preference saved
+          const shouldBeCollapsed = savedState === 'true';
+          // Use forceState: Pass true to force open if shouldBeCollapsed is false.
+          // Pass false to force closed if shouldBeCollapsed is true.
+          toggleSidebarCollapse(!shouldBeCollapsed);
+     };
+
+     applyInitialState(); // Apply state on initial load
+
+     // Add resize listener to handle layout changes
+     let resizeTimeout;
+     window.addEventListener('resize', () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+               console.log("Window resized, checking sidebar state.");
+               applyInitialState(); // Re-evaluate sidebar state on resize
+          }, 150); // Debounce resize events
      });
 }
