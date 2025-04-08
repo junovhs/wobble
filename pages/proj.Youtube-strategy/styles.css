@@ -645,3 +645,33 @@ nav {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ===================================== */
+/* Limit Content Width and Center        */
+/* ===================================== */
+
+/* Target the direct section children of the body */
+/* This avoids affecting elements inside the header */
+body > section {
+    max-width: 800px;  /* Set the maximum width */
+    margin-left: auto; /* Automatically calculate left margin */
+    margin-right: auto;/* Automatically calculate right margin */
+
+    /* Optional: You might want slightly more padding on the sides */
+    /* now that the content is narrower on large screens. */
+    /* Adjust as needed: */
+    /* padding-left: 1rem; */
+    /* padding-right: 1rem; */
+}
+
+/* Ensure elements within the sections don't try to break out */
+/* (This might not be strictly necessary depending on your layout, */
+/* but can help contain grids/tables) */
+body > section .section-header,
+body > section .series-cards,
+body > section .strategy-table,
+body > section .benefits-grid,
+body > section .goals-container,
+body > section .cadence-summary {
+    max-width: 100%; /* Ensure they don't exceed the section's 800px */
+}
