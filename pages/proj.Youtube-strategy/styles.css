@@ -652,7 +652,7 @@ nav {
 
 /* Target the hero section */
 .hero-section {
-    max-width: 800px;   /* Set the maximum width */
+    max-width: 1200px;   /* Set the maximum width */
     margin-left: auto;  /* Center horizontally */
     margin-right: auto;
     /* Optional: Adjust padding if needed now that it's centered */
@@ -664,7 +664,7 @@ nav {
 
 /* Target the direct section children of the body (below the header) */
 body > section {
-    max-width: 800px;   /* Set the maximum width */
+    max-width: 1200px;   /* Set the maximum width */
     margin-left: auto;  /* Center horizontally */
     margin-right: auto;
     /* Optional: Adjust padding if needed */
