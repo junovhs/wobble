@@ -650,28 +650,38 @@ nav {
 /* Limit Content Width and Center        */
 /* ===================================== */
 
-/* Target the direct section children of the body */
-/* This avoids affecting elements inside the header */
-body > section {
-    max-width: 800px;  /* Set the maximum width */
-    margin-left: auto; /* Automatically calculate left margin */
-    margin-right: auto;/* Automatically calculate right margin */
-
-    /* Optional: You might want slightly more padding on the sides */
-    /* now that the content is narrower on large screens. */
-    /* Adjust as needed: */
-    /* padding-left: 1rem; */
-    /* padding-right: 1rem; */
+/* Target the hero section */
+.hero-section {
+    max-width: 800px;   /* Set the maximum width */
+    margin-left: auto;  /* Center horizontally */
+    margin-right: auto;
+    /* Optional: Adjust padding if needed now that it's centered */
+    /* The original padding was 5rem 2rem */
+    /* You might want to remove horizontal padding now */
+    padding-left: 1rem;  /* Example: Keep some padding */
+    padding-right: 1rem; /* Example: Keep some padding */
 }
 
-/* Ensure elements within the sections don't try to break out */
-/* (This might not be strictly necessary depending on your layout, */
-/* but can help contain grids/tables) */
+/* Target the direct section children of the body (below the header) */
+body > section {
+    max-width: 800px;   /* Set the maximum width */
+    margin-left: auto;  /* Center horizontally */
+    margin-right: auto;
+    /* Optional: Adjust padding if needed */
+    /* The original padding was 5rem 2rem */
+     padding-left: 1rem;  /* Example: Keep some padding */
+     padding-right: 1rem; /* Example: Keep some padding */
+}
+
+/* Ensure elements within the limited sections don't try to break out */
+/* Added hero section children here too */
+.hero-section .hero-content,
+.hero-section .hero-image,
 body > section .section-header,
 body > section .series-cards,
 body > section .strategy-table,
 body > section .benefits-grid,
 body > section .goals-container,
 body > section .cadence-summary {
-    max-width: 100%; /* Ensure they don't exceed the section's 800px */
+    max-width: 100%; /* Ensure they don't exceed their parent's 800px */
 }
