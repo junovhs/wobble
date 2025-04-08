@@ -196,8 +196,6 @@ nav {
 .cruise-illustration {
     max-width: 100%;
     height: auto;
-    max-height: 400px;
-    width: 100%;
     animation: float 6s ease-in-out infinite;
 }
 
@@ -335,7 +333,7 @@ nav {
 
 /* Strategy Section */
 .strategy-table {
-    max-width: 1200px; 
+    max-width: 1000px;
     margin: 0 auto;
     background-color: white;
     border-radius: 1rem;
@@ -345,10 +343,8 @@ nav {
 
 .table-header, .table-row {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 0.8fr 0.8fr 1.5fr 1.5fr; 
+    grid-template-columns: 1fr 2fr 1fr 2fr;
     padding: 1rem 1.5rem;
-    gap: 1rem; 
-    align-items: center; 
 }
 
 .table-header {
@@ -417,139 +413,109 @@ nav {
     margin-bottom: 1rem;
 }
 
-/* Cadence Summary Styles (now part of Strategy section) */
-.cadence-summary {
-    max-width: 1000px;
-    margin: 3rem auto 0; 
-    text-align: center;
-}
-
-.cadence-bullets {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap; 
-}
-
-.cadence-bullet {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.bullet-icon {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* CTA Section */
+.cta-section {
     background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
     color: white;
-    font-weight: 700;
-    font-size: 1.25rem;
-    border-radius: 50%;
-    flex-shrink: 0; 
+    text-align: center;
+    padding: 5rem 2rem;
 }
 
-.bullet-text {
-    font-size: 1.1rem;
-    font-weight: 500;
-    text-align: left; 
+.cta-content {
+    max-width: 700px;
+    margin: 0 auto;
 }
 
-/* Goals Section */
-.goals-section {
+.cta-form {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+}
+
+.cta-form input {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    width: 100%;
+    max-width: 350px;
+}
+
+.cta-form button {
+    background-color: white;
+    color: var(--primary);
+    border: none;
+}
+
+.cta-form button:hover {
     background-color: var(--background-alt);
 }
 
-.goals-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+/* Footer */
+footer {
+    background-color: var(--text);
+    color: white;
+    padding: 4rem 2rem 2rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     max-width: 1200px;
-    margin: 0 auto 3rem;
+    margin: 0 auto;
+    gap: 2rem;
 }
 
-.goal-card {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    height: 100%;
+.footer-logo {
+    flex-basis: 300px;
 }
 
-.goal-icon {
-    margin-bottom: 1.5rem;
+.footer-logo p {
+    margin-top: 1rem;
+    color: var(--text-lighter);
 }
 
-.goal-list {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 1.5rem;
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3rem;
 }
 
-.goal-list li {
-    padding: 0.5rem 0;
-    position: relative;
-    padding-left: 1.5rem;
-    color: var(--text-light);
+.footer-column h4 {
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
 }
 
-.goal-list li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--primary);
-    font-weight: bold;
+.footer-column a {
+    display: block;
+    color: var(--text-lighter);
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+    transition: color 0.3s ease;
+}
+
+.footer-column a:hover {
+    color: white;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 3rem auto 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--text-light);
+    color: var(--text-lighter);
+    text-align: center;
 }
 
 /* Responsive Styles */
-@media (max-width: 992px) { 
-    .table-header {
-        display: none; 
-    }
-
-    .table-row {
-        grid-template-columns: 1fr; 
-        padding: 1rem;
-        border-bottom: 2px solid var(--primary-light); 
-    }
-
-    .table-row div {
-        padding: 0.5rem 0;
-        display: flex; 
-        justify-content: space-between; 
-        border-bottom: 1px dashed var(--border);
-    }
-     .table-row div:last-child {
-         border-bottom: none;
-     }
-
-    .table-row div::before { 
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--primary);
-        margin-right: 1rem;
-        flex-shrink: 0;
-    }
-
-    .table-row div:nth-child(1)::before { content: 'Series:'; }
-    .table-row div:nth-child(2)::before { content: 'Style:'; }
-    .table-row div:nth-child(3)::before { content: 'Lift:'; }
-    .table-row div:nth-child(4)::before { content: 'Duration:'; }
-    .table-row div:nth-child(5)::before { content: 'Goal:'; }
-    .table-row div:nth-child(6)::before { content: 'Notes:'; }
-     
-    .lift-badge {
-        margin-left: auto; 
-    }
-}
-
-
 @media (max-width: 768px) {
     h1 {
         font-size: 2.5rem;
+    }
+    
+    h2 {
+        font-size: 2rem;
     }
     
     .hero-section {
@@ -590,15 +556,4 @@ nav {
     .cta-form input, .cta-form button {
         width: 100%;
     }
-    
-    .cadence-bullets {
-        flex-direction: column;
-        gap: 1.5rem;
-        align-items: center; 
-    }
-     .cadence-bullet {
-         width: 100%;
-         max-width: 300px; 
-         justify-content: flex-start; 
-     }
 }
