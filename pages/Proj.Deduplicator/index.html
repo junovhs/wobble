@@ -1,0 +1,81 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Deal Matcher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Deal Matcher</h1>
+    <div class="help-text">
+      Paste your HQ deals (vendor lines start with <code>v</code> and deal lines with <code>d</code> or <code>ed</code>)
+      in the first box and the JSON export from your site in the second box. Then click "Compare Deals."
+    </div>
+
+    <div class="section">
+      <h2>HQ Deals</h2>
+      <textarea id="hqDeals" placeholder="Example:
+v	Carnival:
+d	Early Saver-Reduced Deposit & Up to $50 OBC (PEM/OB7): 03/31/2025
+ed	More=Merrier Sale-Save up to $125 per room & $25 NRD (PHY): 03/24/2025-03/29/2025
+d	72 Hour Sale-Great Guarantee Rates (P3P): 03/25/2025-03/27/2025
+"></textarea>
+
+      <h2>JSON Deals</h2>
+      <textarea id="jsonDeals" placeholder='Example:
+[
+  {
+    "shopOverline": "Carnival",
+    "expiryDate": "2025-03-31T16:00:00-07:00",
+    "title": "Early Saver-Reduced Deposit & Up to $50 OBC (PEM/OB7): 03/31/2025",
+    "shopListing": "More=Merrier Sale-Save up to $125 per room & $25 NRD (PHY): 03/24/2025-03/29/2025"
+  }
+]'></textarea>
+
+      <div class="control-bar">
+        <div class="threshold-control">
+          <label for="matchThreshold">Match Threshold:</label>
+          <input type="number" id="matchThreshold" value="150" min="100" max="400" step="10">
+          <div class="tooltip">ℹ️
+            <span class="tooltiptext">
+              Adjust the minimum score required for a match. Higher values are more strict.
+              <br>• 100: Vendor match only
+              <br>• 150: Default threshold
+              <br>• 200+: Very strict matching
+            </span>
+          </div>
+        </div>
+        <button id="compareButton">Compare Deals</button>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="section">
+      <h2>Matched Deals <span class="count-badge" id="matchedCount">0</span></h2>
+      <div class="search-filter">
+        <input type="text" id="matchedFilter" placeholder="Filter matched deals...">
+      </div>
+      <div id="matchedDealsContainer"></div>
+    </div>
+
+    <div class="section">
+      <h2>Non-Matched Deals <span class="count-badge" id="nonMatchedCount">0</span></h2>
+      <div class="search-filter">
+        <input type="text" id="nonMatchedFilter" placeholder="Filter non-matched deals...">
+      </div>
+      <div id="nonMatchedDealsContainer"></div>
+      <div class="actions">
+        <button id="copyButton">Copy Non-Matched Deals to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/match.js"></script>
+  <script src="scripts/render.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+
+</html>
