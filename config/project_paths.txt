@@ -7,3 +7,4 @@ pages/proj.example-html
 pages/proj.example-markdown
 pages/proj.Youtube-strategy
 pages/proj.deduplicator
+pages/proj.list-cleaning

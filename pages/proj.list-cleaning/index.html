@@ -1,0 +1,349 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Cleaning Roadmap - TravelPerks.com</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.2/+esm"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slides-container">
+            <!-- Slide 1: Title -->
+            <section class="slide active" id="slide1">
+                <div class="slide-content title-slide">
+                    <div class="logo-container">
+                        <img src="travelperks_newest.png" alt="TravelPerks Logo" class="logo main-logo">
+                    </div>
+                    <h1>List Cleaning Roadmap</h1>
+                    <h2>Constant Contact Optimization</h2>
+                    <div class="subtitle">TravelPerks.com</div>
+                </div>
+            </section>
+
+            <!-- Slide 2: Goal -->
+            <section class="slide" id="slide2">
+                <div class="slide-content">
+                    <h2>Our Goal</h2>
+                    <div class="goal-box">
+                        <p>Systematically improve email list quality to:</p>
+                        <ul class="goal-list">
+                            <li><i class="fas fa-check-circle"></i> Drastically reduce the ~6.5% bounce rate</li>
+                            <li><i class="fas fa-check-circle"></i> Remove non-genuine/unengaged contacts</li>
+                            <li><i class="fas fa-check-circle"></i> Protect real customer relationships</li>
+                            <li><i class="fas fa-check-circle"></i> Improve "Low" Google Domain Reputation score</li>
+                        </ul>
+                    </div>
+                    <div class="badge-container">
+                        <div class="score-badge">
+                            <div class="score-icon"><i class="fas fa-star-half-alt"></i></div>
+                            <div class="score-text">Current Reputation: <span class="highlight-red">Low</span></div>
+                        </div>
+                        <div class="score-badge target">
+                            <div class="score-icon"><i class="fas fa-star"></i></div>
+                            <div class="score-text">Target Reputation: <span class="highlight-green">Medium/High</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Overview -->
+            <section class="slide" id="slide3">
+                <div class="slide-content">
+                    <h2>Implementation Roadmap</h2>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon phase1">1</div>
+                            <div class="timeline-content">
+                                <h3>Phase 1: Immediate Cleanup</h3>
+                                <p>Bot removal & bounce purge</p>
+                                <div class="timeline-date">ASAP - Mid May</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon phase2">2</div>
+                            <div class="timeline-content">
+                                <h3>Phase 2: Engagement Purge</h3>
+                                <p>Remove chronically unengaged contacts</p>
+                                <div class="timeline-date">Mid/Late May</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon phase3">3</div>
+                            <div class="timeline-content">
+                                <h3>Phase 3: Ongoing Maintenance</h3>
+                                <p>Regular cleaning & monitoring</p>
+                                <div class="timeline-date">Starting June 2nd</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: Phase 1 - Part 1 -->
+            <section class="slide" id="slide4">
+                <div class="slide-content">
+                    <div class="phase-header phase1">
+                        <span class="phase-number">1</span>
+                        <h2>Phase 1: Immediate Cleanup</h2>
+                        <div class="phase-date">ASAP - Mid May</div>
+                    </div>
+                    <h3>Bot Identification & Removal</h3>
+                    <div class="process-steps">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Identify</h4>
+                                <p>Compile list of ~378 suspected bot addresses</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Validate</h4>
+                                <p>Cross-check against customer database (sailing dates, etc.)</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Refine</h4>
+                                <p>Remove confirmed real/paying customers from purge list</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Approve</h4>
+                                <p>Review final list with Becca for approval</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Purge</h4>
+                                <p>Update approved bot list status to "Unsubscribed"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: Phase 1 - Part 2 -->
+            <section class="slide" id="slide5">
+                <div class="slide-content">
+                    <div class="phase-header phase1">
+                        <span class="phase-number">1</span>
+                        <h2>Phase 1: Immediate Cleanup</h2>
+                        <div class="phase-date">ASAP - Mid May</div>
+                    </div>
+                    <h3>Bounce Purge Implementation</h3>
+                    <div class="bounce-container">
+                        <div class="bounce-section">
+                            <div class="bounce-type hard">
+                                <i class="fas fa-times-circle"></i>
+                                <h4>Hard Bounces</h4>
+                                <p>Invalid addresses from last 6-12 months</p>
+                            </div>
+                        </div>
+                        <div class="bounce-section">
+                            <div class="bounce-type soft">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h4>Consistent Soft Bounces</h4>
+                                <p>Addresses that consistently bounce (>3 times in 6 months)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-steps">
+                        <div class="action-item">
+                            <i class="fas fa-list-ul"></i>
+                            <p>Segment & combine these lists in Constant Contact</p>
+                        </div>
+                        <div class="action-item">
+                            <i class="fas fa-search"></i>
+                            <p>Review for any obvious anomalies</p>
+                        </div>
+                        <div class="action-item">
+                            <i class="fas fa-user-minus"></i>
+                            <p>Change status to "Unsubscribed" or "Suspended"</p>
+                        </div>
+                    </div>
+                    <div class="benefit-box">
+                        <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="benefit-text">Drastically reduces ~6.5% bounce rate</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 6: Phase 2 -->
+            <section class="slide" id="slide6">
+                <div class="slide-content">
+                    <div class="phase-header phase2">
+                        <span class="phase-number">2</span>
+                        <h2>Phase 2: Engagement Purge</h2>
+                        <div class="phase-date">Mid/Late May</div>
+                    </div>
+                    <div class="engagement-container">
+                        <div class="engagement-step">
+                            <div class="engagement-icon">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                            <h3>Identify Unengaged Contacts</h3>
+                            <p>Segment contacts with no opens or clicks in last 6 months</p>
+                        </div>
+                        <div class="engagement-step">
+                            <div class="engagement-icon">
+                                <i class="fas fa-envelope-open-text"></i>
+                            </div>
+                            <h3>Re-Engagement Campaign</h3>
+                            <p>Send 1-2 emails asking to confirm subscription</p>
+                            <div class="tag">Recommended</div>
+                        </div>
+                        <div class="engagement-step">
+                            <div class="engagement-icon">
+                                <i class="fas fa-user-minus"></i>
+                            </div>
+                            <h3>Purge Non-Responders</h3>
+                            <p>Unsubscribe contacts who didn't take positive action</p>
+                        </div>
+                    </div>
+                    <div class="benefit-box">
+                        <div class="benefit-icon"><i class="fas fa-chart-pie"></i></div>
+                        <div class="benefit-text">Improves engagement metrics & sender reputation</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: Phase 3 -->
+            <section class="slide" id="slide7">
+                <div class="slide-content">
+                    <div class="phase-header phase3">
+                        <span class="phase-number">3</span>
+                        <h2>Phase 3: Ongoing Maintenance</h2>
+                        <div class="phase-date">Starting June 2nd</div>
+                    </div>
+                    <div class="maintenance-grid">
+                        <div class="maintenance-item">
+                            <div class="maintenance-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3>Quarterly Engagement Purges</h3>
+                            <p>Jun 2, Sep 1, Jan 1...</p>
+                            <p>Repeat Phase 2 process regularly</p>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maintenance-icon">
+                                <i class="fas fa-envelope-times"></i>
+                            </div>
+                            <h3>Campaign Bounce Management</h3>
+                            <p>After every campaign, review and handle bounces</p>
+                            <p>Immediate action on hard bounces</p>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maintenance-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Internal Vigilance</h3>
+                            <p>Monitor bounce rates for new list batches</p>
+                            <p>Implement process improvements</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: Considerations -->
+            <section class="slide" id="slide8">
+                <div class="slide-content">
+                    <h2>Important Considerations</h2>
+                    <div class="considerations-container">
+                        <div class="consideration-item">
+                            <div class="consideration-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>Backup</h3>
+                                <p>Export lists before any purge action</p>
+                            </div>
+                        </div>
+                        <div class="consideration-item">
+                            <div class="consideration-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>Communication</h3>
+                                <p>Keep Becca updated on removal numbers</p>
+                            </div>
+                        </div>
+                        <div class="consideration-item">
+                            <div class="consideration-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>Measurement</h3>
+                                <p>Track bounce rate & Google reputation score</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="results-prediction">
+                        <h3>Expected Results</h3>
+                        <div class="metrics-container">
+                            <div class="metric">
+                                <div class="metric-label">Bounce Rate</div>
+                                <div class="metric-change">
+                                    <span class="current">6.5%</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                    <span class="target">< 2%</span>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Google Reputation</div>
+                                <div class="metric-change">
+                                    <span class="current">Low</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                    <span class="target">Medium/High</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 9: Thank You -->
+            <section class="slide" id="slide9">
+                <div class="slide-content thank-you">
+                    <div class="thank-you-content">
+                        <h2>Thank You</h2>
+                        <p>Questions or feedback?</p>
+                        <div class="logo-container">
+                            <img src="travelperks_newest.png" alt="TravelPerks Logo" class="logo main-logo">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="controls">
+            <button id="prev" class="nav-button"><i class="fas fa-chevron-left"></i></button>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-indicator"></div>
+                </div>
+                <div class="slide-counter">
+                    <span id="current-slide">1</span>/<span id="total-slides">9</span>
+                </div>
+            </div>
+            <button id="next" class="nav-button"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
