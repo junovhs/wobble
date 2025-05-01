@@ -39,6 +39,8 @@
                             <li><i class="fas fa-check-circle"></i> Remove non-genuine/unengaged contacts</li>
                             <li><i class="fas fa-check-circle"></i> Protect real customer relationships</li>
                             <li><i class="fas fa-check-circle"></i> Improve "Low" Google Domain Reputation score</li>
+                            <li><i class="fas fa-shield-alt"></i> Mitigate risks from spam traps (often hidden in old/inactive lists)</li>
+                            <li><i class="fas fa-signal"></i> Minimize negative engagement signals sent to Google</li>
                         </ul>
                     </div>
                     <div class="badge-container">
@@ -157,7 +159,7 @@
                             <div class="bounce-type soft">
                                 <i class="fas fa-exclamation-circle"></i>
                                 <h4>Consistent Soft Bounces</h4>
-                                <p>Addresses that consistently bounce (>3 times in 6 months)</p>
+                                <p>Addresses that consistently bounce (&gt;3 times in 6 months)</p>
                             </div>
                         </div>
                     </div>
@@ -177,7 +179,15 @@
                     </div>
                     <div class="benefit-box">
                         <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="benefit-text">Drastically reduces ~6.5% bounce rate</div>
+                        <div class="benefit-text">Target: <strong>Reduce Bounce Rate to &lt; 2%</strong> (Currently ~6.5%)<br>
+                            <span style="font-weight:400;">Drastically reduces high bounce rates for improved deliverability</span>
+                        </div>
+                    </div>
+                    <div class="validation-research-note">
+                        <i class="fas fa-tools" style="color: var(--phase3-color); margin-right: 10px;"></i>
+                        <span>
+                            <strong>Industry Best Practice:</strong> Consider using a 3rd-party email validation service (e.g., <u>ZeroBounce</u>, <u>NeverBounce</u>) for a one-time deep scan before Phase 2 to catch typos, invalid formats, and risky addresses missed by bounce filtering.
+                        </span>
                     </div>
                 </div>
             </section>
@@ -216,7 +226,47 @@
                     </div>
                     <div class="benefit-box">
                         <div class="benefit-icon"><i class="fas fa-chart-pie"></i></div>
-                        <div class="benefit-text">Improves engagement metrics & sender reputation</div>
+                        <div class="benefit-text">
+                            Remove chronically unengaged contacts (no opens/clicks in 6+ months).<br>
+                            <span style="font-weight:400;">
+                                These contacts lower overall engagement rates, send negative signals to Google (like "deletes without opening"), hurt sender reputation, and may harbor hidden spam traps.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Slide: Phase 2.5 Re-Warm Sending Reputation -->
+            <section class="slide" id="slide6a">
+                <div class="slide-content">
+                    <div class="phase-header phase2">
+                        <span class="phase-number" style="background: linear-gradient(90deg, #34a853 50%, #fbbc04 100%);">2.5</span>
+                        <h2>Phase 2.5: Re-Warm Sending Reputation</h2>
+                    </div>
+                    <div class="rewarm-content" style="margin-top: 22px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                            <div style="font-size:2rem; color: var(--phase3-color); margin-right: 18px;">
+                                <i class="fas fa-temperature-low"></i>
+                                <i class="fas fa-arrow-right" style="font-size:1rem; margin: 0 7px; vertical-align: middle; color:var(--text-light);"></i>
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <h3 style="font-size:1.2rem; font-weight: 500;">After Cleaning: Gradually Ramp Up Again</h3>
+                        </div>
+                        <ul class="rewarm-list" style="font-size:1.1rem; margin-left:25px;">
+                            <li>After major list cleaning (Phases 1 &amp; 2), our sending volume &amp; list composition will shift.</li>
+                            <li><b>Crucial Step:</b> Gradually ramp up email volume again.</li>
+                            <li>Start by sending <strong>only</strong> to the most engaged segments (opened/clicked recently).</li>
+                            <li>Slowly increase volume over several weeks, monitoring Google Postmaster Tools closely.</li>
+                            <li>This process rebuilds trust with Gmail/ISPs based on the new, cleaner list.</li>
+                        </ul>
+                        <div class="benefit-box" style="margin-top:30px;">
+                            <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="benefit-text">
+                                <strong>Why?</strong>
+                                <br>
+                                Prevents sudden reputation shocks and supports better inbox placement after a major clean.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -242,8 +292,9 @@
                             <div class="maintenance-icon">
                                 <i class="fas fa-envelope-times"></i>
                             </div>
-                            <h3>Campaign Bounce Management</h3>
+                            <h3>Campaign Performance Monitoring</h3>
                             <p>After every campaign, review and handle bounces</p>
+                            <p>Track engagement signals (opens/clicks by segment)</p>
                             <p>Immediate action on hard bounces</p>
                         </div>
                         <div class="maintenance-item">
@@ -253,6 +304,7 @@
                             <h3>Internal Vigilance</h3>
                             <p>Monitor bounce rates for new list batches</p>
                             <p>Implement process improvements</p>
+                            <p><b>Refine segmentation</b>: Over time, explore advanced segmentation (travel preference, booking history) for improved relevance and engagement.</p>
                         </div>
                     </div>
                 </div>
@@ -287,7 +339,34 @@
                             </div>
                             <div class="consideration-content">
                                 <h3>Measurement</h3>
-                                <p>Track bounce rate & Google reputation score</p>
+                                <p>Track bounce rate &amp; Google reputation score</p>
+                            </div>
+                        </div>
+                        <div class="consideration-item">
+                            <div class="consideration-icon" style="background-color: rgba(251,188,4,0.1);">
+                                <i class="fas fa-sort-amount-up-alt" style="color:var(--phase3-color);"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>Gradual Re-Warming</h3>
+                                <p>Ramp up sending volume post-cleanup to rebuild trust with mailbox providers</p>
+                            </div>
+                        </div>
+                        <div class="consideration-item">
+                            <div class="consideration-icon" style="background-color: rgba(234,67,53,0.1);">
+                                <i class="fas fa-tools" style="color: var(--accent-color);"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>List Validation Tools</h3>
+                                <p>Consider 3rd-party validation (e.g., NeverBounce/ZeroBounce) to improve data quality</p>
+                            </div>
+                        </div>
+                        <div class="consideration-item">
+                            <div class="consideration-icon" style="background-color: rgba(26, 115, 232, 0.07);">
+                                <i class="fas fa-envelope" style="color: var(--primary-color);"></i>
+                            </div>
+                            <div class="consideration-content">
+                                <h3>Content Optimization</h3>
+                                <p>Refine messaging/content to boost engagement and deliverability</p>
                             </div>
                         </div>
                     </div>
@@ -299,7 +378,7 @@
                                 <div class="metric-change">
                                     <span class="current">6.5%</span>
                                     <i class="fas fa-arrow-right"></i>
-                                    <span class="target">< 2%</span>
+                                    <span class="target">&lt; 2%</span>
                                 </div>
                             </div>
                             <div class="metric">
