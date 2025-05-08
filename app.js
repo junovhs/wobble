@@ -34,12 +34,10 @@ let isLoading = false;
  */
 function clearIframe() {
     if (contentFrame) {
-        console.log("[clearIframe] Clearing iframe content and handlers."); // ADDED LOG
+        console.log("[clearIframe] Clearing iframe content and handlers."); 
         contentFrame.onload = null;
         contentFrame.onerror = null;
-        // Setting src to 'about:blank' is crucial for stopping potential ongoing loads/scripts
         contentFrame.src = 'about:blank'; 
-        // Also ensure srcdoc is cleared if it was used
         contentFrame.removeAttribute('srcdoc'); 
     } else {
         console.warn("[clearIframe] Attempted to clear iframe, but contentFrame element not found.");
@@ -49,9 +47,6 @@ function clearIframe() {
 
 /**
  * Recursively searches the nested projects array for a project by its ID.
- * @param {Array} items - The array of projects/categories to search.
- * @param {string} id - The project ID to find.
- * @returns {object|null} The project object or null if not found.
  */
 function findProjectById(items, id) {
     if (!items || !Array.isArray(items)) { return null; }
@@ -67,7 +62,6 @@ function findProjectById(items, id) {
 
 /**
  * Extracts the project route part from the full pathname.
- * @returns {string|null} The route part or null.
  */
 function getRouteFromPathname() {
     const path = window.location.pathname;
@@ -82,7 +76,6 @@ function getRouteFromPathname() {
 
 /**
  * Loads and displays the selected project's content or welcome screen.
- * @param {string|null} projectId - The ID of the project to load, or null for welcome screen.
  */
 async function loadProject(projectId) {
      if (isLoading) {
@@ -90,28 +83,24 @@ async function loadProject(projectId) {
           return;
      }
      isLoading = true; 
-     // Clear iframe VERY early to prevent late onload events
-     clearIframe();
+     clearIframe(); // Clear iframe early
 
      if (!projectId) {
           console.log("[loadProject] No project ID, showing welcome screen.");
           hideError(); 
-          if(welcomeScreenElement) showWelcomeScreen(); // This should make it visible
-          displayContentFrame(false); // Ensure iframe is hidden via ui.js function
+          if(welcomeScreenElement) showWelcomeScreen(); // Make welcome screen visible
+          displayContentFrame(false); // Hide iframe
           currentProject = null;
           updateNavActiveState(null); 
           
-          // ---- NEW: Trigger animations ----
-          // Give the browser a moment for display changes to paint, then run animations
           requestAnimationFrame(() => { 
              if (typeof window.runWelcomeAnimations === 'function') {
-                  console.log("[loadProject] Calling runWelcomeAnimations for welcome screen."); // ADDED LOG
+                  console.log("[loadProject] Calling runWelcomeAnimations for welcome screen."); 
                   window.runWelcomeAnimations(); 
              } else {
-                  console.warn("[loadProject] runWelcomeAnimations function not found on window."); // ADDED LOG
+                  console.warn("[loadProject] runWelcomeAnimations function not found on window."); 
              }
           });
-          // ---- END NEW ----
           
           isLoading = false;
           return;
@@ -143,14 +132,14 @@ async function loadProject(projectId) {
      console.log(`[loadProject] Loading project: ${project.name} (ID: ${project.id})`);
      hideError(); 
      if(welcomeScreenElement) hideWelcomeScreen(); 
-     displayContentFrame(false); // Keep iframe hidden until content loaded
+     displayContentFrame(false); 
 
      currentProject = project;
      updateNavActiveState(currentProject.id); 
 
      try {
           const content = await fetchProjectContent(project.path);
-          await setFrameContent(content, project); // Should show frame on success
+          await setFrameContent(content, project); 
      } catch (error) {
           console.error(`[loadProject] Error loading project ${projectId}:`, error);
           showError(`Failed to load project '${project.name}': ${error.message}`);
@@ -168,35 +157,33 @@ async function loadProject(projectId) {
 function handleRouteChange() {
     const routePart = getRouteFromPathname();
     const projectId = routePart ? `proj.${routePart}` : null;
-    console.log(`[handleRouteChange] Route changed/detected: "${routePart || '(root)'}". ProjectId: ${projectId}`); // ADDED LOG
+    console.log(`[handleRouteChange] Route changed/detected: "${routePart || '(root)'}". ProjectId: ${projectId}`); 
 
-    // Determine if a load is needed
     let needsLoad = false;
     if (projectId !== (currentProject?.id || null)) {
-        console.log("[handleRouteChange] Project ID changed."); // ADDED LOG
+        console.log("[handleRouteChange] Project ID changed."); 
         needsLoad = true;
     } else if (projectId === null && welcomeScreenElement?.classList.contains('hidden') && !isLoading) {
-        console.log("[handleRouteChange] Navigating to root, but welcome screen is hidden."); // ADDED LOG
-        needsLoad = true; // Need to explicitly show welcome
+        console.log("[handleRouteChange] Navigating to root, but welcome screen is hidden."); 
+        needsLoad = true; 
     } else if (projectId !== null && contentFrame?.classList.contains('hidden') && !isLoading) {
-        console.log("[handleRouteChange] Project ID matches, but content frame is hidden."); // ADDED LOG
-        needsLoad = true; // Need to load project content
+        console.log("[handleRouteChange] Project ID matches, but content frame is hidden."); 
+        needsLoad = true; 
     }
 
     if (needsLoad) {
-        console.log("[handleRouteChange] Triggering loadProject."); // ADDED LOG
+        console.log("[handleRouteChange] Triggering loadProject."); 
         loadProject(projectId);
     } else {
         console.log(`[handleRouteChange] Route matches current state (${projectId || 'welcome screen'}), no new load needed.`);
-        // Optional: Ensure visibility consistency if needed, though loadProject checks this too
+        // Consistency checks
         if (!projectId && welcomeScreenElement && welcomeScreenElement.classList.contains('hidden')) {
-             console.log("[handleRouteChange] Consistency check: Forcing welcome screen visible."); // ADDED LOG
+             console.log("[handleRouteChange] Consistency check: Forcing welcome screen visible."); 
              if (contentFrame) displayContentFrame(false);
              showWelcomeScreen();
-             // Optionally re-run animations if needed, similar to loadProject(null)
              requestAnimationFrame(() => { window.runWelcomeAnimations?.(); }); 
         } else if (projectId && contentFrame && contentFrame.classList.contains('hidden')) {
-            console.log("[handleRouteChange] Consistency check: Forcing content frame visible."); // ADDED LOG
+            console.log("[handleRouteChange] Consistency check: Forcing content frame visible."); 
              if (welcomeScreenElement) hideWelcomeScreen();
              displayContentFrame(true, !!contentFrame.srcdoc);
         }
@@ -237,7 +224,7 @@ async function initialize() {
         siteTitleHeader.addEventListener('click', (event) => {
             event.preventDefault(); 
             const isAlreadyOnWelcome = (currentProject === null && welcomeScreenElement && !welcomeScreenElement.classList.contains('hidden'));
-            console.log(`[initialize] Site title clicked. Already on welcome: ${isAlreadyOnWelcome}`); // ADDED LOG
+            console.log(`[initialize] Site title clicked. Already on welcome: ${isAlreadyOnWelcome}`); 
             
             if (isAlreadyOnWelcome && !isLoading) {
                  console.log('[initialize] Site title clicked, but already on welcome screen.');
@@ -245,14 +232,13 @@ async function initialize() {
             }
             
             const targetPath = basePath ? (basePath.endsWith('/') ? basePath : basePath + '/') : '/';
-             // Only push state if the path is actually different to avoid redundant route handling
             if (window.location.pathname !== targetPath) { 
                  console.log(`[initialize] Site title clicked, pushing state to: ${targetPath}`);
                  history.pushState({}, '', targetPath); 
                  handleRouteChange(); 
             } else {
                  console.log("[initialize] Site title clicked, already at root path, ensuring welcome is visible.");
-                 loadProject(null); // Ensure welcome is shown even if path didn't change but state was wrong
+                 loadProject(null); 
             }
         });
     }
@@ -291,35 +277,30 @@ async function initialize() {
     if (appElement) {
         appElement.addEventListener('click', (event) => {
             const targetLink = event.target.closest('a');
-            if (targetLink && targetLink.href && targetLink.origin === window.location.origin) { // Check if it's an internal link based on origin and href presence
+            if (targetLink && targetLink.href && targetLink.origin === window.location.origin) { 
                 if (targetLink.target === '_blank' || targetLink.hasAttribute('download') || targetLink.href.startsWith('mailto:')) {
                     return; 
                 }
                 
-                // Check if the link is for the current page already
                 const isCurrentPage = targetLink.href === window.location.href;
                 const isBasePathLink = targetLink.pathname === basePath || targetLink.pathname === basePath + '/';
                 const isCurrentProjectNull = currentProject === null;
 
-                // Only prevent default if it's an internal navigation link that changes the path OR it's forcing a reload/state update
                 if(targetLink.pathname.startsWith(basePath)) {
                     event.preventDefault();
-                    console.log(`[initialize] Intercepted navigation to: ${targetLink.href}. Is current page: ${isCurrentPage}`); // ADDED LOG
+                    console.log(`[initialize] Intercepted navigation to: ${targetLink.href}. Is current page: ${isCurrentPage}`); 
 
                     if (!isCurrentPage) {
                         history.pushState({}, '', targetLink.href);
                         handleRouteChange();
                     } else {
-                        // Handle case where user clicks link to current page (e.g., refresh state or re-trigger welcome)
                         console.log("[initialize] Clicked link matches current URL. Re-evaluating route for potential state update.");
-                        // Re-trigger route change to potentially show welcome or reload project if needed
                         if(isBasePathLink && isCurrentProjectNull) {
-                           // Already on welcome, maybe re-run animations?
                            if (typeof window.runWelcomeAnimations === 'function') {
                                 window.runWelcomeAnimations(); 
                            }
                         } else {
-                             handleRouteChange(); // Let route handler decide if reload is needed
+                             handleRouteChange(); 
                         }
                     }
                 }
@@ -332,7 +313,6 @@ async function initialize() {
     handleRouteChange();
 }
 
-// Ensure initialize runs after DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
 } else {
