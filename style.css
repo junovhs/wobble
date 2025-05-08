@@ -37,14 +37,14 @@
   box-sizing: border-box;
 }
 
-html, body { /* MODIFIED for particle background */
+html, body { 
   width: 100%;
   height: 100%;
   font-family: var(--font-family);
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
-  overflow: hidden; /* Prevent scrollbars */
+  overflow: hidden; 
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
@@ -53,22 +53,22 @@ html, body { /* MODIFIED for particle background */
   height: 100vh;
 }
 
-/* Particle Background Container - ADDED */
+/* Particle Background Container */
 #tsparticles-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: 50; /* Behind welcome content and sidebar */
   background-color: var(--bg-color);
 }
 [data-theme="dark"] #tsparticles-bg {
-  background-color: #0c0f13; /* Even darker for contrast with particles */
+  background-color: #0c0f13; 
 }
 
 
-/* ========== Sidebar (No changes assumed unless specifically for particles interaction) ========== */
+/* ========== Sidebar ========== */
 #sidebar {
   width: var(--sidebar-width-expanded);
   background-color: var(--primary-color);
@@ -77,12 +77,11 @@ html, body { /* MODIFIED for particle background */
   flex-direction: column;
   transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed);
   box-shadow: 2px 0 5px var(--shadow-color);
-  z-index: 100; /* Ensure sidebar is above particles */
+  z-index: 100; 
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
-/* ... (Rest of your existing #sidebar, header, nav styles remain unchanged) ... */
 #sidebar header {
   display: flex;
   justify-content: space-between;
@@ -104,6 +103,7 @@ html, body { /* MODIFIED for particle background */
   overflow: hidden;
   flex-grow: 1;
   min-width: 0;
+  cursor: pointer; /* Added for clickable title */
 }
 .theme-button {
   background: none;
@@ -211,34 +211,40 @@ html, body { /* MODIFIED for particle background */
 .nav-message { padding: 15px; padding-left: var(--base-padding-left); text-align: left; color: var(--text-color); font-style: italic; opacity: 0.8; }
 .nav-message-empty-category { font-style: italic; opacity: 0.7; font-size: 0.9em; padding-top: 5px; padding-bottom: 5px; color: var(--text-color); }
 
-
-/* ========== Content Area (Main content and iframe parent) ========== */
+/* ========== Content Area ========== */
 #content-area {
   flex-grow: 1;
-  position: relative; /* For positioning #tsparticles-bg and #welcome-screen correctly */
-  background-color: transparent; /* It will sit on top of body or app, which has color. Let particles show. */
+  position: relative; 
+  background-color: transparent; 
   transition: margin-left var(--transition-speed) var(--transition-easing);
-  overflow: hidden; /* Contains the particles and welcome screen */
+  overflow: hidden; 
 }
 
-
-/* --- Enhanced Welcome Screen Styles - ADDED/MODIFIED --- */
+/* --- Enhanced Welcome Screen Styles --- */
 #welcome-screen {
-  position: absolute; /* Changed to absolute to overlay #tsparticles-bg within #content-area */
-  top: 0; left: 0; right: 0; bottom: 0; /* Cover full #content-area */
-  z-index: 55;
+  position: absolute; 
+  top: 0; left: 0; right: 0; bottom: 0; 
+  z-index: 55; /* Above particles, below sidebar potentially when sidebar is overlay on mobile (though not current setup) */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100%; /* Changed from 100vh to 100% of parent (#content-area) */
+  min-height: 100%; 
   text-align: center;
   padding: 40px 20px;
   color: var(--text-color);
-  background-color: transparent; /* Transparent to see particles */
+  background-color: transparent; 
 }
 
-/* Welcome Content Wrapper */
+/* Fallback visibility if JS animations fail or for no-JS users */
+.main-headline,
+.typed-line-container,
+.tagline,
+.guidance,
+.welcome-footer-info p {
+  opacity: 1; /* Default to visible, GSAP will manage actual animation states */
+}
+
 .welcome-content {
   display: flex;
   flex-direction: column;
@@ -249,27 +255,25 @@ html, body { /* MODIFIED for particle background */
 }
 
 .main-headline {
-  font-size: clamp(2.5rem, 7vw, 4.5rem); /* Adjusted for less extreme sizing */
+  font-size: clamp(2.5rem, 7vw, 4.5rem); 
   font-weight: 700;
   color: var(--accent-color);
   margin-bottom: 0.4em;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  opacity: 0; /* GSAP will handle visibility */
+  /* opacity: 0; GSAP will handle visibility */
 }
-
 .main-headline .letter {
   display: inline-block;
-  opacity: 0; 
+  /* opacity: 0; GSAP handles this */
 }
 
 .typed-line-container {
-  font-size: clamp(1.1rem, 3vw, 1.6rem); /* Adjusted */
+  font-size: clamp(1.1rem, 3vw, 1.6rem); 
   color: var(--text-color);
-  /* opacity: 0.85; Let GSAP handle initial */
-  margin-bottom: 1.2em; /* Adjusted */
+  margin-bottom: 1.2em; 
   min-height: 1.5em;
-  opacity: 0; /* GSAP will handle visibility, also to avoid FOUC with typed.js cursor */
+  /* opacity: 0; GSAP handles this */
 }
 .typed-cursor {
   opacity: 1;
@@ -281,30 +285,29 @@ html, body { /* MODIFIED for particle background */
 }
 
 .tagline {
-  font-size: clamp(1rem, 2.5vw, 1.4rem); /* Adjusted */
+  font-size: clamp(1rem, 2.5vw, 1.4rem); 
   color: var(--text-color);
-  /* opacity: 0.7; */
-  margin-bottom: 2em; /* Adjusted */
+  margin-bottom: 2em; 
   font-style: italic;
-  opacity: 0; /* GSAP will handle visibility */
+  /* opacity: 0; GSAP handles this */
 }
 
 .guidance {
   display: inline-flex;
   align-items: center;
-  font-size: clamp(1rem, 2.2vw, 1.25rem); /* Adjusted */
+  font-size: clamp(1rem, 2.2vw, 1.25rem); 
   font-weight: 500;
   color: var(--text-color);
   cursor: default;
-  margin-top: 0.5em; /* Adjusted */
-  opacity: 0; 
+  margin-top: 0.5em; 
+  /* opacity: 0; GSAP handles this */
 }
 .guidance .arrow-icon {
-  width: clamp(1.2em, 3vw, 1.4em); /* Adjusted */
+  width: clamp(1.2em, 3vw, 1.4em); 
   height: clamp(1.2em, 3vw, 1.4em);
   margin-left: 0.5em;
   color: var(--accent-color);
-  opacity: 0; 
+  /* opacity: 0; GSAP handles this */
 }
 
 /* Footer Info */
@@ -317,14 +320,13 @@ html, body { /* MODIFIED for particle background */
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  font-size: 0.75rem; /* Made smaller */
+  font-size: 0.75rem; 
   color: var(--text-color);
-  /* opacity: 0.6; */
   z-index: 1;
 }
 .welcome-footer-info p {
   margin: 0 10px;
-  opacity: 0; 
+  /* opacity: 0; GSAP handles this */
 }
 .welcome-footer-info a {
   color: var(--accent-color);
@@ -338,30 +340,35 @@ html, body { /* MODIFIED for particle background */
   padding: 2px 5px;
   border-radius: 3px;
   font-family: monospace;
-  font-weight: normal; /* Less emphasis */
+  font-weight: normal; 
 }
 
-#content-frame { /* No changes, from your original file */
+[data-theme="dark"] .main-headline { /* No specific change, accent color should be light */ }
+[data-theme="dark"] .typed-line-container,
+[data-theme="dark"] .tagline,
+[data-theme="dark"] .guidance { color: #e0e0e0; }
+[data-theme="dark"] .guidance .arrow-icon { color: var(--accent-color); }
+[data-theme="dark"] .welcome-footer-info { color: #ababab; }
+[data-theme="dark"] .welcome-footer-info a { color: var(--accent-color); }
+
+
+#content-frame { 
   width: 100%; height: 100%; border: none; display: block; opacity: 1; transition: opacity var(--transition-speed);
 }
 #content-frame.hidden { opacity: 0; pointer-events: none; }
 
-/* Iframe styling when visible (ensure it's on top of welcome) */
 #content-frame:not(.hidden) {
-    z-index: 150; /* Higher than sidebar and welcome screen */
+    z-index: 150; 
     position: relative;
-    background-color: var(--bg-color); /* Give iframe area a background for when it loads */
+    background-color: var(--bg-color); 
 }
 
-/* Original Welcome Screen hidden class */
 #welcome-screen.hidden {
-  opacity: 0 !important; /* Ensure it's hidden when class applied */
+  opacity: 0 !important; 
   pointer-events: none !important;
   z-index: -1 !important;
 }
 
-
-/* ========== Collapsed Sidebar Styles (No changes) ========== */
 @media (min-width: 769px) {
   #app.sidebar-collapsed #sidebar { width: var(--sidebar-width-collapsed); }
   #app.sidebar-collapsed #sidebar header { justify-content: center; padding: 0 5px; gap: 5px; }
@@ -372,7 +379,6 @@ html, body { /* MODIFIED for particle background */
   #app.sidebar-collapsed .category-header { display: none; }
 }
 
-/* ========== Responsive Adjustments (No changes, assuming these were okay) ========== */
 @media (max-width: 768px) {
   #app { flex-direction: column; }
   #sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 5px var(--shadow-color); z-index: 200; overflow: visible; }
@@ -390,35 +396,33 @@ html, body { /* MODIFIED for particle background */
   #project-nav li a { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; }
   #project-nav li a.active { border-left-color: transparent; border-bottom-color: var(--accent-color); background-color: transparent; }
   
-  #content-area { /* Modified for mobile */
-    height: auto; /* Let content flow */
+  #content-area { 
+    height: auto; 
     flex-grow: 1;
-    overflow-y: auto; /* Allow #content-area to scroll if welcome content is too long */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
   }
-  #tsparticles-bg { /* Ensure particles stay within #content-area on mobile */
-      height: 100%; /* Or set a fixed min-height if content-area doesn't have enough height initially */
+  #tsparticles-bg { 
+      height: 100%; 
   }
   #welcome-screen {
-    min-height: calc(100vh - var(--header-height) - 50px); /* header height of main page, approximate nav height on mobile */
-    /* padding remains from base */
-    position: relative; /* No longer absolute for mobile if #content-area scrolls */
+    min-height: calc(100vh - var(--header-height) - 50px); 
+    position: relative; 
   }
   .welcome-footer-info {
     flex-direction: column; align-items: center; justify-content: center;
-    bottom: 10px; position: relative; /* Changed from absolute */ margin-top: 20px;
+    bottom: 10px; position: relative; margin-top: 20px;
   }
   .welcome-footer-info p { margin-bottom: 8px; }
 }
 
 @media (max-width: 480px) {
-    .main-headline { font-size: 1.8rem; } /* Further adjust for very small screens */
+    .main-headline { font-size: 1.8rem; } 
     .typed-line-container { font-size: 0.9rem; }
     .tagline { font-size: 0.8rem; }
     .guidance { font-size: 0.8rem; }
 }
 
-/* Ensure error container from ui.js is above everything */
 #error-container {
     z-index: 250 !important; 
 }

@@ -89,45 +89,41 @@
     <!-- Inline script for particles and welcome screen animations -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
             // --- tsParticles Configuration & Initialization ---
             const particlesConfig = {
                 autoPlay: true,
-                background: {
-                    // CSS on #tsparticles-bg handles actual background color
-                },
+                background: { /* CSS handles background color */ },
                 fpsLimit: 60,
                 interactivity: {
-                    events: {
-                        onHover: { enable: true, mode: "repulse" },
-                    },
-                    modes: {
-                        repulse: { distance: 60, duration: 0.4 },
-                    },
+                    events: { onHover: { enable: true, mode: "repulse" } },
+                    modes: { repulse: { distance: 70, duration: 0.4, speed: 0.5 } }, 
                 },
                 particles: {
-                    color: { value: "#777777" }, 
+                    color: { value: isDarkMode ? "#cccccc" : "#555555" }, 
                     links: {
-                        color: "#555555", 
-                        distance: 150,
+                        color: { value: isDarkMode ? "#777777" : "#aaaaaa" },
+                        distance: 160,
                         enable: true,
-                        opacity: 0.2, 
+                        opacity: isDarkMode ? 0.3 : 0.4, 
                         width: 1,
                     },
                     move: {
                         direction: "none",
                         enable: true,
-                        outModes: { default: "bounce" },
-                        random: true, 
-                        speed: 0.5,    
+                        outModes: { default: "out" }, 
+                        random: true,
+                        speed: 0.8, 
                         straight: false,
                     },
                     number: {
-                        density: { enable: true, area: 1000 }, 
-                        value: 40, 
+                        density: { enable: true, area: 800 }, 
+                        value: 35, 
                     },
-                    opacity: { value: 0.3 }, 
+                    opacity: { value: {min: 0.2, max: 0.6} }, 
                     shape: { type: "circle" },
-                    size: { value: { min: 1, max: 3 } }, 
+                    size: { value: { min: 1, max: 2.5 } }, 
                 },
                 detectRetina: true,
             };
@@ -137,85 +133,109 @@
 
             // --- Welcome Screen GSAP Animations & Typed.js ---
             const welcomeScreen = document.getElementById('welcome-screen');
+            
             if (welcomeScreen && !welcomeScreen.classList.contains('hidden')) { 
-                const mainHeadlineEl = document.querySelector('.main-headline');
-                const typedLineEl = document.getElementById('typed-line-element');
-                const taglineEl = document.querySelector('.tagline');
-                const guidanceEl = document.querySelector('.guidance');
-                const arrowIconEl = document.querySelector('.guidance .arrow-icon');
-                const devHintEl = document.querySelector('.dev-hint');
-                const contactInfoEl = document.querySelector('.contact-info');
+                const mainHeadlineEl = welcomeScreen.querySelector('.main-headline');
+                const typedLineEl = welcomeScreen.querySelector('#typed-line-element');
+                const taglineEl = welcomeScreen.querySelector('.tagline');
+                const guidanceEl = welcomeScreen.querySelector('.guidance');
+                const arrowIconEl = welcomeScreen.querySelector('.guidance .arrow-icon');
+                const devHintEl = welcomeScreen.querySelector('.dev-hint');
+                const contactInfoEl = welcomeScreen.querySelector('.contact-info');
 
-                const headlineText = "Portfolio Hub"; // Generic Main Headline Text
-                if(mainHeadlineEl) { 
+                const headlineText = "Portfolio Hub";
+                if (mainHeadlineEl) {
+                    mainHeadlineEl.innerHTML = ''; 
                     headlineText.split("").forEach(letter => {
                         const span = document.createElement('span');
                         span.textContent = letter === " " ? "\u00A0" : letter;
                         span.classList.add('letter');
                         mainHeadlineEl.appendChild(span);
                     });
+                } else {
+                    console.error("GSAP Init Error: '.main-headline' element not found.");
                 }
                 
-                const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+                const tl = gsap.timeline({ 
+                    defaults: { ease: "power2.out" },
+                    onComplete: () => { 
+                        if (typedLineEl && typedLineEl.textContent.length < 5) { 
+                            gsap.set(typedLineEl.closest('.typed-line-container'), { opacity: 1 }); 
+                        }
+                    }
+                });
 
-                if(mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) {
-                    tl.from(".main-headline .letter", {
-                        y: 50,
+                gsap.set([mainHeadlineEl, typedLineEl?.closest('.typed-line-container'), taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl], { opacity: 0 });
+
+
+                if (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) {
+                    tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }) 
+                      .from(mainHeadlineEl.querySelectorAll('.letter'), {
+                        y: 60, 
                         opacity: 0,
-                        stagger: 0.05,
-                        delay: 0.5 
+                        stagger: 0.06,
+                        delay: 0.3 
                     });
+                } else {
+                    tl.addLabel("headlineDone"); 
                 }
                 
+                let typedInstance = null;
                 if (typedLineEl) {
+                    gsap.set(typedLineEl.closest('.typed-line-container'), {opacity: 1}); 
                     tl.add(() => { 
-                        new Typed('#typed-line-element', {
-                            strings: ['A dynamic collection of projects.'], // Generic Typed Line
-                            typeSpeed: 50,
-                            startDelay: 200, 
+                        typedInstance = new Typed('#typed-line-element', {
+                            strings: ['A dynamic collection of projects.'],
+                            typeSpeed: 45,
+                            startDelay: 100, 
                             showCursor: true,
                             cursorChar: '_',
-                            onComplete: () => {
+                            onComplete: (self) => {
+                                setTimeout(() => { if(self && self.cursor) self.cursor.remove(); }, 1000); 
                                 tl.play(); 
                             }
                         });
-                    }, (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">" : "+=0.5"); 
+                    }, (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? "-=0.3" : "+=0.3"); 
                     tl.pause(); 
                 }
                 
-                if(taglineEl) {
-                    tl.from(taglineEl, { opacity: 0, y: 20, duration: 0.8 }, typedLineEl ? "-=0.2" : (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">+0.5" : "+=0.5");
+                if (taglineEl) {
+                    tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, typedInstance ? ">" : (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">+0.3" : "+=0.3")
+                      .from(taglineEl, { y: 25 }, "<"); // Animate from y:25 to y:0 for the .to()
                 }
-                if(guidanceEl) {
-                  tl.from(guidanceEl, { opacity: 0, y: 20, duration: 0.6 }, "-=0.4");
+                if (guidanceEl) {
+                  tl.to(guidanceEl, { opacity: 1, y: 0, duration: 0.6 }, "-=0.5")
+                    .from(guidanceEl, {y:20}, "<");
                 }
-                if(arrowIconEl) {
-                  tl.from(arrowIconEl, { 
-                    opacity: 0, 
-                    x: -20, 
-                    duration: 0.5, 
-                    repeat: -1, 
-                    yoyo: true, 
-                    ease: "sine.inOut",
-                    delay: 0.2 
-                  }, "<"); 
+                if (arrowIconEl) {
+                  tl.to(arrowIconEl, {opacity:1, duration: 0.4}, "<") 
+                    .fromTo(arrowIconEl, 
+                        { x: 0, opacity: 1 }, 
+                        { 
+                            x: 10, 
+                            duration: 0.7, 
+                            repeat: -1, 
+                            yoyo: true, 
+                            ease: "sine.inOut"
+                        }, 
+                        ">-0.2" 
+                    ); 
                 }
 
-                if(devHintEl && contactInfoEl) {
-                    gsap.from([devHintEl, contactInfoEl], {
-                        opacity: 0,
-                        y: 10,
+                if (devHintEl && contactInfoEl) {
+                    // Initial state for .from()
+                    gsap.set([devHintEl, contactInfoEl], { y: 15, opacity:0 }); 
+                    gsap.to([devHintEl, contactInfoEl], { // Animate .to() visible state
+                        opacity: 1,
+                        y: 0,       
                         duration: 1,
-                        delay: tl.duration() > 0.1 ? tl.duration() -1 : 1.5, 
+                        delay: tl.duration() > 0.1 ? tl.duration() - 0.8 : 2.0, 
                         stagger: 0.3,
                         ease: "power1.inOut"
                     });
-                } else { 
-                    if (devHintEl) gsap.set(devHintEl, {opacity: 1, y: 0});
-                    if (contactInfoEl) gsap.set(contactInfoEl, {opacity: 1, y: 0});
                 }
             } else if (welcomeScreen) { 
-                gsap.set(welcomeScreen.querySelectorAll('.welcome-content > *, .welcome-footer-info > *'), {opacity: 1, y: 0, x:0});
+                console.log("Welcome screen is present but conditions not met for animation (e.g., screen hidden).");
             }
         });
     </script>
