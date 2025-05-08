@@ -254,6 +254,14 @@ async function initialize() {
     if (appElement) {
         appElement.addEventListener('click', (event) => {
             const targetLink = event.target.closest('a');
+            // Check if the click is inside the guidance hint BEFORE checking general navigation links
+             if (event.target.closest('#explore-hint')) {
+                  // The click handler for the hint is now set up within runWelcomeAnimations
+                  // No need to preventDefault or handle routing here
+                  console.log("[initialize] Click detected on or within #explore-hint. Letting its specific handler run.");
+                  return; 
+             }
+            
             if (targetLink && targetLink.href && targetLink.origin === window.location.origin) { 
                 if (targetLink.target === '_blank' || targetLink.hasAttribute('download') || targetLink.href.startsWith('mailto:')) {
                     return; 
@@ -265,13 +273,13 @@ async function initialize() {
 
                 if(targetLink.pathname.startsWith(basePath)) {
                     event.preventDefault();
-                    console.log(`[initialize] Intercepted navigation to: ${targetLink.href}. Is current page: ${isCurrentPage}`); 
+                    console.log(`[initialize] Intercepted navigation link click to: ${targetLink.href}. Is current page: ${isCurrentPage}`); 
 
                     if (!isCurrentPage) {
                         history.pushState({}, '', targetLink.href);
                         handleRouteChange();
                     } else {
-                        console.log("[initialize] Clicked link matches current URL. Re-evaluating route for potential state update.");
+                        console.log("[initialize] Clicked link matches current URL. Re-evaluating route.");
                         if(isBasePathLink && isCurrentProjectNull) {
                            if (typeof window.runWelcomeAnimations === 'function') {
                                 window.runWelcomeAnimations(); 
