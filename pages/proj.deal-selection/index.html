@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Deal Selection Tools</title>
+    <style>
+        :root {
+            --primary: #1a73e8; /* Blue */
+            --primary-light: #e8f0fe;
+            --primary-dark: #1565c0;
+            --secondary: #34A853; /* Green (e.g., for exclusive star, or rotator compute) */
+            --secondary-dark: #218838; /* Darker green for hover */
+            --surface: #ffffff;
+            --background: #f8f9fa;
+            --text: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --border-light: #e0e0e0;
+            --shadow-1: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.1);
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --transition-fast: 0.15s ease-out;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Roboto', 'Noto Sans', Arial, sans-serif;
+            background-color: var(--background); color: var(--text);
+            line-height: 1.6; padding: 1.5rem;
+        }
+        .container { max-width: 1000px; margin: 1rem auto; }
+        .page-title { font-size: 2.2rem; font-weight: 500; text-align: center; color: var(--primary); margin-bottom: 2rem; }
+
+        .tool-section {
+            background-color: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-1);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+        .tool-section h2 {
+            font-size: 1.5rem; font-weight: 500; color: var(--primary-dark);
+            margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);
+        }
+
+        /* Common control group styling */
+        .control-group { margin-bottom: 1.25rem; }
+        .control-group label {
+            display: block; font-size: 0.95rem; font-weight: 500; color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        .control-group select, textarea#deals-input {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border);
+            border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.9rem;
+            background-color: var(--surface);
+        }
+        .control-group select:focus, textarea#deals-input:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        textarea#deals-input { height: 200px; resize: vertical; margin-bottom: 1rem; font-family: 'Roboto Mono', monospace; }
+
+
+        .actions-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); text-decoration: none; }
+        .btn:hover { background: var(--primary-dark); box-shadow: var(--shadow-1); }
+        
+        .btn-secondary { background: var(--surface); color: var(--primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--primary-light); border-color: var(--primary); }
+        
+        .btn-compute { /* Specific style for main compute buttons if needed, e.g. rotator */
+            background: var(--secondary); width: 100%; padding: 0.75em; font-size: 1em;
+        }
+        .btn-compute:hover { background: var(--secondary-dark); }
+
+
+        /* Filter bubbles (reused from App 2) */
+        #filters-and-sorts-container h2, /* Target h2 within deal lister's filter section */
+        .control-section h2 { /* Also target this if used elsewhere */
+            font-size: 1rem; font-weight: 500; color: var(--text);
+            margin-bottom: 0.75rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border-light);
+        }
+        .filter-bubbles { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .filter-bubbles button, .options-controls button {
+            background: var(--surface); color: var(--primary); border: 1px solid var(--border);
+            padding: 0.4rem 0.8rem; border-radius: 16px; font-family: inherit;
+            font-size: 0.85rem; cursor: pointer; transition: all var(--transition-fast);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; /* Prevent overly wide bubbles */
+        }
+        .filter-bubbles button:hover, .options-controls button:hover {
+            background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px);
+        }
+        .filter-bubbles button.active, .options-controls button.active {
+            background: var(--primary); color: white; border-color: var(--primary); font-weight: 500;
+        }
+        
+        /* For rotator output and deal lister output consistency */
+        .output-area {
+            margin-top: 1.5em; padding: 1em; background: #f9f9f9;
+            border: 1px solid var(--border-light); border-radius: var(--border-radius-sm);
+            min-height: 50px; font-size: 0.95rem;
+        }
+        .output-area strong { color: var(--primary-dark); }
+
+        /* Deal Lister specific styles from App 2 */
+        #filters-and-sorts-container {
+            /* background-color: var(--surface); No, it's inside tool-section already */
+            padding: 1rem 0; /* Adjusted padding as it's within tool-section */
+            /* border-radius: var(--border-radius-md); No, tool-section has radius */
+            /* box-shadow: var(--shadow-1); No, tool-section has shadow */
+            margin-bottom: 1.5rem;
+            /* border: 1px solid var(--border-light); No, tool-section has border */
+        }
+        .control-section { margin-bottom: 1.25rem; }
+        .control-section:last-child { margin-bottom: 0; }
+        
+        .options-controls { display: flex; gap: 0.75rem; align-items: center; }
+        .sort-options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .sort-options button { font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--border-radius-sm); }
+        .sort-options button.active {
+            background: var(--primary-dark); color: white; border-color: var(--primary-dark); font-weight: 500;
+        }
+
+        #deal-list-container { margin-top: 1rem; /* background: var(--surface); */ border: 1px solid var(--border-light); border-radius: var(--border-radius-md); /* box-shadow: var(--shadow-1); */ padding: 0.5rem 0; }
+        #deal-list { list-style: none; max-height: 70vh; overflow-y: auto; padding: 0 1.5rem; }
+        .deal-item {
+            border-bottom: 1px solid var(--border-light); padding: 1rem 0;
+            display: grid; grid-template-columns: auto 1fr; gap: 0 1rem; align-items: start;
+         }
+        .deal-item:last-child { border-bottom: none; }
+        .deal-item .indicator { grid-row: 1 / 3; font-size: 1.5rem; padding-top: 0.1em; }
+        .deal-item .indicator .exclusive-star { color: var(--secondary); }
+        .deal-item .supplier { font-weight: 500; font-size: 1.1rem; color: var(--primary-dark); grid-column: 2; margin-bottom: 0.25rem; }
+        .deal-item .title-line { grid-column: 2; display: flex; align-items: baseline; flex-wrap: wrap; margin-bottom: 0.3rem; }
+        .deal-item .title { font-weight: 500; margin-right: 0.75rem; font-size: 1rem; }
+        .deal-item .expiry-pill {
+            font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); background-color: #e8eaed;
+            padding: 0.1rem 0.6rem; border-radius: 10px; white-space: nowrap; border: 1px solid var(--border-light);
+        }
+        .deal-item .description { grid-column: 2; font-size: 0.9rem; color: var(--text-secondary); }
+        .placeholder { padding: 2rem; text-align: center; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">Travel Deal Selection Tools</h1>
+
+        <!-- Section 1: Weekly Hot Deals Supplier Rotator -->
+        <section id="rotator-section" class="tool-section">
+            <h2>Weekly Hot Deals Supplier Rotator</h2>
+            
+            <div class="control-group">
+                <label for="featured-brand-select">Select This Week’s Main Feature Brand:</label>
+                <select id="featured-brand-select">
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Select Last Week’s Below-the-Fold Brands (up to 4):</label>
+                <div id="lastweek-brands-bubbles" class="filter-bubbles">
+                    <!-- Bubbles populated by JS -->
+                </div>
+            </div>
+
+            <button id="compute-rotator-btn" class="btn btn-compute">Compute This Week’s Below-the-Fold</button>
+            
+            <div id="rotator-output" class="output-area">
+                <p style="color: var(--text-secondary);">Select brands above and click compute.</p>
+            </div>
+        </section>
+
+        <!-- Separator -->
+        <hr style="margin: 2.5rem 0; border: none; border-top: 1px solid var(--border-light);">
+
+        <!-- Section 2: Enhanced JSON Deal Lister -->
+        <section id="deal-lister-section" class="tool-section">
+            <h2>Enhanced JSON Deal Lister</h2>
+            
+            <textarea id="deals-input" placeholder="Paste the JSON array of deal objects here..."></textarea>
+            
+            <div class="actions-bar">
+                <button class="btn" onclick="processJsonInput()">Show Deals</button>
+                <button class="btn btn-secondary" onclick="clearAllDealLister()">Clear Deal Lister</button>
+            </div>
+
+            <div id="filters-and-sorts-container" style="display: none;">
+                <div class="control-section">
+                    <h2>Filter by Supplier:</h2>
+                    <div id="supplier-filters" class="filter-bubbles"></div>
+                </div>
+                <div class="control-section">
+                    <h2>Options:</h2>
+                    <div class="options-controls">
+                        <button id="exclusive-toggle-btn" onclick="toggleExclusiveFilter()">Show Only Exclusives</button>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <h2>Sort by:</h2>
+                    <div class="sort-options">
+                        <button id="sort-supplier" class="btn btn-secondary active" onclick="setSort('supplier')">Supplier</button>
+                        <button id="sort-expiry" class="btn btn-secondary" onclick="setSort('expiry')">Expiry Date</button>
+                        <button id="sort-exclusive" class="btn btn-secondary" onclick="setSort('exclusive')">Exclusives First</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="deal-list-container">
+                <ul id="deal-list">
+                    <li class="placeholder">Paste JSON and click "Show Deals"</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+    (function() {
+        // --- COMMON DATA FOR ROTATOR ---
+        const potm = ['MSC Cruises', 'AmaWaterways'];
+        const mostPriority = ['Norwegian Cruise Line', 'Royal Caribbean'];
+        const midPriority = ['Celebrity Cruises', 'Disney Cruise Line', 'Virgin Voyages', 'Holland America Line', 'Princess Cruises'];
+        const leastPriority = ['Carnival Cruise Line', 'MSC Cruises'];
+
+        // This list contains {text: "Short Display Name", value: "Full Name for Logic"}
+        // Derived from App 1's buttons. 'value' must match names in potm, mostPriority etc.
+        const rotatorBrandDisplayList = [
+            { text: "Norwegian", value: "Norwegian Cruise Line" }, { text: "Royal Caribbean", value: "Royal Caribbean" },
+            { text: "Celebrity", value: "Celebrity Cruises" }, { text: "Disney Cruise Line", value: "Disney Cruise Line" },
+            { text: "Virgin Voyages", value: "Virgin Voyages" }, { text: "Holland America", value: "Holland America Line" },
+            { text: "Princess", value: "Princess Cruises" }, { text: "Carnival", value: "Carnival Cruise Line" },
+            { text: "MSC", value: "MSC Cruises" }, { text: "Costa", value: "Costa Cruises" },
+            { text: "Viking Ocean", value: "Viking Ocean Cruises" }, { text: "Seabourn", value: "Seabourn" },
+            { text: "Regent Seven Seas", value: "Regent Seven Seas Cruises" }, { text: "Oceania", value: "Oceania Cruises" },
+            { text: "Silversea", value: "Silversea" }, { text: "Explora Journeys", value: "Explora Journeys" },
+            { text: "Azamara", value: "Azamara" }, { text: "Scenic Eclipse", value: "Scenic Eclipse" },
+            { text: "Atlas Ocean Voyages", value: "Atlas Ocean Voyages" }, { text: "Crystal Cruises", value: "Crystal Cruises" },
+            { text: "Emerald Cruises", value: "Emerald Cruises" }, { text: "Cunard", value: "Cunard" },
+            { text: "Windstar", value: "Windstar Cruises" }, { text: "Paul Gauguin", value: "Paul Gauguin Cruises" },
+            { text: "Ponant", value: "Ponant" }, { text: "American Cruise Line", value: "American Cruise Line" },
+            { text: "Tauck Cruises", value: "Tauck Cruises" }, { text: "Star Clippers", value: "Star Clippers" },
+            { text: "Four Seasons Yachts", value: "Four Seasons Yachts" }, { text: "Ritz-Carlton Yacht", value: "Ritz-Carlton Yacht Collection" },
+            { text: "Viking River", value: "Viking River Cruises" }, { text: "Avalon Waterways", value: "Avalon Waterways" },
+            { text: "AmaWaterways", value: "AmaWaterways" }, { text: "CroisiEurope", value: "CroisiEurope" },
+            { text: "Riverside Cruises", value: "Riverside Cruises" }, { text: "Scenic River", value: "Scenic River Cruises" },
+            { text: "Riviera River", value: "Riviera River Cruises" }, { text: "Uniworld", value: "Uniworld Boutique River Cruises" },
+            { text: "Lindblad", value: "Lindblad Expeditions" }, { text: "Hurtigruten", value: "Hurtigruten" },
+            { text: "UnCruise Adventures", value: "UnCruise Adventures" },
+            { text: "Disney Cruises", value: "Disney Cruises" }, // This is distinct from Disney Cruise Line in App1 data
+            { text: "DisneyWorld", value: "DisneyWorld" }, { text: "Disneyland", value: "Disneyland" },
+            { text: "Aulani", value: "Aulani" }, { text: "Adventures by Disney", value: "Adventures by Disney" },
+            { text: "Sandals", value: "Sandals" }, { text: "Beaches Resorts", value: "Beaches Resorts" },
+            { text: "Breathless Resorts", value: "Breathless Resorts" }, { text: "Club Med", value: "Club Med" },
+            { text: "El Dorado Spa Resorts", value: "El Dorado Spa Resorts" }, { text: "Excellence Resorts", value: "Excellence Resorts" },
+            { text: "Hard Rock Hotels", value: "Hard Rock Hotels" }, { text: "Iberostar", value: "Iberostar Hotels & Resorts" },
+            { text: "Dreams Resorts", value: "Dreams Resorts" }, { text: "Karisma Hotels", value: "Karisma Hotels & Resorts" },
+            { text: "Villas of Distinction", value: "Villas of Distinction" }, { text: "Palace Resorts", value: "Palace Resorts" },
+            { text: "Atlantis Paradise Island", value: "Atlantis Paradise Island" }, { text: "Melia", value: "Melia Hotels" },
+            { text: "RIU Hotels & Resorts", value: "RIU Hotels & Resorts" }, { text: "Outrigger", value: "Outrigger Hotels & Resorts" },
+            { text: "Zoëtry", value: "Zoëtry Wellness & Spa Resorts" }, { text: "Secrets Resorts", value: "Secrets Resorts" },
+            { text: "American Airlines Vacations", value: "American Airlines Vacations" }, { text: "Delta Vacations", value: "Delta Vacations" },
+            { text: "Southwest Vacations", value: "Southwest Vacations" }, { text: "United Vacations", value: "United Vacations" },
+            { text: "Great Safaris", value: "Great Safaris" }, { text: "African Travel", value: "African Travel" },
+            { text: "Abercrombie & Kent", value: "Abercrombie & Kent" }, { text: "G Adventures", value: "G Adventures" },
+            { text: "Globus Journeys", value: "Globus Journeys" }, { text: "Rocky Mountaineer", value: "Rocky Mountaineer" },
+            { text: "Collette", value: "Collette" }, { text: "CIE Tours", value: "CIE Tours" },
+            { text: "Trafalgar", value: "Trafalgar" }
+        ].sort((a, b) => a.text.localeCompare(b.text)); // Sort by display text
+
+
+        // --- ROTATOR FUNCTIONALITY ---
+        const featuredBrandSelect = document.getElementById('featured-brand-select');
+        const lastweekBrandsContainer = document.getElementById('lastweek-brands-bubbles');
+        const computeRotatorBtn = document.getElementById('compute-rotator-btn');
+        const rotatorOutputDiv = document.getElementById('rotator-output');
+        let selectedLastWeekBrands = []; 
+
+        function populateRotatorSelectors() {
+            featuredBrandSelect.innerHTML = '<option value="">-- Select Main Feature Brand --</option>';
+            rotatorBrandDisplayList.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.value; // Full name for logic
+                option.textContent = brand.value; // Display full name in dropdown for clarity
+                featuredBrandSelect.appendChild(option);
+            });
+
+            lastweekBrandsContainer.innerHTML = '';
+            rotatorBrandDisplayList.forEach(brand => {
+                const button = document.createElement('button');
+                button.dataset.brandValue = brand.value; // Full name for logic
+                button.textContent = brand.text; // Short name for display
+                button.title = brand.value; // Show full name on hover
+                button.onclick = () => toggleLastWeekBrand(button, brand.value);
+                lastweekBrandsContainer.appendChild(button);
+            });
+        }
+
+        function toggleLastWeekBrand(buttonEl, brandValue) {
+            if (selectedLastWeekBrands.includes(brandValue)) {
+                selectedLastWeekBrands = selectedLastWeekBrands.filter(b => b !== brandValue);
+                buttonEl.classList.remove('active');
+            } else {
+                if (selectedLastWeekBrands.length < 4) {
+                    selectedLastWeekBrands.push(brandValue);
+                    buttonEl.classList.add('active');
+                } else {
+                    alert('You can select up to 4 last week brands.');
+                }
+            }
+        }
+
+        function computeRotatorResults() {
+            const featured = featuredBrandSelect.value;
+            
+            if (!featured) {
+                rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">Please select This Week’s Main Feature Brand.</p>';
+                return;
+            }
+            if (selectedLastWeekBrands.length === 0) {
+                 rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">Please select at least one Last Week’s Below-the-Fold Brand.</p>';
+                return;
+            }
+
+            let result = potm.filter(b => b !== featured && !selectedLastWeekBrands.includes(b));
+
+            function addFromPriorityList(list) {
+                for (const b of list) {
+                    if (result.length >= 4) break;
+                    if (b === featured) continue;
+                    if (selectedLastWeekBrands.includes(b)) continue;
+                    if (!result.includes(b)) result.push(b);
+                }
+            }
+
+            addFromPriorityList(mostPriority);
+            addFromPriorityList(midPriority);
+            addFromPriorityList(leastPriority);
+            
+            // Optional: If still less than 4, you could add a mechanism to pick from remaining `rotatorBrandDisplayList`
+            // that are not featured, not in last week, and not already in result.
+            // For now, sticking to App1's logic which primarily pulls from these hardcoded lists.
+            if (result.length < 4) {
+                 const allPossibleBrandsForRotator = rotatorBrandDisplayList.map(b => b.value);
+                 addFromPriorityList(allPossibleBrandsForRotator); // Try to fill from any available brand
+            }
+
+
+            if (result.length === 0) {
+                 rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">No suitable below-the-fold suppliers found based on selections and priority lists.</p>';
+            } else {
+                rotatorOutputDiv.innerHTML = `<strong>This Week’s Below-the-Fold Suppliers:</strong><br>` +
+                                          result.slice(0, 4).map(b => `– ${b}`).join('<br>'); // Ensure max 4
+            }
+        }
+
+        // --- DEAL LISTER FUNCTIONALITY (Adapted from App 2) ---
+        let allParsedDeals = [];
+        let displayedDeals = [];
+        let currentSort = 'supplier';
+        let activeSupplierFilter = null;
+        let showExclusivesOnly = false;
+
+        // IMPORTANT: Paste your FULL SUPPLIER_INFO object here from App 2
+        const SUPPLIER_INFO = { /* --- PASTE YOUR FULL SUPPLIER_INFO OBJECT HERE --- */
+             "norwegian cruise line": { name: "Norwegian Cruise Line" }, "royal caribbean": { name: "Royal Caribbean" }, "celebrity cruises": { name: "Celebrity Cruises" }, "disney cruise line": { name: "Disney Cruise Line" }, "virgin voyages": { name: "Virgin Voyages" }, "holland america line": { name: "Holland America Line" }, "princess": { name: "Princess" }, "princess cruises": { name: "Princess" }, "carnival": { name: "Carnival" }, "carnival cruise line": { name: "Carnival" }, "msc cruises": { name: "MSC Cruises" }, "viking": { name: "Viking" }, "american cruise line": { name: "American Cruise Line" }, "atlas ocean voyages": { name: "Atlas Ocean Voyages" }, "azamara": { name: "Azamara" }, "crystal cruises": { name: "Crystal Cruises" }, "cunard": { name: "Cunard" }, "emerald cruises": { name: "Emerald Cruises" }, "explora journeys": { name: "Explora Journeys" }, "four seasons yachts": { name: "Four Seasons Yachts" }, "oceania cruises": { name: "Oceania Cruises" }, "paul gauguin cruises": { name: "Paul Gauguin Cruises" }, "ponant": { name: "Ponant" }, "regent seven seas cruises": { name: "Regent Seven Seas Cruises" }, "ritz-carlton yacht collection": { name: "Ritz-Carlton Yacht Collection" }, "scenic eclipse ocean voyages": { name: "Scenic Eclipse Ocean Voyages" }, "seabourn": { name: "Seabourn" }, "silversea": { name: "Silversea" }, "star clippers": { name: "Star Clippers" }, "tauck cruises": { name: "Tauck Cruises" }, "windstar": { name: "Windstar" }, "windstar cruises": { name: "Windstar" }, "avalon waterways": { name: "Avalon Waterways" }, "amawaterways": { name: "AmaWaterways" }, "croisieurope": { name: "CroisiEurope" }, "riverside cruises": { name: "Riverside Cruises" }, "riviera river cruises": { name: "Riviera River Cruises" }, "tauck tours": { name: "Tauck Tours" }, "uniworld": { name: "Uniworld" }, "uniworld boutique river cruises": { name: "Uniworld" }, "scenic river": { name: "Scenic River" }, "scenic luxury cruises & tours": { name: "Scenic River" }, "lindblad expeditions & national geographic": { name: "Lindblad Expeditions & National Geographic" }, "lindblad expeditions": { name: "Lindblad Expeditions & National Geographic" }, "hurtigruten": { name: "Hurtigruten" }, "uncruise adventures": { name: "UnCruise Adventures" }, "adventures by disney": { name: "Adventures by Disney" }, "disneyland": { name: "Disneyland" }, "disneyworld": { name: "DisneyWorld" }, "walt disney world": { name: "DisneyWorld" }, "aulani a disney resort & spa": { name: "Aulani, A Disney Resort & Spa" }, "aulani": { name: "Aulani, A Disney Resort & Spa" }, "sandals": { name: "Sandals" }, "beaches": { name: "Beaches" }, "breathless": { name: "Breathless" }, "club med": { name: "Club Med" }, "el dorado spa resorts & hotels": { name: "El Dorado Spa Resorts & Hotels" }, "dreams": { name: "Dreams" }, "excellence resorts": { name: "Excellence Resorts" }, "hard rock hotels": { name: "Hard Rock Hotels" }, "hard rock hotel & casino": { name: "Hard Rock Hotels" }, "iberostar hotels & resorts": { name: "Iberostar Hotels & Resorts" }, "iberostar beachfront resorts": { name: "Iberostar Hotels & Resorts" }, "karisma hotels & resorts": { name: "Karisma Hotels & Resorts" }, "outrigger hotels & resorts": { name: "Outrigger Hotels & Resorts" }, "palace resorts": { name: "Palace Resorts" }, "riu hotels & resorts": { name: "RIU Hotels & Resorts" }, "secrets": { name: "Secrets" }, "american airline vacations": { name: "American Airline Vacations" }, "delta vacations": { name: "Delta Vacations" }, "southwest vacations": { name: "Southwest Vacations" }, "united vacations": { name: "United Vacations" }, "villas of distinction": { name: "Villas of Distinction" }, "zoetry wellness & spa resorts": { name: "Zoëtry Wellness & Spa Resorts" }, "atlantis paradise island bahamas": { name: "Atlantis Paradise Island Bahamas" }, "atlantis": { name: "Atlantis Paradise Island Bahamas" }, "great safaris": { name: "Great Safaris" }, "african travel": { name: "African Travel" }, "abercrombie & kent": { name: "Abercrombie & Kent" }, "g adventures": { name: "G Adventures" }, "globus journeys": { name: "Globus Journeys" }, "globus": { name: "Globus Journeys" }, "trafalgar": { name: "Trafalgar" }, "bluesky tours": { name: "BlueSky Tours" }, "cie tours": { name: "CIE Tours" }, "collette": { name: "Collette" }, "shore excursions group": { name: "Shore Excursions Group" }, "toursalescom": { name: "TourSales.com" }, "viator": { name: "Viator" }, "project expedition": { name: "Project Expedition" }, "rocky mountaineer": { name: "Rocky Mountaineer" }
+        };
+
+        function normalizeSupplier(name) { return name?.toLowerCase().trim().replace(/&/g, '&').replace(/[.,\/#!$%\^&\*;:{}=\-_`~()']/g,"").replace(/\s+/g,' ').trim() || ''; }
+        function formatDisplayName(key) { return key ? key.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : '').join(' ') : "Unknown"; }
+        function getDisplayName(key) { return SUPPLIER_INFO[normalizeSupplier(key)]?.name || formatDisplayName(normalizeSupplier(key)); }
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try { const d = new Date(dateString); if (isNaN(d) || d.getFullYear() > 2050) return ''; return `Ends ${d.getMonth() + 1}/${d.getDate()}`; }
+            catch (e) { return ''; }
+        }
+
+        function parseDeals(rawInput) {
+            const parsed = []; let dealObjects = [];
+            try { dealObjects = JSON.parse(rawInput); if (!Array.isArray(dealObjects)) throw new Error("Not JSON array."); }
+            catch (e) { alert(`Invalid JSON input for Deal Lister:\n${e.message}`); return []; }
+
+            dealObjects.forEach((deal, index) => {
+                try {
+                    if (typeof deal !== 'object' || deal === null) return;
+                    const { status, shopOverline, title, shopListing, dealCategory, expiryDate: expiryDateStr } = deal;
+                    if (!shopOverline || !title || !shopListing || !status) return;
+                    if (status !== "live") return;
+
+                    const supplierKey = normalizeSupplier(shopOverline); if (!supplierKey) return;
+                    const categories = dealCategory || [];
+                    const isExclusive = categories.includes(39542);
+                    const formattedExpiry = formatDate(expiryDateStr);
+                    const expiryDate = new Date(expiryDateStr);
+
+                    parsed.push({
+                        supplierKey: supplierKey,
+                        displayName: getDisplayName(supplierKey),
+                        title: title,
+                        description: shopListing,
+                        exclusive: isExclusive,
+                        formattedExpiryDate: formattedExpiry,
+                        expiryDateObject: !isNaN(expiryDate) ? expiryDate : null,
+                        id: crypto.randomUUID()
+                    });
+                } catch (error) { console.error(`Error processing deal object at index ${index}:`, error, deal); }
+            });
+            return parsed;
+        }
+
+        function sortDisplayedDeals() {
+            const fallbackDate = new Date('2099-12-31');
+            displayedDeals.sort((a, b) => {
+                if (currentSort === 'supplier') {
+                    const nameCompare = a.displayName.localeCompare(b.displayName);
+                    if (nameCompare !== 0) return nameCompare;
+                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateB = b.expiryDateObject || fallbackDate;
+                    return dateA - dateB;
+                } else if (currentSort === 'expiry') {
+                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateB = b.expiryDateObject || fallbackDate;
+                    const dateCompare = dateA - dateB;
+                    if (dateCompare !== 0) return dateCompare;
+                    return a.displayName.localeCompare(b.displayName);
+                } else if (currentSort === 'exclusive') {
+                    const exclusiveCompare = b.exclusive - a.exclusive;
+                    if (exclusiveCompare !== 0) return exclusiveCompare;
+                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateB = b.expiryDateObject || fallbackDate;
+                    return dateA - dateB;
+                }
+                return 0;
+            });
+        }
+
+        function renderDealList() {
+            const listElement = document.getElementById('deal-list');
+            listElement.innerHTML = '';
+
+            if (displayedDeals.length === 0) {
+                const placeholderText = allParsedDeals.length > 0 ?
+                    "No deals match the current filters." :
+                    "Paste JSON and click \"Show Deals\", or no valid deals were found in the input.";
+                listElement.innerHTML = `<li class="placeholder">${placeholderText}</li>`;
+                return;
+            }
+
+            displayedDeals.forEach(deal => {
+                const li = document.createElement('li');
+                li.className = 'deal-item';
+                const expiryPillHtml = deal.formattedExpiryDate ? `<span class="expiry-pill">${deal.formattedExpiryDate}</span>` : '';
+                const exclusiveIndicator = deal.exclusive ? '<span class="exclusive-star" title="Exclusive Deal">★</span>' : '';
+                li.innerHTML = `
+                    <div class="indicator">${exclusiveIndicator}</div>
+                    <div class="supplier">${deal.displayName}</div>
+                    <div class="title-line">
+                        <span class="title">${deal.title}</span>
+                        ${expiryPillHtml}
+                    </div>
+                    <div class="description">${deal.description}</div>
+                `;
+                listElement.appendChild(li);
+            });
+        }
+        
+        function updateDealListerFilterUIStates() {
+            document.querySelectorAll('#supplier-filters button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.supplier === (activeSupplierFilter || 'ALL'));
+            });
+            const exclusiveBtn = document.getElementById('exclusive-toggle-btn');
+            exclusiveBtn.classList.toggle('active', showExclusivesOnly);
+            exclusiveBtn.textContent = showExclusivesOnly ? 'Showing Only Exclusives' : 'Show Only Exclusives';
+            document.querySelectorAll('.sort-options button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`sort-${currentSort}`)?.classList.add('active');
+        }
+        
+        function updateAndRenderDeals() {
+            let tempDeals = [...allParsedDeals];
+            if (activeSupplierFilter) {
+                tempDeals = tempDeals.filter(d => d.displayName === activeSupplierFilter);
+            }
+            if (showExclusivesOnly) {
+                tempDeals = tempDeals.filter(d => d.exclusive);
+            }
+            displayedDeals = tempDeals;
+            sortDisplayedDeals();
+            renderDealList();
+            updateDealListerFilterUIStates();
+        }
+
+        function renderSupplierFilters() {
+            const container = document.getElementById('supplier-filters');
+            container.innerHTML = '';
+            const uniqueSuppliers = [...new Set(allParsedDeals.map(d => d.displayName))].sort();
+            const allBtn = document.createElement('button');
+            allBtn.textContent = 'All Suppliers';
+            allBtn.dataset.supplier = 'ALL';
+            allBtn.onclick = () => setSupplierFilter(null);
+            container.appendChild(allBtn);
+            uniqueSuppliers.forEach(supplierName => {
+                const btn = document.createElement('button');
+                btn.textContent = supplierName;
+                btn.dataset.supplier = supplierName;
+                btn.onclick = () => setSupplierFilter(supplierName);
+                container.appendChild(btn);
+            });
+        }
+        
+        // Make Deal Lister functions available globally for onclick handlers
+        window.setSupplierFilter = function(supplierName) {
+            activeSupplierFilter = supplierName;
+            updateAndRenderDeals();
+        }
+        window.toggleExclusiveFilter = function() {
+            showExclusivesOnly = !showExclusivesOnly;
+            updateAndRenderDeals();
+        }
+        window.setSort = function(sortType) {
+            if (currentSort !== sortType) {
+                currentSort = sortType;
+                updateAndRenderDeals();
+            }
+        }
+        window.processJsonInput = function() {
+            const rawInput = document.getElementById('deals-input').value;
+            if (!rawInput.trim()) { alert("Paste JSON for Deal Lister first."); return; }
+            allParsedDeals = parseDeals(rawInput);
+            const filtersContainer = document.getElementById('filters-and-sorts-container');
+            if (allParsedDeals.length > 0) {
+                filtersContainer.style.display = 'block';
+                renderSupplierFilters();
+                activeSupplierFilter = null; // Reset filter
+                // showExclusivesOnly = false; // Retain this filter setting across loads
+                // currentSort = 'supplier'; // Retain sort setting
+            } else {
+                filtersContainer.style.display = 'none';
+                document.getElementById('supplier-filters').innerHTML = '';
+            }
+            updateAndRenderDeals();
+        }
+        window.clearAllDealLister = function() { // Renamed from clearAll
+             allParsedDeals = []; displayedDeals = [];
+             document.getElementById('deals-input').value = '';
+             document.getElementById('filters-and-sorts-container').style.display = 'none';
+             document.getElementById('supplier-filters').innerHTML = '';
+             activeSupplierFilter = null; showExclusivesOnly = false; currentSort = 'supplier';
+             updateAndRenderDeals();
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Rotator Init
+            populateRotatorSelectors();
+            computeRotatorBtn.addEventListener('click', computeRotatorResults);
+
+            // Deal Lister Init (mostly handled by global functions, but ensure initial UI state for sort is okay)
+            updateDealListerFilterUIStates(); // Ensures sort buttons are correctly highlighted on load
+        });
+    })();
+    </script>
+</body>
+</html>
