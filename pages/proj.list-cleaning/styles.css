@@ -724,6 +724,29 @@ h3 {
     color: var(--text-color);
 }
 
+/* New/Amended Slide & Note Styles */
+.validation-research-note {
+    display: flex;
+    align-items: flex-start;
+    background: rgba(234,67,53,0.07);
+    color: var(--accent-color);
+    font-size: 1.04rem;
+    border-left: 5px solid var(--accent-color);
+    border-radius: 7px;
+    margin-top: 18px;
+    padding: 16px 20px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.rewarm-list {
+    list-style: disc inside;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+.rewarm-list li {
+    margin-bottom: 8px;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 1200px) {
     .slide {
@@ -764,6 +787,14 @@ h3 {
     .metrics-container {
         flex-direction: column;
         gap: 20px;
+    }
+    
+    .validation-research-note {
+        font-size: 0.93rem;
+        padding: 10px 10px;
+    }
+    .considerations-container {
+        gap: 12px;
     }
 }
 
