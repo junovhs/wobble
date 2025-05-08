@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Showcase</title>
-    <base href="/wobble/"> <!-- Ensure this is correct for your GH pages setup -->
+    <base href="/wobble/">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
-        /* Basic styles for pre-JS load */
         .letter { display: inline-block; } 
     </style>
 </head>
@@ -18,35 +17,27 @@
             <header>
                 <h1>My Projects</h1>
                 <button id="theme-toggle" class="theme-button">
-                    <!-- Sun Icon SVG -->
                     <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" /></svg>
-                    <!-- Moon Icon SVG -->
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd" /></svg>
                 </button>
                 <button id="sidebar-toggle" class="sidebar-toggle-button" title="Collapse sidebar">
-                    <!-- Collapse Icon SVG -->
                     <svg class="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    <!-- Expand Icon SVG -->
                     <svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
             </header>
             <nav id="project-nav"></nav>
         </aside>
         <main id="content-area">
-            <!-- tsParticles canvas -->
             <div id="tsparticles-bg"></div>
-
             <div id="welcome-screen"> 
                 <div class="welcome-content">
                     <h1 class="main-headline">
-                        <!-- Letters for "Portfolio Hub" injected here by JS -->
+                        <!-- Letters dynamically injected -->
                     </h1>
                     <p class="typed-line-container">
-                        <!-- Static text instead of typed effect for now -->
                         <span id="typed-line-element">A dynamic collection of projects.</span> 
                     </p>
                     <p class="tagline">Innovating with code, one project at a time.</p>
-
                     <div class="guidance">
                         <span>Explore the Work</span>
                         <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -63,34 +54,26 @@
         </main>
     </div>
 
-    <!-- Importmap -->
     <script type="importmap">
     { "imports": { "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.1/+esm" } }
     </script>
-
-    <!-- tsParticles -->
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
-    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <!-- Typed.js - Not used in this version, but keep the CDN link commented out for later -->
     <!-- <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script> -->
 
-    <!-- Your App Scripts -->
     <script type="module" src="config.js"></script>
     <script type="module" src="githubApi.js"></script>
     <script type="module" src="ui.js"></script>
     <script type="module" src="nav.js"></script>
     <script type="module" src="app.js"></script>
 
-
-    <!-- Inline script for particles and welcome screen animations (SIMPLIFIED - NO Typed.js) -->
     <script>
         function runWelcomeAnimations() {
-            console.log("[Animation Script - Simple] Attempting to run animations..."); 
+            console.log("[Animation Script V2] Attempting to run animations..."); 
             
             const welcomeScreen = document.getElementById('welcome-screen');
             if (!welcomeScreen || welcomeScreen.classList.contains('hidden')) {
-                console.log("[Animation Script - Simple] Welcome screen not found or is hidden."); 
+                console.log("[Animation Script V2] Welcome screen not found or is hidden."); 
                 return; 
             }
 
@@ -103,89 +86,103 @@
             const contactInfoEl = welcomeScreen.querySelector('.contact-info');
 
             if (!mainHeadlineEl || !typedLineContainerEl || !taglineEl || !guidanceEl || !arrowIconEl || !devHintEl || !contactInfoEl) {
-                 console.error("[Animation Script - Simple] One or more animation target elements not found! Aborting.", {
+                 console.error("[Animation Script V2] One or more animation target elements not found! Aborting.", {
                     mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl
                  });
-                 gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, devHintEl, contactInfoEl].filter(Boolean), { opacity: 1, y: 0, x:0 });
+                 gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl].filter(Boolean), { opacity: 1, y: 0, x:0, scale: 1 });
                  return;
             }
 
-            console.log("[Animation Script - Simple] Elements found, starting GSAP timeline setup...");
+            console.log("[Animation Script V2] Elements found, starting GSAP timeline setup...");
 
             const headlineText = "Portfolio Hub";
             mainHeadlineEl.innerHTML = ''; 
-            headlineText.split("").forEach(letter => {
+            const letters = headlineText.split("").map(letter => {
                 const span = document.createElement('span');
                 span.textContent = letter === " " ? "\u00A0" : letter;
                 span.classList.add('letter');
                 mainHeadlineEl.appendChild(span);
+                return span;
             });
 
-            gsap.killTweensOf([mainHeadlineEl, mainHeadlineEl.querySelectorAll('.letter'), typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl]);
+            gsap.killTweensOf([mainHeadlineEl, letters, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl]);
                 
-            const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+            const tl = gsap.timeline({ defaults: { ease: "power2.out", force3D: true } }); // Added force3D
 
-            gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl], { opacity: 0, y: 0, x:0 }); 
+            // Ensure initial states are set (opacity 0, and any transforms you are animating from)
+            gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl], { opacity: 0, y:0, x:0, scale:1 });
+            gsap.set(letters, {opacity:0, y:60}); // Specifically for letter entrance
 
-            tl.addLabel("start", "+=0.2"); 
+            tl.addLabel("start", "+=0.3"); // Slightly longer initial delay for everything to settle
 
-            tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }, "start") 
-              .from(mainHeadlineEl.querySelectorAll('.letter'), {
-                y: 60, 
-                opacity: 0,
-                stagger: 0.06,
+            // Headline animation
+            tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }, "start") // Make container visible
+              .to(letters, { // Animate letters to their final state
+                y: 0, 
+                opacity: 1,
+                stagger: 0.07, // Slightly increased stagger
+                duration: 0.6, // Slightly longer duration for smoother feel
+                ease: "back.out(1.7)", // A bouncier ease for entry
               }, "start"); 
 
-            tl.to(typedLineContainerEl, { opacity: 1, y: 0, duration: 0.8 }, "-=0.2") 
-              .from(typedLineContainerEl, {y: 20}, "<");
+            // Simple fade/slide for the 'typed' line container
+            tl.to(typedLineContainerEl, { opacity: 1, y: 0, duration: 0.7 }, "-=0.4") // Overlap with end of headline
+              .from(typedLineContainerEl, {y: 25}, "<");
 
-            const timingAfterHeadline = ">"; 
+            const timingAfterPrev = ">-0.2"; // Overlap slightly with previous animation
 
-            tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, timingAfterHeadline)
+            tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, timingAfterPrev)
               .from(taglineEl, { y: 25 }, "<"); 
               
             tl.to(guidanceEl, { opacity: 1, y: 0, duration: 0.6 }, "-=0.5")
               .from(guidanceEl, {y:20}, "<");
 
-            tl.to(arrowIconEl, {opacity:1, duration: 0.4}, "<") 
+            // Smoother arrow animation: Gentle pulse (scale and opacity)
+            tl.to(arrowIconEl, {opacity: 0.7, duration: 0.5}, "<") // Fade arrow in
               .fromTo(arrowIconEl, 
-                    { x: 0, opacity: 1 }, 
-                    { x: 10, duration: 0.7, repeat: -1, yoyo: true, ease: "sine.inOut" }, 
-                    ">-0.2" 
+                    { scale: 1, opacity: 0.7 }, 
+                    { 
+                        scale: 1.15, 
+                        opacity: 1,
+                        duration: 1.2, // Slower pulse
+                        repeat: -1, 
+                        yoyo: true, 
+                        ease: "sine.inOut"
+                    }, 
+                    ">-0.3" 
                ); 
 
+            // Footer info animation - ensure its initial state is also set
             gsap.set([devHintEl, contactInfoEl], { y: 15, opacity:0 }); 
             gsap.to([devHintEl, contactInfoEl], { 
                 opacity: 1,
                 y: 0,       
                 duration: 1,
-                delay: tl.duration() > 0.1 ? tl.duration() - 0.5 : 2.0, 
+                delay: tl.duration() > 0.1 ? tl.duration() - 0.6 : 2.2, // Adjusted delay further
                 stagger: 0.3,
                 ease: "power1.inOut",
                 overwrite: "auto" 
             });
-            console.log("[Animation Script - Simple] Animation setup complete."); 
+            console.log("[Animation Script V2] Animation setup complete."); 
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("[DOM Ready] Initializing Particles."); 
+            console.log("[DOM Ready V2] Initializing Particles."); 
             const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-             const particlesConfig = { /* Particle config remains the same */ 
+             const particlesConfig = { 
                 autoPlay: true, background: {}, fpsLimit: 60, interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 70, duration: 0.4, speed: 0.5 } }, }, particles: { color: { value: isDarkMode ? "#cccccc" : "#555555" }, links: { color: { value: isDarkMode ? "#777777" : "#aaaaaa" }, distance: 160, enable: true, opacity: isDarkMode ? 0.3 : 0.4, width: 1, }, move: { direction: "none", enable: true, outModes: { default: "out" }, random: true, speed: 0.8, straight: false, }, number: { density: { enable: true, area: 800 }, value: 35, }, opacity: { value: {min: 0.2, max: 0.6} }, shape: { type: "circle" }, size: { value: { min: 1, max: 2.5 } }, }, detectRetina: true,
             };
             if (document.getElementById("tsparticles-bg")) {
                  tsParticles.load({ id: "tsparticles-bg", options: particlesConfig }).then(container => {
-                    console.log("[DOM Ready] tsParticles loaded successfully.", container ? container.id : 'no container obj'); 
+                    console.log("[DOM Ready V2] tsParticles loaded successfully.", container ? container.id : 'no container obj'); 
                  }).catch(error => {
-                    console.error("[DOM Ready] tsParticles failed to load:", error); 
+                    console.error("[DOM Ready V2] tsParticles failed to load:", error); 
                  });
             }
             
              runWelcomeAnimations(); 
              window.runWelcomeAnimations = runWelcomeAnimations;
         });
-
     </script>
-
 </body>
 </html>

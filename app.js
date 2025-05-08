@@ -6,11 +6,11 @@ import { basePath } from './config.js';
 import {
     showError,
     hideError,
-    showWelcomeScreen, // Make sure ui.js exports this
-    hideWelcomeScreen, // Make sure ui.js exports this
+    showWelcomeScreen, 
+    hideWelcomeScreen, 
     applyTheme,
-    displayContentFrame, // Make sure ui.js exports this
-    setFrameContent,    // Make sure ui.js exports this
+    displayContentFrame, 
+    setFrameContent,    
     toggleSidebarCollapse,
     initializeSidebarState
 } from './ui.js';
@@ -29,9 +29,6 @@ let projects = [];
 let currentProject = null;
 let isLoading = false;
 
-/**
- * Clears the iframe source and associated handlers safely.
- */
 function clearIframe() {
     if (contentFrame) {
         console.log("[clearIframe] Clearing iframe content and handlers."); 
@@ -44,10 +41,6 @@ function clearIframe() {
     }
 }
 
-
-/**
- * Recursively searches the nested projects array for a project by its ID.
- */
 function findProjectById(items, id) {
     if (!items || !Array.isArray(items)) { return null; }
     for (const item of items) {
@@ -60,9 +53,6 @@ function findProjectById(items, id) {
     return null;
 }
 
-/**
- * Extracts the project route part from the full pathname.
- */
 function getRouteFromPathname() {
     const path = window.location.pathname;
     const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
@@ -74,22 +64,19 @@ function getRouteFromPathname() {
     return null;
 }
 
-/**
- * Loads and displays the selected project's content or welcome screen.
- */
 async function loadProject(projectId) {
      if (isLoading) {
           console.log(`Already loading, aborting request for: "${projectId || 'welcome screen'}"`);
           return;
      }
      isLoading = true; 
-     clearIframe(); // Clear iframe early
+     clearIframe(); 
 
      if (!projectId) {
           console.log("[loadProject] No project ID, showing welcome screen.");
           hideError(); 
-          if(welcomeScreenElement) showWelcomeScreen(); // Make welcome screen visible
-          displayContentFrame(false); // Hide iframe
+          if(welcomeScreenElement) showWelcomeScreen(); 
+          displayContentFrame(false); 
           currentProject = null;
           updateNavActiveState(null); 
           
@@ -151,9 +138,6 @@ async function loadProject(projectId) {
      }
 }
 
-/**
- * Handles route changes.
- */
 function handleRouteChange() {
     const routePart = getRouteFromPathname();
     const projectId = routePart ? `proj.${routePart}` : null;
@@ -176,7 +160,6 @@ function handleRouteChange() {
         loadProject(projectId);
     } else {
         console.log(`[handleRouteChange] Route matches current state (${projectId || 'welcome screen'}), no new load needed.`);
-        // Consistency checks
         if (!projectId && welcomeScreenElement && welcomeScreenElement.classList.contains('hidden')) {
              console.log("[handleRouteChange] Consistency check: Forcing welcome screen visible."); 
              if (contentFrame) displayContentFrame(false);
@@ -190,9 +173,6 @@ function handleRouteChange() {
     }
 }
 
-/**
- * Toggles between light and dark themes.
- */
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -200,9 +180,6 @@ function toggleTheme() {
     applyTheme(newTheme); 
 }
 
-/**
- * Initializes the application.
- */
 async function initialize() {
     console.log('[initialize] Initializing application...');
     isLoading = true;
