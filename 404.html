@@ -3,222 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Showcase</title>
-    <base href="/wobble/"> <!-- Ensure this is correct for your GH pages setup -->
-    <link rel="stylesheet" href="style.css">
+    <title>Page Not Found</title>
+    <base href="/wobble/"> <!-- This ensures the link back to home works correctly -->
+    <link rel="stylesheet" href="style.css"> <!-- Optional: Link to your main styles for consistency -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
-        /* Basic styles for pre-JS load (prevents flash of unstyled content) */
-        #welcome-screen .welcome-content > * { opacity: 0; } /* Initially hide elements for GSAP */
-        .letter { display: inline-block; } /* For GSAP letter animation */
+        body {
+            font-family: var(--font-family, system-ui, sans-serif);
+            color: var(--text-color, #212529);
+            background-color: var(--bg-color, #ffffff);
+            text-align: center;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        [data-theme="dark"] body {
+             color: var(--text-color, #e0e0e0);
+             background-color: var(--bg-color, #121212);
+        }
+        .notfound-container {
+            max-width: 600px;
+        }
+        .notfound-title {
+            font-size: clamp(2rem, 10vw, 4rem);
+            color: var(--accent-color, #007bff);
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+        .notfound-message {
+            font-size: clamp(1rem, 4vw, 1.25rem);
+            margin-bottom: 1.5em;
+        }
+        .notfound-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--accent-color, #007bff);
+            color: white; /* Text on button usually white */
+            text-decoration: none;
+            border-radius: var(--border-radius-sm, 4px);
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .notfound-link:hover {
+            background-color: var(--accent-color-dark, #0056b3); /* You'd define --accent-color-dark or it uses a generic darker shade */
+        }
+        /* If your main style.css defines these variables, it will use them */
+        [data-theme="dark"] .notfound-link {
+             background-color: var(--accent-color, #64b5f6);
+        }
+        [data-theme="dark"] .notfound-link:hover {
+             background-color: var(--accent-color-dark, #4dabf5); /* Example darker accent for dark theme */
+        }
     </style>
 </head>
 <body>
-    <div id="app">
-        <aside id="sidebar">
-            <header>
-                <h1>My Projects</h1>
-                <button id="theme-toggle" class="theme-button">
-                    <!-- Sun Icon SVG -->
-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" /></svg>
-                    <!-- Moon Icon SVG -->
-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd" /></svg>
-                </button>
-                <button id="sidebar-toggle" class="sidebar-toggle-button" title="Collapse sidebar">
-                    <!-- Collapse Icon SVG -->
-                    <svg class="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    <!-- Expand Icon SVG -->
-                    <svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </button>
-            </header>
-            <nav id="project-nav"></nav>
-        </aside>
-        <main id="content-area">
-            <!-- tsParticles canvas -->
-            <div id="tsparticles-bg"></div>
-
-            <div id="welcome-screen">
-                <div class="welcome-content">
-                    <h1 class="main-headline">
-                        <!-- Letters for "Portfolio Hub" will be injected here by JS for GSAP -->
-                    </h1>
-                    <p class="typed-line-container">
-                        <span id="typed-line-element"></span> <!-- Element for Typed.js-like effect -->
-                    </p>
-                    <p class="tagline">Innovating with code, one project at a time.</p>
-
-                    <div class="guidance">
-                        <span>Explore the Work</span>
-                        <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="welcome-footer-info">
-                    <p class="dev-hint">Site under development. Folders like <code>proj.*</code> and <code>cat.*</code> in <code>pages/</code> define content.</p>
-                    <p class="contact-info">Contact: <a href="mailto:junovhs@gmail.com">junovhs@gmail.com</a></p>
-                </div>
-            </div>
-            <iframe id="content-frame" title="Project Content"></iframe>
-        </main>
+    <div class="notfound-container">
+        <h1 class="notfound-title">404</h1>
+        <p class="notfound-message">Oops! The page you're looking for wasn't found.</p>
+        <p><a href="./" class="notfound-link">Return to Showcase</a></p>
     </div>
-
-    <!-- Importmap for dynamic module loading (like marked.js) -->
-    <script type="importmap">
-    { "imports": { "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.1/+esm" } }
-    </script>
-
-    <!-- tsParticles (successor to particles.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
-    
-    <!-- GSAP (Core) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-    <!-- Typed.js (Optional, for the typing effect) -->
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-
-
-    <!-- Your App Scripts -->
-    <script type="module" src="config.js"></script>
-    <script type="module" src="githubApi.js"></script>
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="nav.js"></script> 
-    <script type="module" src="app.js"></script>
-
-
-    <!-- Inline script for particles and welcome screen animations -->
+    <!-- Simple theme toggle script for 404 page consistency -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- tsParticles Configuration & Initialization ---
-            const particlesConfig = {
-                autoPlay: true,
-                background: {
-                    // CSS on #tsparticles-bg handles actual background color
-                },
-                fpsLimit: 60,
-                interactivity: {
-                    events: {
-                        onHover: { enable: true, mode: "repulse" },
-                    },
-                    modes: {
-                        repulse: { distance: 60, duration: 0.4 },
-                    },
-                },
-                particles: {
-                    color: { value: "#777777" }, 
-                    links: {
-                        color: "#555555", 
-                        distance: 150,
-                        enable: true,
-                        opacity: 0.2, 
-                        width: 1,
-                    },
-                    move: {
-                        direction: "none",
-                        enable: true,
-                        outModes: { default: "bounce" },
-                        random: true, 
-                        speed: 0.5,    
-                        straight: false,
-                    },
-                    number: {
-                        density: { enable: true, area: 1000 }, 
-                        value: 40, 
-                    },
-                    opacity: { value: 0.3 }, 
-                    shape: { type: "circle" },
-                    size: { value: { min: 1, max: 3 } }, 
-                },
-                detectRetina: true,
-            };
-            if (document.getElementById("tsparticles-bg")) {
-                 tsParticles.load({ id: "tsparticles-bg", options: particlesConfig });
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const themeToApply = savedTheme || (prefersDark ? 'dark' : 'light');
+            if (document.documentElement) {
+                document.documentElement.setAttribute('data-theme', themeToApply);
             }
-
-            // --- Welcome Screen GSAP Animations & Typed.js ---
-            const welcomeScreen = document.getElementById('welcome-screen');
-            if (welcomeScreen && !welcomeScreen.classList.contains('hidden')) { 
-                const mainHeadlineEl = document.querySelector('.main-headline');
-                const typedLineEl = document.getElementById('typed-line-element');
-                const taglineEl = document.querySelector('.tagline');
-                const guidanceEl = document.querySelector('.guidance');
-                const arrowIconEl = document.querySelector('.guidance .arrow-icon');
-                const devHintEl = document.querySelector('.dev-hint');
-                const contactInfoEl = document.querySelector('.contact-info');
-
-                const headlineText = "Portfolio Hub"; // Generic Main Headline Text
-                if(mainHeadlineEl) { // Check if element exists
-                    headlineText.split("").forEach(letter => {
-                        const span = document.createElement('span');
-                        span.textContent = letter === " " ? "\u00A0" : letter;
-                        span.classList.add('letter');
-                        mainHeadlineEl.appendChild(span);
-                    });
-                }
-                
-                const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-
-                if(mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) {
-                    tl.from(".main-headline .letter", {
-                        y: 50,
-                        opacity: 0,
-                        stagger: 0.05,
-                        delay: 0.5 
-                    });
-                }
-                
-                if (typedLineEl) {
-                    tl.add(() => { 
-                        new Typed('#typed-line-element', {
-                            strings: ['A dynamic collection of projects.'], // Generic Typed Line
-                            typeSpeed: 50,
-                            startDelay: 200, 
-                            showCursor: true,
-                            cursorChar: '_',
-                            onComplete: () => {
-                                tl.play(); 
-                            }
-                        });
-                    }, (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">" : "+=0.5"); // Adjust timing based on previous animation
-                    tl.pause(); 
-                }
-                
-                if(taglineEl) {
-                    tl.from(taglineEl, { opacity: 0, y: 20, duration: 0.8 }, typedLineEl ? "-=0.2" : (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">+0.5" : "+=0.5");
-                }
-                if(guidanceEl) {
-                  tl.from(guidanceEl, { opacity: 0, y: 20, duration: 0.6 }, "-=0.4");
-                }
-                if(arrowIconEl) {
-                  tl.from(arrowIconEl, { 
-                    opacity: 0, 
-                    x: -20, 
-                    duration: 0.5, 
-                    repeat: -1, 
-                    yoyo: true, 
-                    ease: "sine.inOut",
-                    delay: 0.2 
-                  }, "<"); 
-                }
-
-                if(devHintEl && contactInfoEl) {
-                    gsap.from([devHintEl, contactInfoEl], {
-                        opacity: 0,
-                        y: 10,
-                        duration: 1,
-                        delay: tl.duration() > 0.1 ? tl.duration() -1 : 1.5, // Ensure delay isn't negative if timeline is very short
-                        stagger: 0.3,
-                        ease: "power1.inOut"
-                    });
-                } else { // Fallback if elements not found, ensures content is visible.
-                    if (devHintEl) gsap.set(devHintEl, {opacity: 1, y: 0});
-                    if (contactInfoEl) gsap.set(contactInfoEl, {opacity: 1, y: 0});
-                }
-            } else if (welcomeScreen) { // If welcome screen is hidden but exists, ensure content is technically visible if JS fails.
-                gsap.set(welcomeScreen.querySelectorAll('.welcome-content > *, .welcome-footer-info > *'), {opacity: 1, y: 0, x:0});
-            }
-        });
+        })();
     </script>
-
 </body>
 </html>
