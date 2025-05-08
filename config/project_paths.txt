@@ -2,10 +2,16 @@
 # Each line should contain the full relative path from the repository root
 # to a *project* folder (must end in /proj.*).
 # Lines starting with # and empty lines are ignored.
+# Categories are derived from the path structure.
 
-pages/proj.example-html
-pages/proj.example-markdown
-pages/proj.Youtube-strategy
-pages/proj.deduplicator
-pages/proj.list-cleaning
-pages/proj.deal-selection
+# TravelPerks > Tools
+pages/cat.travelperks/cat.tools/proj.deal-selection
+pages/cat.travelperks/cat.tools/proj.deduplicator
+
+# TravelPerks > Presentations
+pages/cat.travelperks/cat.presentations/proj.list-cleaning
+pages/cat.travelperks/cat.presentations/proj.youtube-strategy
+
+# Any other top-level projects or other categories can remain or be added
+# For example, if you had proj.example-html directly under pages:
+# pages/proj.example-html
