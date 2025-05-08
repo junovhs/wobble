@@ -8,3 +8,4 @@ pages/proj.example-markdown
 pages/proj.Youtube-strategy
 pages/proj.deduplicator
 pages/proj.list-cleaning
+pages/proj.deal-selection
