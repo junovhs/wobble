@@ -9,8 +9,11 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
         /* Basic styles for pre-JS load (prevents flash of unstyled content) */
-        #welcome-screen .welcome-content > * { opacity: 0; } /* Initially hide elements for GSAP */
-        .letter { display: inline-block; } /* For GSAP letter animation */
+        /* #welcome-screen .welcome-content > * { opacity: 0; } /* REMOVING THIS for debugging */
+        .letter { display: inline-block; } 
+        /* ADDING a debug style to force visibility if needed */
+        /* Uncomment below to test if text is just hidden by opacity/transform */
+         /* .welcome-content > * { opacity: 1 !important; transform: none !important; } */
     </style>
 </head>
 <body>
@@ -37,13 +40,13 @@
             <!-- tsParticles canvas -->
             <div id="tsparticles-bg"></div>
 
-            <div id="welcome-screen">
+            <div id="welcome-screen"> <!-- Initially potentially hidden via class in ui.js -->
                 <div class="welcome-content">
                     <h1 class="main-headline">
-                        <!-- Letters for "Portfolio Hub" will be injected here by JS for GSAP -->
+                        <!-- Letters for "Portfolio Hub" injected here by JS -->
                     </h1>
                     <p class="typed-line-container">
-                        <span id="typed-line-element"></span> <!-- Element for Typed.js-like effect -->
+                        <span id="typed-line-element"></span> 
                     </p>
                     <p class="tagline">Innovating with code, one project at a time.</p>
 
@@ -59,7 +62,7 @@
                     <p class="contact-info">Contact: <a href="mailto:junovhs@gmail.com">junovhs@gmail.com</a></p>
                 </div>
             </div>
-            <iframe id="content-frame" title="Project Content"></iframe>
+            <iframe id="content-frame" title="Project Content" class="hidden"></iframe> <!-- Assume frame starts hidden -->
         </main>
     </div>
 
@@ -68,176 +71,175 @@
     { "imports": { "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.1/+esm" } }
     </script>
 
-    <!-- tsParticles (successor to particles.js) -->
+    <!-- tsParticles -->
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
-    
-    <!-- GSAP (Core) -->
+    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-    <!-- Typed.js (Optional, for the typing effect) -->
+    <!-- Typed.js -->
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-
 
     <!-- Your App Scripts -->
     <script type="module" src="config.js"></script>
     <script type="module" src="githubApi.js"></script>
     <script type="module" src="ui.js"></script>
-    <script type="module" src="nav.js"></script> 
+    <script type="module" src="nav.js"></script>
     <script type="module" src="app.js"></script>
 
 
     <!-- Inline script for particles and welcome screen animations -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        // Function to run animations, can be called when welcome screen is shown
+        function runWelcomeAnimations() {
+            console.log("[Animation Script] Attempting to run animations..."); // ADDED LOG
+            
+            const welcomeScreen = document.getElementById('welcome-screen');
+            if (!welcomeScreen || welcomeScreen.classList.contains('hidden')) {
+                console.log("[Animation Script] Welcome screen not found or is hidden. Aborting animations."); // ADDED LOG
+                return; 
+            }
 
-            // --- tsParticles Configuration & Initialization ---
-            const particlesConfig = {
-                autoPlay: true,
-                background: { /* CSS handles background color */ },
-                fpsLimit: 60,
-                interactivity: {
-                    events: { onHover: { enable: true, mode: "repulse" } },
-                    modes: { repulse: { distance: 70, duration: 0.4, speed: 0.5 } }, 
-                },
-                particles: {
-                    color: { value: isDarkMode ? "#cccccc" : "#555555" }, 
-                    links: {
-                        color: { value: isDarkMode ? "#777777" : "#aaaaaa" },
-                        distance: 160,
-                        enable: true,
-                        opacity: isDarkMode ? 0.3 : 0.4, 
-                        width: 1,
-                    },
-                    move: {
-                        direction: "none",
-                        enable: true,
-                        outModes: { default: "out" }, 
-                        random: true,
-                        speed: 0.8, 
-                        straight: false,
-                    },
-                    number: {
-                        density: { enable: true, area: 800 }, 
-                        value: 35, 
-                    },
-                    opacity: { value: {min: 0.2, max: 0.6} }, 
-                    shape: { type: "circle" },
-                    size: { value: { min: 1, max: 2.5 } }, 
-                },
-                detectRetina: true,
+            const mainHeadlineEl = welcomeScreen.querySelector('.main-headline');
+            const typedLineEl = welcomeScreen.querySelector('#typed-line-element');
+            const taglineEl = welcomeScreen.querySelector('.tagline');
+            const guidanceEl = welcomeScreen.querySelector('.guidance');
+            const arrowIconEl = welcomeScreen.querySelector('.guidance .arrow-icon');
+            const devHintEl = welcomeScreen.querySelector('.dev-hint');
+            const contactInfoEl = welcomeScreen.querySelector('.contact-info');
+
+            // Check if elements exist
+            if (!mainHeadlineEl || !typedLineEl || !taglineEl || !guidanceEl || !arrowIconEl || !devHintEl || !contactInfoEl) {
+                 console.error("[Animation Script] One or more animation target elements not found! Aborting.", {
+                    mainHeadlineEl, typedLineEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl
+                 });
+                 // Ensure content is visible even if animations fail due to missing elements
+                 gsap.set([mainHeadlineEl, typedLineEl?.closest('.typed-line-container'), taglineEl, guidanceEl, devHintEl, contactInfoEl].filter(Boolean), { opacity: 1, y: 0 });
+                 return;
+            }
+
+            // --- Proceed with Animations ---
+            console.log("[Animation Script] Elements found, starting GSAP timeline setup..."); // ADDED LOG
+
+            const headlineText = "Portfolio Hub";
+            mainHeadlineEl.innerHTML = ''; // Clear previous letters if any
+            headlineText.split("").forEach(letter => {
+                const span = document.createElement('span');
+                span.textContent = letter === " " ? "\u00A0" : letter;
+                span.classList.add('letter');
+                mainHeadlineEl.appendChild(span);
+            });
+
+            // Kill previous tweens on these elements to prevent conflicts if function runs again
+            gsap.killTweensOf([mainHeadlineEl, mainHeadlineEl.querySelectorAll('.letter'), typedLineEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl]);
+                
+            const tl = gsap.timeline({ 
+                defaults: { ease: "power2.out" },
+                onComplete: () => { 
+                     console.log("[Animation Script] Main timeline complete."); // ADDED LOG
+                     if (typedLineEl && typedLineEl.textContent.length < 5) { 
+                        gsap.set(typedLineEl.closest('.typed-line-container'), { opacity: 1 }); 
+                     }
+                }
+            });
+
+            gsap.set([mainHeadlineEl, typedLineEl?.closest('.typed-line-container'), taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl], { opacity: 0, y: 0, x:0 }); // Reset initial state for animations
+
+            tl.addLabel("start", "+=0.2"); // Add initial delay label
+
+            tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }, "start") 
+              .from(mainHeadlineEl.querySelectorAll('.letter'), {
+                y: 60, 
+                opacity: 0,
+                stagger: 0.06,
+              }, "start"); // Start letter animation at the same time headline becomes visible
+
+            let typedInstance = null;
+            if (typedLineEl) {
+                // Clear previous typed instance if exists (necessary if runWelcomeAnimations is called multiple times)
+                if (typedLineEl.typedInstance) {
+                   typedLineEl.typedInstance.destroy();
+                }
+                typedLineEl.innerHTML = ''; // Clear previous typed content
+                gsap.set(typedLineEl.closest('.typed-line-container'), {opacity: 1}); 
+                tl.add(() => { 
+                    console.log("[Animation Script] Initializing Typed.js..."); // ADDED LOG
+                    typedInstance = new Typed('#typed-line-element', {
+                        strings: ['A dynamic collection of projects.'],
+                        typeSpeed: 45,
+                        startDelay: 100, 
+                        showCursor: true,
+                        cursorChar: '_',
+                        onComplete: (self) => {
+                            console.log("[Animation Script] Typed.js completed."); // ADDED LOG
+                            setTimeout(() => { if(self && self.cursor) self.cursor.remove(); }, 1000); 
+                            tl.play(); 
+                        },
+                        onDestroy: () => { // Cleanup reference
+                           if(typedLineEl.typedInstance === typedInstance) {
+                               typedLineEl.typedInstance = null;
+                           }
+                        }
+                    });
+                    typedLineEl.typedInstance = typedInstance; // Store instance
+                }, "-=0.3"); 
+                tl.pause(); 
+            } else {
+                 console.warn("[Animation Script] Typed line element not found.");
+            }
+            
+            // Subsequent animations start relative to the end of typing OR headline animation
+            const timingAfterTyping = typedInstance ? ">" : "-=0.2"; // Adjust based on whether typed ran
+
+            tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, timingAfterTyping)
+              .from(taglineEl, { y: 25 }, "<"); 
+              
+            tl.to(guidanceEl, { opacity: 1, y: 0, duration: 0.6 }, "-=0.5")
+              .from(guidanceEl, {y:20}, "<");
+
+            tl.to(arrowIconEl, {opacity:1, duration: 0.4}, "<") 
+              .fromTo(arrowIconEl, 
+                    { x: 0, opacity: 1 }, 
+                    { x: 10, duration: 0.7, repeat: -1, yoyo: true, ease: "sine.inOut" }, 
+                    ">-0.2" 
+               ); 
+
+            // Footer info - using a separate tween for simplicity
+            gsap.set([devHintEl, contactInfoEl], { y: 15, opacity:0 }); // Set initial state for footer
+            gsap.to([devHintEl, contactInfoEl], { 
+                opacity: 1,
+                y: 0,       
+                duration: 1,
+                // Delay based on main timeline duration *if* it ran, otherwise a fixed delay
+                delay: tl.duration() > 0.1 ? tl.duration() - 0.5 : 2.5, 
+                stagger: 0.3,
+                ease: "power1.inOut",
+                overwrite: "auto" // Prevent conflicts if run multiple times
+            });
+             console.log("[Animation Script] Animation setup complete."); // ADDED LOG
+        }
+
+        // --- tsParticles Initialization --- (Runs once)
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("[DOM Ready] Initializing Particles."); // ADDED LOG
+            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+             const particlesConfig = { /* ... YOUR EXISTING PARTICLE CONFIG ... */ 
+                autoPlay: true, background: {}, fpsLimit: 60, interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 70, duration: 0.4, speed: 0.5 } }, }, particles: { color: { value: isDarkMode ? "#cccccc" : "#555555" }, links: { color: { value: isDarkMode ? "#777777" : "#aaaaaa" }, distance: 160, enable: true, opacity: isDarkMode ? 0.3 : 0.4, width: 1, }, move: { direction: "none", enable: true, outModes: { default: "out" }, random: true, speed: 0.8, straight: false, }, number: { density: { enable: true, area: 800 }, value: 35, }, opacity: { value: {min: 0.2, max: 0.6} }, shape: { type: "circle" }, size: { value: { min: 1, max: 2.5 } }, }, detectRetina: true,
             };
             if (document.getElementById("tsparticles-bg")) {
-                 tsParticles.load({ id: "tsparticles-bg", options: particlesConfig });
+                 tsParticles.load({ id: "tsparticles-bg", options: particlesConfig }).then(container => {
+                    console.log("[DOM Ready] tsParticles loaded successfully.", container); // ADDED LOG
+                 }).catch(error => {
+                    console.error("[DOM Ready] tsParticles failed to load:", error); // ADDED ERROR CATCH
+                 });
             }
+             // Attempt to run animations immediately after particle setup
+            // This might run BEFORE app.js decides final welcome screen state, 
+            // which is why runWelcomeAnimations checks visibility.
+             runWelcomeAnimations(); 
 
-            // --- Welcome Screen GSAP Animations & Typed.js ---
-            const welcomeScreen = document.getElementById('welcome-screen');
-            
-            if (welcomeScreen && !welcomeScreen.classList.contains('hidden')) { 
-                const mainHeadlineEl = welcomeScreen.querySelector('.main-headline');
-                const typedLineEl = welcomeScreen.querySelector('#typed-line-element');
-                const taglineEl = welcomeScreen.querySelector('.tagline');
-                const guidanceEl = welcomeScreen.querySelector('.guidance');
-                const arrowIconEl = welcomeScreen.querySelector('.guidance .arrow-icon');
-                const devHintEl = welcomeScreen.querySelector('.dev-hint');
-                const contactInfoEl = welcomeScreen.querySelector('.contact-info');
-
-                const headlineText = "Portfolio Hub";
-                if (mainHeadlineEl) {
-                    mainHeadlineEl.innerHTML = ''; 
-                    headlineText.split("").forEach(letter => {
-                        const span = document.createElement('span');
-                        span.textContent = letter === " " ? "\u00A0" : letter;
-                        span.classList.add('letter');
-                        mainHeadlineEl.appendChild(span);
-                    });
-                } else {
-                    console.error("GSAP Init Error: '.main-headline' element not found.");
-                }
-                
-                const tl = gsap.timeline({ 
-                    defaults: { ease: "power2.out" },
-                    onComplete: () => { 
-                        if (typedLineEl && typedLineEl.textContent.length < 5) { 
-                            gsap.set(typedLineEl.closest('.typed-line-container'), { opacity: 1 }); 
-                        }
-                    }
-                });
-
-                gsap.set([mainHeadlineEl, typedLineEl?.closest('.typed-line-container'), taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl], { opacity: 0 });
-
-
-                if (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) {
-                    tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }) 
-                      .from(mainHeadlineEl.querySelectorAll('.letter'), {
-                        y: 60, 
-                        opacity: 0,
-                        stagger: 0.06,
-                        delay: 0.3 
-                    });
-                } else {
-                    tl.addLabel("headlineDone"); 
-                }
-                
-                let typedInstance = null;
-                if (typedLineEl) {
-                    gsap.set(typedLineEl.closest('.typed-line-container'), {opacity: 1}); 
-                    tl.add(() => { 
-                        typedInstance = new Typed('#typed-line-element', {
-                            strings: ['A dynamic collection of projects.'],
-                            typeSpeed: 45,
-                            startDelay: 100, 
-                            showCursor: true,
-                            cursorChar: '_',
-                            onComplete: (self) => {
-                                setTimeout(() => { if(self && self.cursor) self.cursor.remove(); }, 1000); 
-                                tl.play(); 
-                            }
-                        });
-                    }, (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? "-=0.3" : "+=0.3"); 
-                    tl.pause(); 
-                }
-                
-                if (taglineEl) {
-                    tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, typedInstance ? ">" : (mainHeadlineEl && mainHeadlineEl.querySelectorAll('.letter').length > 0) ? ">+0.3" : "+=0.3")
-                      .from(taglineEl, { y: 25 }, "<"); // Animate from y:25 to y:0 for the .to()
-                }
-                if (guidanceEl) {
-                  tl.to(guidanceEl, { opacity: 1, y: 0, duration: 0.6 }, "-=0.5")
-                    .from(guidanceEl, {y:20}, "<");
-                }
-                if (arrowIconEl) {
-                  tl.to(arrowIconEl, {opacity:1, duration: 0.4}, "<") 
-                    .fromTo(arrowIconEl, 
-                        { x: 0, opacity: 1 }, 
-                        { 
-                            x: 10, 
-                            duration: 0.7, 
-                            repeat: -1, 
-                            yoyo: true, 
-                            ease: "sine.inOut"
-                        }, 
-                        ">-0.2" 
-                    ); 
-                }
-
-                if (devHintEl && contactInfoEl) {
-                    // Initial state for .from()
-                    gsap.set([devHintEl, contactInfoEl], { y: 15, opacity:0 }); 
-                    gsap.to([devHintEl, contactInfoEl], { // Animate .to() visible state
-                        opacity: 1,
-                        y: 0,       
-                        duration: 1,
-                        delay: tl.duration() > 0.1 ? tl.duration() - 0.8 : 2.0, 
-                        stagger: 0.3,
-                        ease: "power1.inOut"
-                    });
-                }
-            } else if (welcomeScreen) { 
-                console.log("Welcome screen is present but conditions not met for animation (e.g., screen hidden).");
-            }
+            // Expose the function globally if needed for app.js to call it, OR use custom events
+             window.runWelcomeAnimations = runWelcomeAnimations;
         });
+
     </script>
 
 </body>

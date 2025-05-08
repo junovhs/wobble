@@ -60,7 +60,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 50; /* Behind welcome content and sidebar */
+  z-index: 50; 
   background-color: var(--bg-color);
 }
 [data-theme="dark"] #tsparticles-bg {
@@ -103,7 +103,7 @@ html, body {
   overflow: hidden;
   flex-grow: 1;
   min-width: 0;
-  cursor: pointer; /* Added for clickable title */
+  cursor: pointer; 
 }
 .theme-button {
   background: none;
@@ -224,7 +224,7 @@ html, body {
 #welcome-screen {
   position: absolute; 
   top: 0; left: 0; right: 0; bottom: 0; 
-  z-index: 55; /* Above particles, below sidebar potentially when sidebar is overlay on mobile (though not current setup) */
+  z-index: 55; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -236,13 +236,12 @@ html, body {
   background-color: transparent; 
 }
 
-/* Fallback visibility if JS animations fail or for no-JS users */
 .main-headline,
 .typed-line-container,
 .tagline,
 .guidance,
 .welcome-footer-info p {
-  opacity: 1; /* Default to visible, GSAP will manage actual animation states */
+  /* GSAP handles animation including initial opacity */
 }
 
 .welcome-content {
@@ -261,11 +260,9 @@ html, body {
   margin-bottom: 0.4em;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  /* opacity: 0; GSAP will handle visibility */
 }
 .main-headline .letter {
   display: inline-block;
-  /* opacity: 0; GSAP handles this */
 }
 
 .typed-line-container {
@@ -273,7 +270,6 @@ html, body {
   color: var(--text-color);
   margin-bottom: 1.2em; 
   min-height: 1.5em;
-  /* opacity: 0; GSAP handles this */
 }
 .typed-cursor {
   opacity: 1;
@@ -289,7 +285,6 @@ html, body {
   color: var(--text-color);
   margin-bottom: 2em; 
   font-style: italic;
-  /* opacity: 0; GSAP handles this */
 }
 
 .guidance {
@@ -300,14 +295,12 @@ html, body {
   color: var(--text-color);
   cursor: default;
   margin-top: 0.5em; 
-  /* opacity: 0; GSAP handles this */
 }
 .guidance .arrow-icon {
   width: clamp(1.2em, 3vw, 1.4em); 
   height: clamp(1.2em, 3vw, 1.4em);
   margin-left: 0.5em;
   color: var(--accent-color);
-  /* opacity: 0; GSAP handles this */
 }
 
 /* Footer Info */
@@ -326,7 +319,6 @@ html, body {
 }
 .welcome-footer-info p {
   margin: 0 10px;
-  /* opacity: 0; GSAP handles this */
 }
 .welcome-footer-info a {
   color: var(--accent-color);
@@ -343,13 +335,14 @@ html, body {
   font-weight: normal; 
 }
 
-[data-theme="dark"] .main-headline { /* No specific change, accent color should be light */ }
+[data-theme="dark"] .main-headline { /* Accent color already adjusted */ }
 [data-theme="dark"] .typed-line-container,
 [data-theme="dark"] .tagline,
 [data-theme="dark"] .guidance { color: #e0e0e0; }
 [data-theme="dark"] .guidance .arrow-icon { color: var(--accent-color); }
 [data-theme="dark"] .welcome-footer-info { color: #ababab; }
 [data-theme="dark"] .welcome-footer-info a { color: var(--accent-color); }
+[data-theme="dark"] .welcome-footer-info code { background-color: var(--secondary-color); /* Dark theme secondary */ color: var(--text-color); /* Ensure readability */ }
 
 
 #content-frame { 
@@ -404,9 +397,10 @@ html, body {
   }
   #tsparticles-bg { 
       height: 100%; 
+      min-height: 100vh; /* Ensure particles cover screen height on mobile */
   }
   #welcome-screen {
-    min-height: calc(100vh - var(--header-height) - 50px); 
+    min-height: calc(100vh - 50px - 50px); /* Approx screen height minus header/nav heights */
     position: relative; 
   }
   .welcome-footer-info {
@@ -421,8 +415,11 @@ html, body {
     .typed-line-container { font-size: 0.9rem; }
     .tagline { font-size: 0.8rem; }
     .guidance { font-size: 0.8rem; }
+    .welcome-footer-info { font-size: 0.7rem;}
 }
 
 #error-container {
+    position: absolute; /* Ensure error is positioned within content-area */
     z-index: 250 !important; 
+    /* Make sure other error styles (like background, border etc) are defined elsewhere */
 }

@@ -6,11 +6,11 @@ import { basePath } from './config.js';
 import {
     showError,
     hideError,
-    showWelcomeScreen,
-    hideWelcomeScreen,
+    showWelcomeScreen, // Make sure ui.js exports this
+    hideWelcomeScreen, // Make sure ui.js exports this
     applyTheme,
-    displayContentFrame,
-    setFrameContent,
+    displayContentFrame, // Make sure ui.js exports this
+    setFrameContent,    // Make sure ui.js exports this
     toggleSidebarCollapse,
     initializeSidebarState
 } from './ui.js';
@@ -22,12 +22,30 @@ const themeToggleButton = document.getElementById('theme-toggle');
 const sidebarToggleButton = document.getElementById('sidebar-toggle');
 const appElement = document.getElementById('app'); 
 const contentFrame = document.getElementById('content-frame'); 
-const welcomeScreenElement = document.getElementById('welcome-screen'); // Use this consistent name
+const welcomeScreenElement = document.getElementById('welcome-screen'); 
 
 // State
 let projects = []; 
 let currentProject = null;
 let isLoading = false;
+
+/**
+ * Clears the iframe source and associated handlers safely.
+ */
+function clearIframe() {
+    if (contentFrame) {
+        console.log("[clearIframe] Clearing iframe content and handlers."); // ADDED LOG
+        contentFrame.onload = null;
+        contentFrame.onerror = null;
+        // Setting src to 'about:blank' is crucial for stopping potential ongoing loads/scripts
+        contentFrame.src = 'about:blank'; 
+        // Also ensure srcdoc is cleared if it was used
+        contentFrame.removeAttribute('srcdoc'); 
+    } else {
+        console.warn("[clearIframe] Attempted to clear iframe, but contentFrame element not found.");
+    }
+}
+
 
 /**
  * Recursively searches the nested projects array for a project by its ID.
@@ -36,18 +54,12 @@ let isLoading = false;
  * @returns {object|null} The project object or null if not found.
  */
 function findProjectById(items, id) {
-    if (!items || !Array.isArray(items)) {
-        return null; 
-    }
+    if (!items || !Array.isArray(items)) { return null; }
     for (const item of items) {
-        if (item.type === 'project' && item.id === id) {
-            return item;
-        }
+        if (item.type === 'project' && item.id === id) { return item; }
         if (item.type === 'category' && item.children) {
             const foundInChildren = findProjectById(item.children, id);
-            if (foundInChildren) {
-                return foundInChildren;
-            }
+            if (foundInChildren) { return foundInChildren; }
         }
     }
     return null;
@@ -60,13 +72,10 @@ function findProjectById(items, id) {
 function getRouteFromPathname() {
     const path = window.location.pathname;
     const normalizedBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-
     if (path.startsWith(normalizedBasePath)) {
         const routePart = path.substring(normalizedBasePath.length);
         return routePart === '' ? null : routePart;
-    } else if (path === basePath.replace(/\/$/, '')) { 
-        return null;
-    }
+    } else if (path === basePath.replace(/\/$/, '')) { return null; }
     console.warn(`Pathname "${path}" does not match expected base path "${basePath}". Treating as root.`);
     return null;
 }
@@ -80,20 +89,30 @@ async function loadProject(projectId) {
           console.log(`Already loading, aborting request for: "${projectId || 'welcome screen'}"`);
           return;
      }
-     isLoading = true; // Set loading flag early
+     isLoading = true; 
+     // Clear iframe VERY early to prevent late onload events
+     clearIframe();
 
      if (!projectId) {
-          console.log("No project ID, showing welcome screen.");
+          console.log("[loadProject] No project ID, showing welcome screen.");
           hideError(); 
-          if(welcomeScreenElement) showWelcomeScreen(); // Call imported showWelcomeScreen
-          displayContentFrame(false); // Ensure iframe is hidden
+          if(welcomeScreenElement) showWelcomeScreen(); // This should make it visible
+          displayContentFrame(false); // Ensure iframe is hidden via ui.js function
           currentProject = null;
           updateNavActiveState(null); 
-          // If animations are in an inline script triggered by DOMContentLoaded and welcome not hidden, they should run.
-          // If welcome screen has class 'hidden', animations inside it won't auto-run from the inline script's check.
-          // If we need to re-trigger animations here when showing welcome dynamically:
-          // This is complex because inline scripts run once. Consider moving animation logic to a function.
-          // For now, assume the inline script handles its initial run.
+          
+          // ---- NEW: Trigger animations ----
+          // Give the browser a moment for display changes to paint, then run animations
+          requestAnimationFrame(() => { 
+             if (typeof window.runWelcomeAnimations === 'function') {
+                  console.log("[loadProject] Calling runWelcomeAnimations for welcome screen."); // ADDED LOG
+                  window.runWelcomeAnimations(); 
+             } else {
+                  console.warn("[loadProject] runWelcomeAnimations function not found on window."); // ADDED LOG
+             }
+          });
+          // ---- END NEW ----
+          
           isLoading = false;
           return;
      }
@@ -102,7 +121,7 @@ async function loadProject(projectId) {
 
      if (!project || project.type !== 'project') {
           const readableName = projectId.startsWith('proj.') ? projectId.substring(5).replace(/[-_]/g, ' ') : projectId;
-          console.warn(`Project with id "${projectId}" not found or is not a project type.`);
+          console.warn(`[loadProject] Project with id "${projectId}" not found or is not a project type.`);
           showError(`Project '${readableName}' not found.`);
           if(welcomeScreenElement) hideWelcomeScreen(); 
           displayContentFrame(false); 
@@ -112,32 +131,28 @@ async function loadProject(projectId) {
           return;
      }
 
-     if (currentProject?.id === projectId && !contentFrame.classList.contains('hidden')) {
-          console.log(`Project ${projectId} is already loaded and visible.`);
+     if (currentProject?.id === projectId && !contentFrame?.classList.contains('hidden')) {
+          console.log(`[loadProject] Project ${projectId} is already loaded and visible.`);
           if (welcomeScreenElement && !welcomeScreenElement.classList.contains('hidden')) {
-               hideWelcomeScreen(); // Still ensure welcome is hidden
+               hideWelcomeScreen(); 
           }
           isLoading = false;
           return;
      }
 
-     console.log(`Loading project: ${project.name} (ID: ${project.id})`);
+     console.log(`[loadProject] Loading project: ${project.name} (ID: ${project.id})`);
      hideError(); 
      if(welcomeScreenElement) hideWelcomeScreen(); 
-     // Display frame will be handled by setFrameContent after content is ready
+     displayContentFrame(false); // Keep iframe hidden until content loaded
 
      currentProject = project;
      updateNavActiveState(currentProject.id); 
 
      try {
-          // Temporarily hide frame until content is set, to prevent FOUC of old content
-          displayContentFrame(false); 
           const content = await fetchProjectContent(project.path);
-          await setFrameContent(content, project); // This handles showing the frame on success
-          // updateNavActiveState might need to be called after setFrameContent if theming depends on it,
-          // but currently nav theming is just for active link.
+          await setFrameContent(content, project); // Should show frame on success
      } catch (error) {
-          console.error(`Error loading project ${projectId}:`, error);
+          console.error(`[loadProject] Error loading project ${projectId}:`, error);
           showError(`Failed to load project '${project.name}': ${error.message}`);
           displayContentFrame(false);
           currentProject = null; 
@@ -152,28 +167,38 @@ async function loadProject(projectId) {
  */
 function handleRouteChange() {
     const routePart = getRouteFromPathname();
-    console.log(`Route changed/detected: "${routePart || '(root)'}" from path: ${window.location.pathname}`);
     const projectId = routePart ? `proj.${routePart}` : null;
+    console.log(`[handleRouteChange] Route changed/detected: "${routePart || '(root)'}". ProjectId: ${projectId}`); // ADDED LOG
 
-    if (projectId !== (currentProject?.id || null) || 
-        (projectId === null && (currentProject !== null || welcomeScreenElement?.classList.contains('hidden')) ) || // Force welcome if navigating to root and not already on it
-        (projectId !== null && contentFrame?.classList.contains('hidden') && !isLoading ) // Force project load if it should be visible but isn't
-    ) {
+    // Determine if a load is needed
+    let needsLoad = false;
+    if (projectId !== (currentProject?.id || null)) {
+        console.log("[handleRouteChange] Project ID changed."); // ADDED LOG
+        needsLoad = true;
+    } else if (projectId === null && welcomeScreenElement?.classList.contains('hidden') && !isLoading) {
+        console.log("[handleRouteChange] Navigating to root, but welcome screen is hidden."); // ADDED LOG
+        needsLoad = true; // Need to explicitly show welcome
+    } else if (projectId !== null && contentFrame?.classList.contains('hidden') && !isLoading) {
+        console.log("[handleRouteChange] Project ID matches, but content frame is hidden."); // ADDED LOG
+        needsLoad = true; // Need to load project content
+    }
+
+    if (needsLoad) {
+        console.log("[handleRouteChange] Triggering loadProject."); // ADDED LOG
         loadProject(projectId);
     } else {
-        console.log(`Route matches current project (${projectId || 'welcome screen'}), no new load needed.`);
-        // Ensure correct visibility if something went awry
-        if (!projectId && welcomeScreenElement) {
-            if(contentFrame) displayContentFrame(false);
-            showWelcomeScreen();
-        } else if (projectId && contentFrame && welcomeScreenElement) {
-            hideWelcomeScreen();
-            if (!contentFrame.src && !contentFrame.srcdoc && currentProject) { // If frame is blank but should show project
-                 console.log("Frame is blank, attempting to reload current project data.");
-                 loadProject(currentProject.id); // Try to reload it
-            } else if (contentFrame.classList.contains('hidden')) {
-                displayContentFrame(true, !!contentFrame.srcdoc);
-            }
+        console.log(`[handleRouteChange] Route matches current state (${projectId || 'welcome screen'}), no new load needed.`);
+        // Optional: Ensure visibility consistency if needed, though loadProject checks this too
+        if (!projectId && welcomeScreenElement && welcomeScreenElement.classList.contains('hidden')) {
+             console.log("[handleRouteChange] Consistency check: Forcing welcome screen visible."); // ADDED LOG
+             if (contentFrame) displayContentFrame(false);
+             showWelcomeScreen();
+             // Optionally re-run animations if needed, similar to loadProject(null)
+             requestAnimationFrame(() => { window.runWelcomeAnimations?.(); }); 
+        } else if (projectId && contentFrame && contentFrame.classList.contains('hidden')) {
+            console.log("[handleRouteChange] Consistency check: Forcing content frame visible."); // ADDED LOG
+             if (welcomeScreenElement) hideWelcomeScreen();
+             displayContentFrame(true, !!contentFrame.srcdoc);
         }
     }
 }
@@ -185,71 +210,70 @@ function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme); // applyTheme in ui.js should handle iframe theme updates
+    applyTheme(newTheme); 
 }
 
 /**
  * Initializes the application.
  */
 async function initialize() {
-    console.log('Initializing application...');
+    console.log('[initialize] Initializing application...');
     isLoading = true;
 
     if (sidebarToggleButton) {
         sidebarToggleButton.addEventListener('click', () => toggleSidebarCollapse());
         initializeSidebarState(); 
-    } else {
-        console.warn("Sidebar toggle button not found.");
-    }
+    } else { console.warn("Sidebar toggle button not found."); }
 
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
     if (themeToggleButton) {
         themeToggleButton.addEventListener('click', toggleTheme);
-    } else {
-        console.warn("Theme toggle button not found.");
-    }
+    } else { console.warn("Theme toggle button not found."); }
     
-    // --- "My Projects" Header Click to Home View ---
     const siteTitleHeader = document.querySelector('#sidebar header h1');
     if (siteTitleHeader) {
-        // siteTitleHeader.style.cursor = 'pointer'; // CSS should handle this now
         siteTitleHeader.addEventListener('click', (event) => {
             event.preventDefault(); 
-            console.log('Site title clicked, navigating to home/welcome screen.');
+            const isAlreadyOnWelcome = (currentProject === null && welcomeScreenElement && !welcomeScreenElement.classList.contains('hidden'));
+            console.log(`[initialize] Site title clicked. Already on welcome: ${isAlreadyOnWelcome}`); // ADDED LOG
             
-            if (currentProject === null && welcomeScreenElement && !welcomeScreenElement.classList.contains('hidden') && !isLoading) {
-                console.log('Already on welcome screen or navigating there.');
-                return;
+            if (isAlreadyOnWelcome && !isLoading) {
+                 console.log('[initialize] Site title clicked, but already on welcome screen.');
+                 return; 
             }
-            if (window.location.pathname === basePath || window.location.pathname === basePath + '/') {
-                 if(currentProject === null) return; // Already at root and showing welcome.
+            
+            const targetPath = basePath ? (basePath.endsWith('/') ? basePath : basePath + '/') : '/';
+             // Only push state if the path is actually different to avoid redundant route handling
+            if (window.location.pathname !== targetPath) { 
+                 console.log(`[initialize] Site title clicked, pushing state to: ${targetPath}`);
+                 history.pushState({}, '', targetPath); 
+                 handleRouteChange(); 
+            } else {
+                 console.log("[initialize] Site title clicked, already at root path, ensuring welcome is visible.");
+                 loadProject(null); // Ensure welcome is shown even if path didn't change but state was wrong
             }
-
-            history.pushState({}, '', basePath + '/'); 
-            handleRouteChange(); 
         });
     }
-    // --- END OF "My Projects" Click ---
 
     let fetchedData;
     try {
         fetchedData = await fetchProjects();
-        if (fetchedData && !fetchedData.error) { // Ensure fetchedData itself isn't an error.
+        if (fetchedData && !fetchedData.error) { 
             projects = fetchedData;
-        } else if (fetchedData && fetchedData.error) { // Handle error object from fetchProjects
-            throw new Error(fetchedData.message); // Propagate error message
-        } else { // Handle unexpected return like null/undefined
+        } else if (fetchedData && fetchedData.error) { 
+            throw new Error(fetchedData.message); 
+        } else { 
             throw new Error("Failed to fetch project data: Unknown error.");
         }
     } catch (fetchError) {
-        console.error("Critical error fetching project structure:", fetchError);
+        console.error("[initialize] Critical error fetching project structure:", fetchError);
         showError(fetchError.message || "Failed to initialize project fetching.");
         if (projectNavElement) {
            projectNavElement.innerHTML = `<p class="nav-message">${fetchError.message.includes('404') || fetchError.message.includes('not found') ? 'Could not find projects list file.' : 'Error loading project structure.'}</p>`;
         }
-        if(welcomeScreenElement) showWelcomeScreen(); // Show welcome screen below error
+        if(welcomeScreenElement) showWelcomeScreen(); 
         isLoading = false; 
         return; 
     }
@@ -260,45 +284,55 @@ async function initialize() {
         } else {
              renderNav(projects, null); 
         }
-    } else {
-        console.warn("Project navigation element (#project-nav) not found.");
-    }
+    } else { console.warn("Project navigation element (#project-nav) not found."); }
 
     window.addEventListener('popstate', handleRouteChange);
 
     if (appElement) {
         appElement.addEventListener('click', (event) => {
             const targetLink = event.target.closest('a');
-            if (targetLink && targetLink.pathname && targetLink.pathname.startsWith(basePath)) {
-                 if (targetLink.target === '_blank' || targetLink.origin !== window.location.origin || targetLink.hasAttribute('download')) {
-                    return; // Let browser handle external links, new tabs, or downloads
+            if (targetLink && targetLink.href && targetLink.origin === window.location.origin) { // Check if it's an internal link based on origin and href presence
+                if (targetLink.target === '_blank' || targetLink.hasAttribute('download') || targetLink.href.startsWith('mailto:')) {
+                    return; 
                 }
-                // Check if it's one of the footer links inside welcome screen. If so, let it behave normally if it's mailto.
-                if (targetLink.closest('#welcome-screen .welcome-footer-info') && targetLink.href.startsWith('mailto:')) {
-                    return;
-                }
+                
+                // Check if the link is for the current page already
+                const isCurrentPage = targetLink.href === window.location.href;
+                const isBasePathLink = targetLink.pathname === basePath || targetLink.pathname === basePath + '/';
+                const isCurrentProjectNull = currentProject === null;
 
+                // Only prevent default if it's an internal navigation link that changes the path OR it's forcing a reload/state update
+                if(targetLink.pathname.startsWith(basePath)) {
+                    event.preventDefault();
+                    console.log(`[initialize] Intercepted navigation to: ${targetLink.href}. Is current page: ${isCurrentPage}`); // ADDED LOG
 
-                event.preventDefault();
-                console.log(`Intercepted navigation to: ${targetLink.href}`);
-                if (targetLink.href !== window.location.href) {
-                    history.pushState({}, '', targetLink.href);
-                    handleRouteChange();
-                } else if (!targetLink.href.endsWith('#') && targetLink.getAttribute('href') !== '#') { // Avoid re-triggering for empty hrefs
-                    console.log("Clicked link matches current URL. Re-evaluating route.");
-                    handleRouteChange(); 
+                    if (!isCurrentPage) {
+                        history.pushState({}, '', targetLink.href);
+                        handleRouteChange();
+                    } else {
+                        // Handle case where user clicks link to current page (e.g., refresh state or re-trigger welcome)
+                        console.log("[initialize] Clicked link matches current URL. Re-evaluating route for potential state update.");
+                        // Re-trigger route change to potentially show welcome or reload project if needed
+                        if(isBasePathLink && isCurrentProjectNull) {
+                           // Already on welcome, maybe re-run animations?
+                           if (typeof window.runWelcomeAnimations === 'function') {
+                                window.runWelcomeAnimations(); 
+                           }
+                        } else {
+                             handleRouteChange(); // Let route handler decide if reload is needed
+                        }
+                    }
                 }
             }
         });
-    } else {
-        console.warn("App element (#app) not found for link interception.");
-    }
+    } else { console.warn("App element (#app) not found for link interception."); }
 
     isLoading = false;
-    console.log('Initialization setup complete. Performing initial route handling...');
+    console.log('[initialize] Initialization setup complete. Performing initial route handling...');
     handleRouteChange();
 }
 
+// Ensure initialize runs after DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
 } else {
