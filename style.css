@@ -15,8 +15,6 @@
   --transition-speed: 0.3s;
   --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  
-  /* Variables for nested navigation indentation */
   --base-padding-left: 15px;
   --indent-size: 20px;
 }
@@ -25,7 +23,7 @@
   --bg-color: #121212;
   --primary-color: #1e1e1e;
   --secondary-color: #2a2a2a;
-  --accent-color: #64b5f6;
+  --accent-color: #64b5f6; /* Lighter blue for dark mode */
   --text-color: #e0e0e0;
   --border-color: #333333;
   --shadow-color: rgba(255, 255, 255, 0.1);
@@ -39,12 +37,14 @@
   box-sizing: border-box;
 }
 
-body {
+html, body { /* MODIFIED for particle background */
+  width: 100%;
+  height: 100%;
   font-family: var(--font-family);
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
-  overflow: hidden;
+  overflow: hidden; /* Prevent scrollbars */
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
@@ -53,7 +53,22 @@ body {
   height: 100vh;
 }
 
-/* ========== Sidebar ========== */
+/* Particle Background Container - ADDED */
+#tsparticles-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-color: var(--bg-color);
+}
+[data-theme="dark"] #tsparticles-bg {
+  background-color: #0c0f13; /* Even darker for contrast with particles */
+}
+
+
+/* ========== Sidebar (No changes assumed unless specifically for particles interaction) ========== */
 #sidebar {
   width: var(--sidebar-width-expanded);
   background-color: var(--primary-color);
@@ -62,12 +77,12 @@ body {
   flex-direction: column;
   transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed);
   box-shadow: 2px 0 5px var(--shadow-color);
-  z-index: 100;
+  z-index: 100; /* Ensure sidebar is above particles */
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
-
+/* ... (Rest of your existing #sidebar, header, nav styles remain unchanged) ... */
 #sidebar header {
   display: flex;
   justify-content: space-between;
@@ -80,7 +95,6 @@ body {
   position: relative;
   gap: 10px;
 }
-
 #sidebar h1 {
   font-size: 1.3rem;
   font-weight: 600;
@@ -91,7 +105,6 @@ body {
   flex-grow: 1;
   min-width: 0;
 }
-
 .theme-button {
   background: none;
   border: none;
@@ -107,10 +120,8 @@ body {
   width: 30px;
   height: 30px;
 }
-
 [data-theme="light"] .theme-button .moon { display: none; }
 [data-theme="dark"] .theme-button .sun { display: none; }
-
 .theme-button svg {
   width: 20px;
   height: 20px;
@@ -119,7 +130,6 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
 .sidebar-toggle-button {
   background: none;
   border: none;
@@ -138,16 +148,13 @@ body {
   height: 30px;
   margin-right: 5px;
 }
-
 .sidebar-toggle-button:hover {
   background-color: var(--nav-hover-bg);
 }
-
 #app:not(.sidebar-collapsed) .sidebar-toggle-button .icon-expand { display: none; }
 #app:not(.sidebar-collapsed) .sidebar-toggle-button .icon-collapse { display: block; }
 #app.sidebar-collapsed .sidebar-toggle-button .icon-collapse { display: none; }
 #app.sidebar-collapsed .sidebar-toggle-button .icon-expand { display: block; }
-
 .sidebar-toggle-button svg {
   width: 20px;
   height: 20px;
@@ -157,7 +164,6 @@ body {
   transform: translate(-50%, -50%);
   transition: transform var(--transition-speed) var(--transition-easing);
 }
-
 #project-nav {
   flex-grow: 1;
   overflow-y: auto;
@@ -165,389 +171,254 @@ body {
   padding: 10px 0;
   transition: opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed);
 }
-
-#project-nav ul {
-  list-style: none;
-  padding-left: 0; /* Base UL for nav should have no left padding */
-}
-
-/* Base styling for all nav items for indentation using CSS vars */
-#project-nav li {
-  /* --nesting-level is set by JS */
-}
-
+#project-nav ul { list-style: none; padding-left: 0; }
+#project-nav li { /* --nesting-level is set by JS */ }
 #project-nav .category-header,
-#project-nav li a { /* Includes project links and category headers */
+#project-nav li a {
   display: flex;
   align-items: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-right: 15px; /* Keep right padding consistent */
-  /* Calculate left padding based on nesting level */
+  padding-top: 10px; padding-bottom: 10px; padding-right: 15px;
   padding-left: calc(var(--base-padding-left) + var(--nesting-level, 0) * var(--indent-size));
-  text-decoration: none;
-  color: var(--text-color);
-  font-weight: 500;
+  text-decoration: none; color: var(--text-color); font-weight: 500;
   transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-#project-nav li a { /* Only project links, distinct from category headers if needed for borders etc. */
-   border-left: 3px solid transparent; /* Original border style for project links */
-}
-
-
+#project-nav li a { border-left: 3px solid transparent; }
 #project-nav .category-header:hover,
-#project-nav li a:hover {
-  background-color: var(--nav-hover-bg);
-}
-
-/* Active state specific to project links */
+#project-nav li a:hover { background-color: var(--nav-hover-bg); }
 #project-nav li a.active {
-  background-color: var(--nav-active-bg);
-  color: var(--accent-color);
-  border-left-color: var(--accent-color); /* Keep for project links */
-  font-weight: 600;
+  background-color: var(--nav-active-bg); color: var(--accent-color);
+  border-left-color: var(--accent-color); font-weight: 600;
 }
-
-.category-item {
-  /* Container for category header + children list */
-}
-
-.category-header {
-  cursor: pointer;
-  user-select: none; 
-  position: relative;
-  font-weight: 600; /* Categories are bold */
-  border-left: 3px solid transparent; /* Make category headers have similar border interaction as links */
-}
-
-/* Active-like state for expanded category headers (optional) */
-.category-header[aria-expanded="true"] {
-  /* background-color: var(--nav-active-bg); /* Optional: style expanded category header */
-  /* color: var(--accent-color); */
-  /* border-left-color: var(--accent-color); /* Match active project links */
-}
-
-
-.category-toggle-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  transition: transform var(--transition-speed) ease-in-out;
-  flex-shrink: 0;
-}
-
-.category-header[aria-expanded="false"] .category-toggle-icon {
-  transform: rotate(0deg);
-}
-
-.category-header[aria-expanded="true"] .category-toggle-icon {
-  transform: rotate(90deg);
-}
-
-.category-name {
-  flex-grow: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.category-children {
-  list-style: none;
-  padding-left: 0; /* Children ULs should not add their own padding */
-  overflow: hidden;
-  max-height: 0; 
-  transition: max-height 0.3s ease-in-out;
-}
-
-.category-children.expanded {
-  max-height: 1000px; /* Sufficiently large value */
-}
-
-/* Project links within categories will inherit their padding from the main 'li a' rule above,
-   which uses --nesting-level for proper indentation. */
-
-.category-children .project-link a {
-  font-weight: 400; /* Projects under categories are normal weight */
-  /* border-left: none;  Adjust if project links under cats should not have left border */
-  /* Remove this if you want projects under categories to also have the 3px left border like top-level projects */
-  position: relative; 
-}
-
-
-/* The ::before dot for project links - its left position needs to be relative to the calculated padding of its 'a' tag */
+.category-header { cursor: pointer; user-select: none; position: relative; font-weight: 600; border-left: 3px solid transparent;}
+.category-toggle-icon { width: 16px; height: 16px; margin-right: 8px; transition: transform var(--transition-speed) ease-in-out; flex-shrink: 0;}
+.category-header[aria-expanded="false"] .category-toggle-icon { transform: rotate(0deg); }
+.category-header[aria-expanded="true"] .category-toggle-icon { transform: rotate(90deg); }
+.category-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.category-children { list-style: none; padding-left: 0; overflow: hidden; max-height: 0; transition: max-height 0.3s ease-in-out; }
+.category-children.expanded { max-height: 1000px; }
+.category-children .project-link a { font-weight: 400; position: relative; }
 .category-children .project-link a::before {
-    content: '';
-    position: absolute;
-    /* Base padding of 'a' tag is (var(--base-padding-left) + var(--nesting-level, 0) * var(--indent-size)) */
-    /* We want the dot to be roughly where the category icon would be for that level */
-    left: calc(var(--base-padding-left) + (var(--nesting-level, 0) - 1) * var(--indent-size) + 8px); /* Try adjusting this calculation based on final look */
-    /* Alternative: Simpler fixed offset from text start (may not align perfectly with parent category icon) */
-    /* left: 8px; /* Place 8px from the start of the link's effective content box (after padding) */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 6px;
-    background-color: var(--border-color); 
-    border-radius: 50%;
+    content: ''; position: absolute;
+    left: calc(var(--base-padding-left) + (var(--nesting-level, 0) - 1) * var(--indent-size) + 8px);
+    top: 50%; transform: translateY(-50%); width: 6px; height: 6px;
+    background-color: var(--border-color); border-radius: 50%;
     transition: background-color var(--transition-speed);
 }
+.category-children .project-link a:hover::before { background-color: var(--accent-color); }
+.category-children .project-link a.active { font-weight: 500; }
+.category-children .project-link a.active::before { background-color: var(--accent-color); }
+.nav-message { padding: 15px; padding-left: var(--base-padding-left); text-align: left; color: var(--text-color); font-style: italic; opacity: 0.8; }
+.nav-message-empty-category { font-style: italic; opacity: 0.7; font-size: 0.9em; padding-top: 5px; padding-bottom: 5px; color: var(--text-color); }
 
-/* Remove the original, more specific rule for category-children .project-link a padding */
-/* 
-.category-children .project-link a {
-  padding-left: 35px;  <-- REMOVED 
-}
-*/
 
-.category-children .project-link a:hover::before {
-  background-color: var(--accent-color);
-}
-
-.category-children .project-link a.active {
-  /* Already handled by the general 'a.active' */
-  font-weight: 500; /* Slightly bolder for active nested projects */
-}
-
-.category-children .project-link a.active::before {
-    background-color: var(--accent-color);
-}
-
-.nav-message {
-  padding: 15px;
-  padding-left: var(--base-padding-left); /* Align with other nav items */
-  text-align: left; /* Align message with items */
-  color: var(--text-color);
-  font-style: italic;
-  opacity: 0.8;
-}
-
-.nav-message-empty-category {
-    font-style: italic;
-    opacity: 0.7;
-    font-size: 0.9em;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    color: var(--text-color);
-    /* padding-left is set by JS using --nesting-level */
-}
-
-/* ========== Content Area ========== */
+/* ========== Content Area (Main content and iframe parent) ========== */
 #content-area {
   flex-grow: 1;
-  position: relative;
-  background-color: var(--bg-color);
-  transition: background-color var(--transition-speed), margin-left var(--transition-speed) var(--transition-easing);
-  overflow: hidden;
+  position: relative; /* For positioning #tsparticles-bg and #welcome-screen correctly */
+  background-color: transparent; /* It will sit on top of body or app, which has color. Let particles show. */
+  transition: margin-left var(--transition-speed) var(--transition-easing);
+  overflow: hidden; /* Contains the particles and welcome screen */
 }
 
+
+/* --- Enhanced Welcome Screen Styles - ADDED/MODIFIED --- */
 #welcome-screen {
+  position: absolute; /* Changed to absolute to overlay #tsparticles-bg within #content-area */
+  top: 0; left: 0; right: 0; bottom: 0; /* Cover full #content-area */
+  z-index: 55;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  min-height: 100%; /* Changed from 100vh to 100% of parent (#content-area) */
   text-align: center;
-  padding: 20px;
+  padding: 40px 20px;
   color: var(--text-color);
+  background-color: transparent; /* Transparent to see particles */
+}
+
+/* Welcome Content Wrapper */
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2; 
+}
+
+.main-headline {
+  font-size: clamp(2.5rem, 7vw, 4.5rem); /* Adjusted for less extreme sizing */
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 0.4em;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  opacity: 0; /* GSAP will handle visibility */
+}
+
+.main-headline .letter {
+  display: inline-block;
+  opacity: 0; 
+}
+
+.typed-line-container {
+  font-size: clamp(1.1rem, 3vw, 1.6rem); /* Adjusted */
+  color: var(--text-color);
+  /* opacity: 0.85; Let GSAP handle initial */
+  margin-bottom: 1.2em; /* Adjusted */
+  min-height: 1.5em;
+  opacity: 0; /* GSAP will handle visibility, also to avoid FOUC with typed.js cursor */
+}
+.typed-cursor {
   opacity: 1;
-  transition: opacity var(--transition-speed);
-  background-color: var(--bg-color);
-  z-index: 50;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-
-#welcome-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-}
-
-#welcome-screen h2 {
-  font-size: 2rem;
-  margin-bottom: 15px;
+  animation: typedjsBlink 0.7s infinite;
   color: var(--accent-color);
 }
-
-#welcome-screen p {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
+@keyframes typedjsBlink {
+  50% { opacity: 0.0; }
 }
 
-#welcome-screen code {
-  background-color: var(--secondary-color);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace;
+.tagline {
+  font-size: clamp(1rem, 2.5vw, 1.4rem); /* Adjusted */
+  color: var(--text-color);
+  /* opacity: 0.7; */
+  margin-bottom: 2em; /* Adjusted */
+  font-style: italic;
+  opacity: 0; /* GSAP will handle visibility */
 }
 
-#content-frame {
+.guidance {
+  display: inline-flex;
+  align-items: center;
+  font-size: clamp(1rem, 2.2vw, 1.25rem); /* Adjusted */
+  font-weight: 500;
+  color: var(--text-color);
+  cursor: default;
+  margin-top: 0.5em; /* Adjusted */
+  opacity: 0; 
+}
+.guidance .arrow-icon {
+  width: clamp(1.2em, 3vw, 1.4em); /* Adjusted */
+  height: clamp(1.2em, 3vw, 1.4em);
+  margin-left: 0.5em;
+  color: var(--accent-color);
+  opacity: 0; 
+}
+
+/* Footer Info */
+.welcome-footer-info {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
   width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-  opacity: 1;
-  transition: opacity var(--transition-speed);
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.75rem; /* Made smaller */
+  color: var(--text-color);
+  /* opacity: 0.6; */
+  z-index: 1;
+}
+.welcome-footer-info p {
+  margin: 0 10px;
+  opacity: 0; 
+}
+.welcome-footer-info a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+.welcome-footer-info a:hover {
+  text-decoration: underline;
+}
+.welcome-footer-info code {
+  background-color: var(--secondary-color);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-weight: normal; /* Less emphasis */
 }
 
-#content-frame.hidden {
-  opacity: 0;
-  pointer-events: none;
+#content-frame { /* No changes, from your original file */
+  width: 100%; height: 100%; border: none; display: block; opacity: 1; transition: opacity var(--transition-speed);
 }
+#content-frame.hidden { opacity: 0; pointer-events: none; }
 
-/* ========== Collapsed Sidebar Styles (Applied via JS by adding class to #app) ========== */
-@media (min-width: 769px) {
-  #app.sidebar-collapsed #sidebar {
-    width: var(--sidebar-width-collapsed);
-  }
-
-  #app.sidebar-collapsed #sidebar header {
-    justify-content: center;
-    padding: 0 5px;
-    gap: 5px;
-  }
-
-  #app.sidebar-collapsed #sidebar h1 {
-    opacity: 0;
-    visibility: hidden;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-  }
-
-  #app.sidebar-collapsed #sidebar .theme-button,
-  #app.sidebar-collapsed #sidebar .sidebar-toggle-button {
-    opacity: 1;
-    visibility: visible;
+/* Iframe styling when visible (ensure it's on top of welcome) */
+#content-frame:not(.hidden) {
+    z-index: 150; /* Higher than sidebar and welcome screen */
     position: relative;
-    margin: 0;
-  }
-
-  #app.sidebar-collapsed #project-nav {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  #app.sidebar-collapsed .category-header {
-       display: none; /* Hide categories when fully collapsed */
-   }
+    background-color: var(--bg-color); /* Give iframe area a background for when it loads */
 }
 
-/* ========== Responsive Adjustments ========== */
+/* Original Welcome Screen hidden class */
+#welcome-screen.hidden {
+  opacity: 0 !important; /* Ensure it's hidden when class applied */
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+
+/* ========== Collapsed Sidebar Styles (No changes) ========== */
+@media (min-width: 769px) {
+  #app.sidebar-collapsed #sidebar { width: var(--sidebar-width-collapsed); }
+  #app.sidebar-collapsed #sidebar header { justify-content: center; padding: 0 5px; gap: 5px; }
+  #app.sidebar-collapsed #sidebar h1 { opacity: 0; visibility: hidden; width: 0; position: absolute; pointer-events: none; }
+  #app.sidebar-collapsed #sidebar .theme-button,
+  #app.sidebar-collapsed #sidebar .sidebar-toggle-button { opacity: 1; visibility: visible; position: relative; margin: 0; }
+  #app.sidebar-collapsed #project-nav { opacity: 0; visibility: hidden; pointer-events: none; }
+  #app.sidebar-collapsed .category-header { display: none; }
+}
+
+/* ========== Responsive Adjustments (No changes, assuming these were okay) ========== */
 @media (max-width: 768px) {
-  #app {
-    flex-direction: column;
-  }
-
-  #sidebar {
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 5px var(--shadow-color);
-    z-index: 200;
-    overflow: visible;
-  }
-
-  .sidebar-toggle-button {
-    display: none; /* Hide collapse button on small screens */
-  }
-
-  #sidebar header {
-    height: 50px;
-    justify-content: space-between;
-    padding: 0 15px;
-    gap: 10px;
-  }
-
-  #sidebar h1 {
-    font-size: 1.1rem;
-    opacity: 1;
-    visibility: visible;
-    width: auto;
-    position: static;
+  #app { flex-direction: column; }
+  #sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 5px var(--shadow-color); z-index: 200; overflow: visible; }
+  .sidebar-toggle-button { display: none; }
+  #sidebar header { height: 50px; justify-content: space-between; padding: 0 15px; gap: 10px; }
+  #sidebar h1 { font-size: 1.1rem; opacity: 1; visibility: visible; width: auto; position: static; flex-grow: 1; }
+  #sidebar .theme-button { opacity: 1; visibility: visible; }
+  #project-nav { opacity: 1; visibility: visible; pointer-events: auto; overflow-y: hidden; overflow-x: auto; white-space: nowrap; padding: 5px 0; display: flex; border-top: 1px solid var(--border-color); }
+  #project-nav > ul { display: flex; width: max-content; }
+  #project-nav > ul > li, #project-nav > ul > .category-item { flex-shrink: 0; }
+  .category-header { padding: 8px 12px; }
+  .category-toggle-icon { display: none; }
+  .category-children { display: none; }
+  .category-children .project-link a::before { display: none; }
+  #project-nav li a { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; }
+  #project-nav li a.active { border-left-color: transparent; border-bottom-color: var(--accent-color); background-color: transparent; }
+  
+  #content-area { /* Modified for mobile */
+    height: auto; /* Let content flow */
     flex-grow: 1;
+    overflow-y: auto; /* Allow #content-area to scroll if welcome content is too long */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
-
-  #sidebar .theme-button {
-    opacity: 1;
-    visibility: visible;
+  #tsparticles-bg { /* Ensure particles stay within #content-area on mobile */
+      height: 100%; /* Or set a fixed min-height if content-area doesn't have enough height initially */
   }
-
-  #project-nav {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    overflow-y: hidden;
-    overflow-x: auto; /* Allow horizontal scrolling for nav items */
-    white-space: nowrap;
-    padding: 5px 0;
-    display: flex; 
-    border-top: 1px solid var(--border-color);
-  }
-
-  #project-nav > ul {
-    display: flex; /* Make top-level items flex row */
-    width: max-content; /* Allow UL to grow as needed for items */
-  }
-
-  #project-nav > ul > li, /* Top level project link or category item */
-  #project-nav > ul > .category-item {
-    flex-shrink: 0; 
-  }
-
-  /* On mobile, disable category nesting visually for simplicity or use a different pattern */
-  .category-header {
-    padding: 8px 12px; /* Adjust padding for mobile nav */
-  }
-  .category-toggle-icon {
-    display: none; /* Hide dropdown arrow on mobile nav for categories */
-  }
-  .category-children {
-    display: none; /* Hide children by default on mobile */
-    /* If you want them to show as flat list too, this needs more complex styling or JS adjustment */
-  }
-   .category-children .project-link a::before {
-       display: none; /* Hide dots on mobile */
-   }
-
-  #project-nav li a { /* General link styling for mobile */
-    padding: 8px 12px;
-    border-left: none; /* Remove left border on mobile */
-    border-bottom: 3px solid transparent; /* Use bottom border for active state */
-  }
-
-  #project-nav li a.active {
-    border-left-color: transparent; /* Ensure no left border active */
-    border-bottom-color: var(--accent-color); /* Highlight with bottom border */
-    background-color: transparent; /* Often better on mobile nav bars */
-  }
-
-  #content-area {
-    height: auto; /* Allow content to define height */
-    flex-grow: 1;
-  }
-
   #welcome-screen {
-    padding: 30px 15px;
-    position: static; /* No longer absolute positioned */
-    transform: none;
-    height: auto;
-    min-height: 300px;
+    min-height: calc(100vh - var(--header-height) - 50px); /* header height of main page, approximate nav height on mobile */
+    /* padding remains from base */
+    position: relative; /* No longer absolute for mobile if #content-area scrolls */
   }
+  .welcome-footer-info {
+    flex-direction: column; align-items: center; justify-content: center;
+    bottom: 10px; position: relative; /* Changed from absolute */ margin-top: 20px;
+  }
+  .welcome-footer-info p { margin-bottom: 8px; }
+}
 
-  #welcome-screen h2 {
-    font-size: 1.5rem;
-  }
+@media (max-width: 480px) {
+    .main-headline { font-size: 1.8rem; } /* Further adjust for very small screens */
+    .typed-line-container { font-size: 0.9rem; }
+    .tagline { font-size: 0.8rem; }
+    .guidance { font-size: 0.8rem; }
+}
 
-  #welcome-screen p {
-    font-size: 1rem;
-  }
+/* Ensure error container from ui.js is above everything */
+#error-container {
+    z-index: 250 !important; 
 }
