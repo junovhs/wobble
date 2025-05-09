@@ -21,8 +21,8 @@
   --error-border-color: #dc3545; 
   --error-text-color: var(--text-color);
   --error-title-color: #dc3545;
-  --highlight-overlay-color: rgba(0, 0, 0, 0.15); /* Overlay for dimming */
-  --highlight-sidebar-glow: 0 0 15px rgba(0, 123, 255, 0.5); /* Example glow using accent */
+  --highlight-overlay-color: rgba(0, 0, 0, 0.15); 
+  --highlight-sidebar-glow: 0 0 15px rgba(0, 123, 255, 0.5); 
 }
 
 [data-theme="dark"] {
@@ -39,63 +39,26 @@
   --error-border-color: #e57373; 
   --error-text-color: var(--text-color);
   --error-title-color: #e57373;
-  --highlight-overlay-color: rgba(255, 255, 255, 0.08); /* Light overlay for dark mode dimming */
-   --highlight-sidebar-glow: 0 0 15px rgba(100, 181, 246, 0.6); /* Example glow using dark accent */
+  --highlight-overlay-color: rgba(255, 255, 255, 0.08); 
+   --highlight-sidebar-glow: 0 0 15px rgba(100, 181, 246, 0.6); 
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; height: 100%; font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; overflow: hidden; transition: background-color var(--transition-speed), color var(--transition-speed); }
-#app { display: flex; height: 100vh; position: relative; } /* App needs position relative for overlay */
+#app { display: flex; height: 100vh; position: relative; } 
 
-/* --- Highlight Sidebar Effect Styles --- ADDED --- */
-#app::before { /* Use pseudo-element for the overlay */
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0; /* Start overlay from left edge of #app */
-  width: 100%;
-  height: 100%;
-  background-color: var(--highlight-overlay-color);
-  opacity: 0;
-  visibility: hidden;
-  z-index: 120; /* Above content, below sidebar if needed, adjust as necessary */
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  pointer-events: none; /* Allow clicks through */
-}
-#app.highlight-sidebar::before {
-  opacity: 1;
-  visibility: visible;
-  left: var(--sidebar-width-expanded); /* Shift overlay start to after expanded sidebar */
-  width: calc(100% - var(--sidebar-width-expanded)); /* Overlay only content area */
-}
-#app.sidebar-collapsed.highlight-sidebar::before {
-   left: var(--sidebar-width-collapsed); /* Adjust overlay for collapsed sidebar */
-   width: calc(100% - var(--sidebar-width-collapsed));
-}
-#app.highlight-sidebar #sidebar {
-  box-shadow: var(--highlight-sidebar-glow), 2px 0 5px var(--shadow-color); /* Add glow effect */
-  border-right-color: var(--accent-color); /* Maybe highlight border */
-  /* Add transition for the shadow */
-  transition: width var(--transition-speed) var(--transition-easing), 
-              background-color var(--transition-speed), 
-              border-color var(--transition-speed), 
-              box-shadow 0.3s ease-in-out; 
-}
-/* Adjust highlight for mobile (where overlay isn't practical) */
-@media (max-width: 768px) {
-    #app::before { display: none; } /* Disable overlay */
-    #app.highlight-sidebar #sidebar { 
-         box-shadow: var(--highlight-sidebar-glow), 0 2px 5px var(--shadow-color); /* Still add glow */
-         border-bottom-color: var(--accent-color); 
-    }
-}
-/* --- End Highlight Styles --- */
-
+/* --- Highlight Sidebar Effect Styles --- */
+#app::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--highlight-overlay-color); opacity: 0; visibility: hidden; z-index: 120; transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; pointer-events: none; }
+#app.highlight-sidebar::before { opacity: 1; visibility: visible; left: var(--sidebar-width-expanded); width: calc(100% - var(--sidebar-width-expanded)); }
+#app.sidebar-collapsed.highlight-sidebar::before { left: var(--sidebar-width-collapsed); width: calc(100% - var(--sidebar-width-collapsed)); }
+#app.highlight-sidebar #sidebar { box-shadow: var(--highlight-sidebar-glow), 2px 0 5px var(--shadow-color); border-right-color: var(--accent-color); transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed), box-shadow 0.3s ease-in-out; }
+@media (max-width: 768px) { #app::before { display: none; } #app.highlight-sidebar #sidebar { box-shadow: var(--highlight-sidebar-glow), 0 2px 5px var(--shadow-color); border-bottom-color: var(--accent-color); } }
 
 /* Particle Background Container */
 #tsparticles-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; background-color: var(--bg-color); }
 [data-theme="dark"] #tsparticles-bg { background-color: #0c0f13; }
-#sidebar { width: var(--sidebar-width-expanded); background-color: var(--primary-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed), box-shadow 0.3s ease-in-out; /* Added box-shadow to transition */ box-shadow: 2px 0 5px var(--shadow-color); z-index: 150; /* Ensure sidebar is above overlay */ overflow: hidden; position: relative; flex-shrink: 0; }
+/* ========== Sidebar ========== */
+#sidebar { width: var(--sidebar-width-expanded); background-color: var(--primary-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; transition: width var(--transition-speed) var(--transition-easing), background-color var(--transition-speed), border-color var(--transition-speed), box-shadow 0.3s ease-in-out; box-shadow: 2px 0 5px var(--shadow-color); z-index: 150; overflow: hidden; position: relative; flex-shrink: 0; }
 #sidebar header { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: var(--header-height); border-bottom: 1px solid var(--border-color); flex-shrink: 0; transition: border-color var(--transition-speed), padding var(--transition-speed) var(--transition-easing); position: relative; gap: 10px; }
 #sidebar h1 { font-size: 1.3rem; font-weight: 600; color: var(--accent-color); transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing); white-space: nowrap; overflow: hidden; flex-grow: 1; min-width: 0; cursor: pointer;  }
 .theme-button { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; color: var(--text-color); transition: color var(--transition-speed), opacity var(--transition-speed) var(--transition-easing); flex-shrink: 0; position: relative; width: 30px; height: 30px; }
@@ -131,17 +94,19 @@ html, body { width: 100%; height: 100%; font-family: var(--font-family); backgro
 .category-children .project-link a.active::before { background-color: var(--accent-color); }
 .nav-message { padding: 15px; padding-left: var(--base-padding-left); text-align: left; color: var(--text-color); font-style: italic; opacity: 0.8; }
 .nav-message-empty-category { font-style: italic; opacity: 0.7; font-size: 0.9em; padding-top: 5px; padding-bottom: 5px; color: var(--text-color); }
+/* ========== Content Area ========== */
 #content-area { flex-grow: 1; position: relative; background-color: transparent; transition: margin-left var(--transition-speed) var(--transition-easing); overflow: hidden; }
+/* --- Enhanced Welcome Screen Styles --- */
 #welcome-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 55; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; text-align: center; padding: 40px 20px; color: var(--text-color); background-color: transparent; }
 .welcome-content { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2; }
-.main-headline { font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 700; color: var(--accent-color); margin-bottom: 0.4em; line-height: 1.1; letter-spacing: -0.02em; opacity: 0; will-change: transform, opacity; /* Hint for browser */ }
+.main-headline { font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 700; color: var(--accent-color); margin-bottom: 0.4em; line-height: 1.1; letter-spacing: -0.02em; opacity: 0; will-change: transform, opacity; }
 .main-headline .letter { display: inline-block; opacity: 0; will-change: transform, opacity; }
 .typed-line-container { font-size: clamp(1.1rem, 3vw, 1.6rem); color: var(--text-color); margin-bottom: 1.2em; min-height: 1.5em; opacity: 0; will-change: transform, opacity; }
 .typed-cursor { opacity: 1; animation: typedjsBlink 0.7s infinite; color: var(--accent-color); }
 @keyframes typedjsBlink { 50% { opacity: 0.0; } }
 .tagline { font-size: clamp(1rem, 2.5vw, 1.4rem); color: var(--text-color); margin-bottom: 2em; font-style: italic; opacity: 0; will-change: transform, opacity; }
-.guidance { display: inline-flex; align-items: center; font-size: clamp(1rem, 2.2vw, 1.25rem); font-weight: 500; color: var(--text-color); cursor: pointer; margin-top: 0.5em; opacity: 0; will-change: transform, opacity; } /* Added cursor pointer */
-.guidance .arrow-icon { width: clamp(1.2em, 3vw, 1.4em); height: clamp(1.2em, 3vw, 1.4em); margin-left: 0.5em; color: var(--accent-color); opacity: 0; will-change: transform, opacity, scale; } /* Added scale to will-change */
+.guidance { display: inline-flex; align-items: center; font-size: clamp(1rem, 2.2vw, 1.25rem); font-weight: 500; color: var(--text-color); cursor: pointer; margin-top: 0.5em; opacity: 0; will-change: transform, opacity; } 
+.guidance .arrow-icon { width: clamp(1.2em, 3vw, 1.4em); height: clamp(1.2em, 3vw, 1.4em); margin-left: 0.5em; color: var(--accent-color); opacity: 0; will-change: transform, opacity, scale; } 
 .welcome-footer-info { position: absolute; bottom: 20px; left: 0; width: 100%; padding: 0 20px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.75rem; color: var(--text-color); z-index: 1; }
 .welcome-footer-info p { margin: 0 10px; opacity: 0; will-change: transform, opacity; }
 .welcome-footer-info a { color: var(--accent-color); text-decoration: none; }

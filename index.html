@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
-        .letter { display: inline-block; } 
+        /* Optimize rendering */
+        .letter, .typed-line-container, .tagline, .guidance, .welcome-footer-info p { 
+            will-change: transform, opacity; 
+            /* Start hidden via JS now, not CSS */
+             opacity: 0; 
+        } 
+        .letter { display: inline-block; }
     </style>
 </head>
 <body>
@@ -38,7 +44,7 @@
                         <span id="typed-line-element">A dynamic collection of projects.</span> 
                     </p>
                     <p class="tagline">Innovating with code, one project at a time.</p>
-                    <div class="guidance">
+                    <div class="guidance" id="explore-hint" style="cursor: pointer;"> 
                         <span>Explore the Work</span>
                         <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
@@ -69,14 +75,15 @@
 
     <script>
         function runWelcomeAnimations() {
-            console.log("[Animation Script V2] Attempting to run animations..."); 
+            console.log("[Animation Script V4] Attempting to run animations..."); 
             
             const welcomeScreen = document.getElementById('welcome-screen');
             if (!welcomeScreen || welcomeScreen.classList.contains('hidden')) {
-                console.log("[Animation Script V2] Welcome screen not found or is hidden."); 
+                console.log("[Animation Script V4] Welcome screen not found or is hidden."); 
                 return; 
             }
 
+            // --- Target Elements ---
             const mainHeadlineEl = welcomeScreen.querySelector('.main-headline');
             const typedLineContainerEl = welcomeScreen.querySelector('.typed-line-container'); 
             const taglineEl = welcomeScreen.querySelector('.tagline');
@@ -84,105 +91,160 @@
             const arrowIconEl = welcomeScreen.querySelector('.guidance .arrow-icon');
             const devHintEl = welcomeScreen.querySelector('.dev-hint');
             const contactInfoEl = welcomeScreen.querySelector('.contact-info');
+            const allAnimatedElements = [mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl];
 
-            if (!mainHeadlineEl || !typedLineContainerEl || !taglineEl || !guidanceEl || !arrowIconEl || !devHintEl || !contactInfoEl) {
-                 console.error("[Animation Script V2] One or more animation target elements not found! Aborting.", {
-                    mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl
+            // --- Check if elements exist ---
+            if (allAnimatedElements.some(el => !el)) {
+                 console.error("[Animation Script V4] One or more animation target elements not found! Aborting.", {
+                     mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl
                  });
-                 gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, devHintEl, contactInfoEl, arrowIconEl].filter(Boolean), { opacity: 1, y: 0, x:0, scale: 1 });
+                 // Make sure things are visible if animation fails
+                 gsap.set(allAnimatedElements.filter(Boolean), { opacity: 1, y: 0, x: 0, scale: 1 });
                  return;
             }
+            console.log("[Animation Script V4] Elements found, starting GSAP timeline setup...");
 
-            console.log("[Animation Script V2] Elements found, starting GSAP timeline setup...");
-
-            const headlineText = "Portfolio Hub";
+            // --- Prepare Headline Letters ---
+            const headlineText = "Project Showcase"; 
             mainHeadlineEl.innerHTML = ''; 
             const letters = headlineText.split("").map(letter => {
                 const span = document.createElement('span');
-                span.textContent = letter === " " ? "\u00A0" : letter;
+                span.textContent = letter === " " ? "\u00A0" : letter; // Use nbsp for spaces
                 span.classList.add('letter');
+                span.style.opacity = 0; // Set initial opacity directly for better control
+                span.style.transform = 'translateY(40px)'; // Start translated down
                 mainHeadlineEl.appendChild(span);
                 return span;
             });
+            
+            // --- Kill Previous Animations ---
+            gsap.killTweensOf([...allAnimatedElements, ...letters]);
 
-            gsap.killTweensOf([mainHeadlineEl, letters, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl]);
-                
-            const tl = gsap.timeline({ defaults: { ease: "power2.out", force3D: true } }); // Added force3D
+            // --- Set Initial States Explicitly (Using GSAP for consistency) ---
+            // Use gsap.set for instant application without animation
+            gsap.set(letters, { y: 40, opacity: 0 }); 
+            gsap.set([typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl], { y: 25, opacity: 0 }); // Start others down and hidden
+            gsap.set(mainHeadlineEl, { opacity: 1 }); // Ensure headline container is visible
 
-            // Ensure initial states are set (opacity 0, and any transforms you are animating from)
-            gsap.set([mainHeadlineEl, typedLineContainerEl, taglineEl, guidanceEl, arrowIconEl, devHintEl, contactInfoEl], { opacity: 0, y:0, x:0, scale:1 });
-            gsap.set(letters, {opacity:0, y:60}); // Specifically for letter entrance
+            // --- Create GSAP Timeline ---
+            const tl = gsap.timeline({ defaults: { ease: "power2.out", duration: 0.8, force3D: true } }); 
 
-            tl.addLabel("start", "+=0.3"); // Slightly longer initial delay for everything to settle
+            // --- Define Animations (Using .to() exclusively) ---
+            tl.addLabel("start", "+=0.2"); 
 
-            // Headline animation
-            tl.to(mainHeadlineEl, { opacity: 1, duration: 0.01 }, "start") // Make container visible
-              .to(letters, { // Animate letters to their final state
+            // Headline letters fly in
+            tl.to(letters, { 
                 y: 0, 
                 opacity: 1,
-                stagger: 0.07, // Slightly increased stagger
-                duration: 0.6, // Slightly longer duration for smoother feel
-                ease: "back.out(1.7)", // A bouncier ease for entry
+                stagger: 0.06,
+                // duration: 0.8, // Default duration
+                ease: "power3.out", // Slightly different ease for letters
               }, "start"); 
 
-            // Simple fade/slide for the 'typed' line container
-            tl.to(typedLineContainerEl, { opacity: 1, y: 0, duration: 0.7 }, "-=0.4") // Overlap with end of headline
-              .from(typedLineContainerEl, {y: 25}, "<");
+            // Secondary line fades/slides in (starts slightly before headline finishes)
+            tl.to(typedLineContainerEl, { 
+                y: 0, 
+                opacity: 1 
+            }, "-=0.5"); 
 
-            const timingAfterPrev = ">-0.2"; // Overlap slightly with previous animation
+            // Tagline fades/slides in
+            tl.to(taglineEl, { 
+                y: 0, 
+                opacity: 1, 
+                duration: 0.7 // Slightly faster than default
+            }, ">-0.3"); // Overlap slightly with previous
 
-            tl.to(taglineEl, { opacity: 1, y: 0, duration: 0.8, ease: "power1.inOut" }, timingAfterPrev)
-              .from(taglineEl, { y: 25 }, "<"); 
-              
-            tl.to(guidanceEl, { opacity: 1, y: 0, duration: 0.6 }, "-=0.5")
-              .from(guidanceEl, {y:20}, "<");
+            // Guidance text and initial arrow fade-in
+            tl.to(guidanceEl, { 
+                y: 0, 
+                opacity: 1, 
+                duration: 0.6 
+            }, "-=0.5");
 
-            // Smoother arrow animation: Gentle pulse (scale and opacity)
-            tl.to(arrowIconEl, {opacity: 0.7, duration: 0.5}, "<") // Fade arrow in
-              .fromTo(arrowIconEl, 
-                    { scale: 1, opacity: 0.7 }, 
-                    { 
-                        scale: 1.15, 
-                        opacity: 1,
-                        duration: 1.2, // Slower pulse
-                        repeat: -1, 
-                        yoyo: true, 
-                        ease: "sine.inOut"
-                    }, 
-                    ">-0.3" 
-               ); 
+            // Arrow pulse animation (starts after fade-in)
+            tl.to(arrowIconEl, { // First fade in the arrow
+                opacity: 0.7, 
+                duration: 0.5 
+            }, "<") 
+              .to(arrowIconEl, { // Then pulse opacity
+                  opacity: 1, 
+                  scale: 1.1, // Subtle scale pulse
+                  duration: 1.2, 
+                  repeat: -1, 
+                  yoyo: true, 
+                  ease: "sine.inOut"
+              }, ">-0.2");
 
-            // Footer info animation - ensure its initial state is also set
-            gsap.set([devHintEl, contactInfoEl], { y: 15, opacity:0 }); 
+            // Footer info - separate tween, starts after main timeline has progressed
             gsap.to([devHintEl, contactInfoEl], { 
                 opacity: 1,
                 y: 0,       
-                duration: 1,
-                delay: tl.duration() > 0.1 ? tl.duration() - 0.6 : 2.2, // Adjusted delay further
-                stagger: 0.3,
+                duration: 1.0,
+                delay: 1.5, // Fixed delay from start - simpler timing
+                stagger: 0.2,
                 ease: "power1.inOut",
                 overwrite: "auto" 
             });
-            console.log("[Animation Script V2] Animation setup complete."); 
+            console.log("[Animation Script V4] Animation setup complete."); 
         }
 
+        // --- Explore Hint Click Handler --- (Moved outside runWelcomeAnimations) ---
+         let highlightTimeout = null;
+         function handleExploreHintClick() {
+              console.log("[handleExploreHintClick] Explore Hint clicked!"); // ADDED LOG
+              const appContainer = document.getElementById('app');
+              if (appContainer) {
+                    // Check if already highlighted to prevent rapid re-application
+                    if (appContainer.classList.contains('highlight-sidebar')) {
+                        return;
+                    }
+                    appContainer.classList.add('highlight-sidebar');
+                    if (highlightTimeout) clearTimeout(highlightTimeout); 
+                    highlightTimeout = setTimeout(() => {
+                        appContainer.classList.remove('highlight-sidebar');
+                        console.log("[handleExploreHintClick] Highlight removed."); // ADDED LOG
+                    }, 1500); 
+              } else {
+                   console.warn("[handleExploreHintClick] #app container not found.");
+              }
+         }
+
+
+        // --- DOM Ready Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("[DOM Ready V2] Initializing Particles."); 
+            console.log("[DOM Ready V4] Page loaded."); 
+
+            // Initialize Particles
             const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-             const particlesConfig = { 
+             const particlesConfig = { /* Particle config remains the same */ 
                 autoPlay: true, background: {}, fpsLimit: 60, interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 70, duration: 0.4, speed: 0.5 } }, }, particles: { color: { value: isDarkMode ? "#cccccc" : "#555555" }, links: { color: { value: isDarkMode ? "#777777" : "#aaaaaa" }, distance: 160, enable: true, opacity: isDarkMode ? 0.3 : 0.4, width: 1, }, move: { direction: "none", enable: true, outModes: { default: "out" }, random: true, speed: 0.8, straight: false, }, number: { density: { enable: true, area: 800 }, value: 35, }, opacity: { value: {min: 0.2, max: 0.6} }, shape: { type: "circle" }, size: { value: { min: 1, max: 2.5 } }, }, detectRetina: true,
             };
             if (document.getElementById("tsparticles-bg")) {
                  tsParticles.load({ id: "tsparticles-bg", options: particlesConfig }).then(container => {
-                    console.log("[DOM Ready V2] tsParticles loaded successfully.", container ? container.id : 'no container obj'); 
+                    console.log("[DOM Ready V4] tsParticles loaded successfully.", container ? container.id : 'no container obj'); 
                  }).catch(error => {
-                    console.error("[DOM Ready V2] tsParticles failed to load:", error); 
+                    console.error("[DOM Ready V4] tsParticles failed to load:", error); 
                  });
             }
             
+             // --- Setup Explore Hint Click Listener --- (Moved here) ---
+             const exploreHint = document.getElementById('explore-hint');
+             if (exploreHint) {
+                // Ensure listener isn't added multiple times if DOMContentLoaded somehow fires again
+                exploreHint.removeEventListener('click', handleExploreHintClick); 
+                exploreHint.addEventListener('click', handleExploreHintClick);
+                console.log("[DOM Ready V4] Explore hint click listener added."); // ADDED LOG
+             } else {
+                 console.warn("[DOM Ready V4] #explore-hint element not found for click listener.");
+             }
+             
+             // Run initial animations (checks welcome screen visibility inside)
              runWelcomeAnimations(); 
+
+             // Expose animation function globally for app.js
              window.runWelcomeAnimations = runWelcomeAnimations;
         });
+
     </script>
 </body>
 </html>
