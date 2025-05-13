@@ -12,6 +12,9 @@ pages/cat.travelperks/cat.tools/proj.deduplicator
 pages/cat.travelperks/cat.presentations/proj.list-cleaning
 pages/cat.travelperks/cat.presentations/proj.youtube-strategy
 
+# utilities
+pages/cat.utilities/proj.directory analysis
+
 # Any other top-level projects or other categories can remain or be added
 # For example, if you had proj.example-html directly under pages:
 # pages/proj.example-html
