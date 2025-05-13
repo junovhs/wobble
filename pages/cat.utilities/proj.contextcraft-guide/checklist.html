@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextCraft - Feature Checklist</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="ContextCraft Logo" class="logo">
+            <h1>ContextCraft</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html#overview">Overview</a></li>
+                <li><a href="index.html#roadmap">Roadmap</a></li>
+                <li><a href="index.html#features">Features</a></li>
+                <li><a href="index.html#marketing">Marketing</a></li>
+                <li><a href="checklist.html">Checklist</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="feature-checklist" class="section">
+            <div class="section-header">
+                <h2>Project Feature Checklist Roadmap</h2>
+            </div>
+            
+            <div class="checklist-phase card">
+                <h3>Phase 1: Free Web Tier MVP - "The Perfect Little Utility" Foundation</h3>
+                <p class="phase-goal">(Goal: A lightning-fast, visually stunning, and highly useful free web app)</p>
+                
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">1.1 Core Directory Handling & Display (The Engine)</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c1-i1"><label for="chk-p1-c1-i1">File Input: Drag & Drop Folder:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i1-s1"><label for="chk-p1-c1-i1-s1">Clear visual drop zone.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i1-s2"><label for="chk-p1-c1-i1-s2">"Dragover" state highlighting.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i1-s3"><label for="chk-p1-c1-i1-s3">Handles single folder drop (error for files/multiple).</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c1-i2"><label for="chk-p1-c1-i2">File Input: "Select Folder" Button:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i2-s1"><label for="chk-p1-c1-i2-s1">Triggers native folder picker.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c1-i3"><label for="chk-p1-c1-i3">Initial Scan Logic (via Web Worker):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i3-s1"><label for="chk-p1-c1-i3-s1">Recursively read folder/file names and basic structure.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i3-s2"><label for="chk-p1-c1-i3-s2">Calculate file sizes.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i3-s3"><label for="chk-p1-c1-i3-s3">Keep UI responsive during scan (main thread not blocked).</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c1-i4"><label for="chk-p1-c1-i4">Visual Tree Display (with Virtualization):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i4-s1"><label for="chk-p1-c1-i4-s1">Render only visible tree items for performance.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i4-s2"><label for="chk-p1-c1-i4-s2">Clear indentation and alignment.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i4-s3"><label for="chk-p1-c1-i4-s3">Distinct icons for folders (filled/empty) & files.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i4-s4"><label for="chk-p1-c1-i4-s4">Display item name & size (or item count for folders).</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c1-i5"><label for="chk-p1-c1-i5">Loader & Feedback:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i5-s1"><label for="chk-p1-c1-i5-s1">Themed loading animation/text (e.g., "Analyzing...").</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c1-i5-s2"><label for="chk-p1-c1-i5-s2">Clear indication of processing.</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">1.2 Tree Interaction & Navigation</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c2-i1"><label for="chk-p1-c2-i1">Expand/Collapse Folders:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i1-s1"><label for="chk-p1-c2-i1-s1">Smooth, quick animation.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i1-s2"><label for="chk-p1-c2-i1-s2">Click on folder item line (icon/name) toggles state.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i1-s3"><label for="chk-p1-c2-i1-s3">Clear visual indicators (e.g., ►/▼).</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c2-i2"><label for="chk-p1-c2-i2">File/Folder Selection (Checkboxes):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i2-s1"><label for="chk-p1-c2-i2-s1">Large enough click targets.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i2-s2"><label for="chk-p1-c2-i2-s2">Clicking label toggles checkbox.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i2-s3"><label for="chk-p1-c2-i2-s3">Perfect tri-state logic (checked, unchecked, indeterminate).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i2-s4"><label for="chk-p1-c2-i2-s4">Instant selection propagation up/down the tree.</label></li>
+                            </ul>
+                        </li>
+                         <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c2-i3"><label for="chk-p1-c2-i3">"Commit Selections" Button & Workflow:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i3-s1"><label for="chk-p1-c2-i3-s1">Button functionality.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i3-s2"><label for="chk-p1-c2-i3-s2">Clear visual indication when selections are "committed" (e.g., uncommitted items dim).</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c2-i4"><label for="chk-p1-c2-i4">Quick Filter for Tree (Substring Match):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i4-s1"><label for="chk-p1-c2-i4-s1">Input field above tree.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i4-s2"><label for="chk-p1-c2-i4-s2">Filters as you type (debounced).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i4-s3"><label for="chk-p1-c2-i4-s3">Case-insensitive.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i4-s4"><label for="chk-p1-c2-i4-s4">Hides non-matching items while showing necessary parent context.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c2-i4-s5"><label for="chk-p1-c2-i4-s5">"Clear filter" button (X icon).</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">1.3 Core Output Features (Free Tier)</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c3-i1"><label for="chk-p1-c3-i1">Text Report Generation:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i1-s1"><label for="chk-p1-c3-i1-s1">Accurate report based on current view (full scan or committed).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i1-s2"><label for="chk-p1-c3-i1-s2">Includes timestamp, root path, filter status, structure, summary.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i1-s3"><label for="chk-p1-c3-i1-s3">Display in themed &lt;pre&gt; tag.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c3-i2"><label for="chk-p1-c3-i2">"Copy Report" Button:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i2-s1"><label for="chk-p1-c3-i2-s1">Copies report content to clipboard.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i2-s2"><label for="chk-p1-c3-i2-s2">Success notification.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c3-i3"><label for="chk-p1-c3-i3">Basic "Combine Mode" (Limited):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i3-s1"><label for="chk-p1-c3-i3-s1">Combines content of up to 5-10 committed files.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i3-s2"><label for="chk-p1-c3-i3-s2">Uses default file separators/headers (not customizable).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i3-s3"><label for="chk-p1-c3-i3-s3">Clear indication of file limit if exceeded.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c3-i4"><label for="chk-p1-c3-i4">"Copy Combined Content" Button (Basic):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i4-s1"><label for="chk-p1-c3-i4-s1">Copies combined content to clipboard.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i4-s2"><label for="chk-p1-c3-i4-s2">Success notification.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c3-i5"><label for="chk-p1-c3-i5">File Preview Modal:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i5-s1"><label for="chk-p1-c3-i5-s1">Display text content of selected files.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c3-i5-s2"><label for="chk-p1-c3-i5-s2">"Close" button.</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">1.4 UI/UX Polish & Theming (The Shine)</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i1"><label for="chk-p1-c4-i1">Three Core Themes (Retro, Modern, Minimal):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i1-s1"><label for="chk-p1-c4-i1-s1">Pixel-perfect consistency (colors, fonts, borders, etc.) for each.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i1-s2"><label for="chk-p1-c4-i1-s2">Themed scrollbars.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i1-s3"><label for="chk-p1-c4-i1-s3">"CRT Toggle" for Retro theme functional.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i2"><label for="chk-p1-c4-i2">General UI Responsiveness:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i2-s1"><label for="chk-p1-c4-i2-s1">Smooth transitions for panel visibility, button presses.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i2-s2"><label for="chk-p1-c4-i2-s2">No jarring UI jumps.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i3"><label for="chk-p1-c4-i3">Notification System:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i3-s1"><label for="chk-p1-c4-i3-s1">Themed, non-blocking notifications for success/error/info.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i3-s2"><label for="chk-p1-c4-i3-s2">Auto-dismiss.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i4"><label for="chk-p1-c4-i4">Error Handling Panel:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i4-s1"><label for="chk-p1-c4-i4-s1">Themed, clear error messages and suggestions.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i5"><label for="chk-p1-c4-i5">Basic Mobile/Tablet Responsiveness:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i5-s1"><label for="chk-p1-c4-i5-s1">Usable layout on smaller screens.</label></li>
+                            </ul>
+                        </li>
+                         <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c4-i6"><label for="chk-p1-c4-i6">Help/About Modal:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c4-i6-s1"><label for="chk-p1-c4-i6-s1">Basic info, privacy statement, version.</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">1.5 Landing Page & Deployment (The Showcase)</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p1-c5-i1"><label for="chk-p1-c5-i1">Design & Build Landing Page:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c5-i1-s1"><label for="chk-p1-c5-i1-s1">Compelling visuals, clear value proposition for free & upcoming Pro.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c5-i1-s2"><label for="chk-p1-c5-i1-s2">Call to Action: "Try Free Online!"</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p1-c5-i1-s3"><label for="chk-p1-c5-i1-s3">Email signup for Pro launch notification.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item">
+                            <input type="checkbox" id="chk-p1-c5-i2"><label for="chk-p1-c5-i2">Deploy Free Web App & Landing Page.</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="checklist-phase card">
+                <h3>Phase 2: Pro Desktop App & Monetization - "The Power-Up"</h3>
+                <p class="phase-goal">(Goal: A downloadable Pro app with exclusive features, ready for sale)</p>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">2.1 Desktop App Packaging & Licensing</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item">
+                            <input type="checkbox" id="chk-p2-c1-i1"><label for="chk-p2-c1-i1">Choose Desktop Framework (Electron/Tauri).</label>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c1-i2"><label for="chk-p2-c1-i2">Package Web App into Desktop Application:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i2-s1"><label for="chk-p2-c1-i2-s1">Builds for Windows, macOS, Linux.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c1-i3"><label for="chk-p2-c1-i3">Implement License Key System (Simple "Master Key"):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i3-s1"><label for="chk-p2-c1-i3-s1">Prompt for license key on first launch (or if no valid key).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i3-s2"><label for="chk-p2-c1-i3-s2">Store key locally in app data (more persistent than localStorage).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i3-s3"><label for="chk-p2-c1-i3-s3">Logic to unlock Pro features if key is valid.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c1-i4"><label for="chk-p2-c1-i4">Setup Payment Gateway (e.g., Gumroad, Lemon Squeezy):</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i4-s1"><label for="chk-p2-c1-i4-s1">Product page for "ContextCraft Pro."</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c1-i4-s2"><label for="chk-p2-c1-i4-s2">System for delivering license key & download link upon purchase.</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">2.2 Pro-Exclusive Features</span>
+                     <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c2-i1"><label for="chk-p2-c2-i1">Enhanced "Combine Mode":</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i1-s1"><label for="chk-p2-c2-i1-s1">Unlimited File Combining: Remove free tier limit.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i1-s2"><label for="chk-p2-c2-i1-s2">Live Estimated Token Count: Display and update based on committed files. (Method transparency tooltip).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i1-s3"><label for="chk-p2-c2-i1-s3">Customizable Separators/Headers: Input fields for users to define their own. (Live preview snippet is a "perfect+" touch).</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i1-s4"><label for="chk-p2-c2-i1-s4">(Optional Pro+) Reordering files in combine panel.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i1-s5"><label for="chk-p2-c2-i1-s5">(Optional Pro+) Auto-skip binary files with notification.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c2-i2"><label for="chk-p2-c2-i2">Enhanced Visualizations:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i2-s1"><label for="chk-p2-c2-i2-s1">Interactive Treemap: Proportional rectangles for file/folder size. Click to highlight in tree.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i2-s2"><label for="chk-p2-c2-i2-s2">Interactive File Type Chart (Pie/Bar): Visual breakdown. Click to filter tree.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c2-i3"><label for="chk-p2-c2-i3">(Potential Future Pro Feature) Advanced Quick Filter:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c2-i3-s1"><label for="chk-p2-c2-i3-s1">Add regex or specific extension filtering to tree filter bar.</label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="checklist-category">
+                    <span class="checklist-category-title-text">2.3 Update Landing Page & Marketing Prep</span>
+                    <ul class="checklist-items">
+                        <li class="checklist-item-container">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" id="chk-p2-c3-i1"><label for="chk-p2-c3-i1">Update Landing Page:</label>
+                            </div>
+                            <ul class="checklist-sub-items">
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c3-i1-s1"><label for="chk-p2-c3-i1-s1">Clearly differentiate Free vs. Pro.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c3-i1-s2"><label for="chk-p2-c3-i1-s2">Showcase Pro features with visuals.</label></li>
+                                <li class="checklist-item"><input type="checkbox" id="chk-p2-c3-i1-s3"><label for="chk-p2-c3-i1-s3">Prominent "Get Pro" CTA linking to payment.</label></li>
+                            </ul>
+                        </li>
+                        <li class="checklist-item">
+                            <input type="checkbox" id="chk-p2-c3-i2"><label for="chk-p2-c3-i2">Prepare Pro Download Instructions & Support Info.</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="checklist-phase card">
+                <h3>Phase 3: Launch, Listen, & Cultivate (Ongoing)</h3>
+                <p class="phase-goal">(No specific features here, but ongoing effort)</p>
+                <ul class="checklist-items">
+                    <li class="checklist-item"><input type="checkbox" id="chk-p3-i1"><label for="chk-p3-i1">Marketing & Outreach Campaign for Pro Launch.</label></li>
+                    <li class="checklist-item"><input type="checkbox" id="chk-p3-i2"><label for="chk-p3-i2">Establish Feedback Channels.</label></li>
+                    <li class="checklist-item"><input type="checkbox" id="chk-p3-i3"><label for="chk-p3-i3">Regularly Review User Feedback & Bug Reports.</label></li>
+                    <li class="checklist-item"><input type="checkbox" id="chk-p3-i4"><label for="chk-p3-i4">Plan & Implement Iterative Improvements/Fixes.</label></li>
+                    <li class="checklist-item"><input type="checkbox" id="chk-p3-i5"><label for="chk-p3-i5">Consider Future Pro Features (from "Potential Future" list or user requests, e.g., Save/Load State, CSV/JSON Export).</label></li>
+                </ul>
+            </div>
+
+        </section>
+    </main>
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2023 ContextCraft. Project Dashboard v1.0</p>
+        </div>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>

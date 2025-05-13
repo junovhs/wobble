@@ -14,6 +14,7 @@ pages/cat.travelperks/cat.presentations/proj.youtube-strategy
 
 # utilities
 pages/cat.utilities/proj.directory-analysis
+pages/cat.utilities/proj.contextcraft-guide
 
 # Any other top-level projects or other categories can remain or be added
 # For example, if you had proj.example-html directly under pages:
