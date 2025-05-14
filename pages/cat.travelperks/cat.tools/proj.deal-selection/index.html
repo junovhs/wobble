@@ -21,6 +21,8 @@
             --border-radius-sm: 4px;
             --border-radius-md: 8px;
             --transition-fast: 0.15s ease-out;
+            --danger: #dc3545;
+            --danger-dark: #c82333;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 16px; }
@@ -62,12 +64,13 @@
         textarea#deals-input { height: 200px; resize: vertical; margin-bottom: 1rem; font-family: 'Roboto Mono', monospace; }
 
 
-        .actions-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .actions-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .btn { display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); text-decoration: none; }
         .btn:hover { background: var(--primary-dark); box-shadow: var(--shadow-1); }
         
         .btn-secondary { background: var(--surface); color: var(--primary); border: 1px solid var(--border); }
         .btn-secondary:hover { background: var(--primary-light); border-color: var(--primary); }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
         
         .btn-compute { /* Specific style for main compute buttons if needed, e.g. rotator */
             background: var(--secondary); width: 100%; padding: 0.75em; font-size: 1em;
@@ -94,6 +97,16 @@
         .filter-bubbles button.active, .options-controls button.active {
             background: var(--primary); color: white; border-color: var(--primary); font-weight: 500;
         }
+        .filter-bubbles button:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            border-color: #ced4da;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .filter-bubbles button:disabled:hover {
+            transform: none;
+        }
         
         /* For rotator output and deal lister output consistency */
         .output-area {
@@ -105,12 +118,8 @@
 
         /* Deal Lister specific styles from App 2 */
         #filters-and-sorts-container {
-            /* background-color: var(--surface); No, it's inside tool-section already */
-            padding: 1rem 0; /* Adjusted padding as it's within tool-section */
-            /* border-radius: var(--border-radius-md); No, tool-section has radius */
-            /* box-shadow: var(--shadow-1); No, tool-section has shadow */
+            padding: 1rem 0; 
             margin-bottom: 1.5rem;
-            /* border: 1px solid var(--border-light); No, tool-section has border */
         }
         .control-section { margin-bottom: 1.25rem; }
         .control-section:last-child { margin-bottom: 0; }
@@ -122,14 +131,16 @@
             background: var(--primary-dark); color: white; border-color: var(--primary-dark); font-weight: 500;
         }
 
-        #deal-list-container { margin-top: 1rem; /* background: var(--surface); */ border: 1px solid var(--border-light); border-radius: var(--border-radius-md); /* box-shadow: var(--shadow-1); */ padding: 0.5rem 0; }
-        #deal-list { list-style: none; max-height: 70vh; overflow-y: auto; padding: 0 1.5rem; }
+        #deal-list-container { margin-top: 1rem; border: 1px solid var(--border-light); border-radius: var(--border-radius-md); padding: 0.5rem 0; }
+        #deal-list { list-style: none; max-height: 70vh; overflow-y: auto; padding: 0 0.5rem 0 1.5rem; /* Adjusted padding for remove button space */ }
         .deal-item {
             border-bottom: 1px solid var(--border-light); padding: 1rem 0;
-            display: grid; grid-template-columns: auto 1fr; gap: 0 1rem; align-items: start;
+            display: grid; 
+            grid-template-columns: auto 1fr auto; /* indicator | content | remove_button */
+            gap: 0 1rem; align-items: start;
          }
         .deal-item:last-child { border-bottom: none; }
-        .deal-item .indicator { grid-row: 1 / 3; font-size: 1.5rem; padding-top: 0.1em; }
+        .deal-item .indicator { grid-column: 1; grid-row: 1 / 3; font-size: 1.5rem; padding-top: 0.1em; }
         .deal-item .indicator .exclusive-star { color: var(--secondary); }
         .deal-item .supplier { font-weight: 500; font-size: 1.1rem; color: var(--primary-dark); grid-column: 2; margin-bottom: 0.25rem; }
         .deal-item .title-line { grid-column: 2; display: flex; align-items: baseline; flex-wrap: wrap; margin-bottom: 0.3rem; }
@@ -140,6 +151,38 @@
         }
         .deal-item .description { grid-column: 2; font-size: 0.9rem; color: var(--text-secondary); }
         .placeholder { padding: 2rem; text-align: center; color: var(--text-secondary); }
+
+        .deal-item .remove-deal-btn {
+            grid-column: 3; 
+            grid-row: 1 / span 3; 
+            align-self: center;
+            justify-self: center;
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color var(--transition-fast);
+        }
+        .deal-item .remove-deal-btn:hover {
+            color: var(--danger-dark);
+            font-weight: bold;
+        }
+        #rotator-filter-status-container {
+            background-color: var(--primary-light); 
+            padding: 0.75rem 1.5rem; 
+            margin-bottom: 1rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--primary);
+        }
+        #rotator-filter-status-container p {
+            margin:0; font-weight: 500; color: var(--primary-dark);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #rotator-filter-names { font-weight: normal; color: var(--text); }
+
     </style>
 </head>
 <body>
@@ -182,7 +225,15 @@
             
             <div class="actions-bar">
                 <button class="btn" onclick="processJsonInput()">Show Deals</button>
+                <button id="copy-selected-deals-btn" class="btn btn-secondary" onclick="copySelectedDealsToClipboard()">Copy Selected Deals (New Format)</button>
                 <button class="btn btn-secondary" onclick="clearAllDealLister()">Clear Deal Lister</button>
+            </div>
+
+            <div id="rotator-filter-status-container" style="display: none;">
+                <p>
+                    <span>Filtering by Rotator Suppliers: <strong id="rotator-filter-names"></strong></span>
+                    <button onclick="clearRotatorFilterAndRefreshDeals()" class="btn btn-secondary btn-sm">Clear Rotator Filter</button>
+                </p>
             </div>
 
             <div id="filters-and-sorts-container" style="display: none;">
@@ -222,8 +273,6 @@
         const midPriority = ['Celebrity Cruises', 'Disney Cruise Line', 'Virgin Voyages', 'Holland America Line', 'Princess Cruises'];
         const leastPriority = ['Carnival Cruise Line', 'MSC Cruises'];
 
-        // This list contains {text: "Short Display Name", value: "Full Name for Logic"}
-        // Derived from App 1's buttons. 'value' must match names in potm, mostPriority etc.
         const rotatorBrandDisplayList = [
             { text: "Norwegian", value: "Norwegian Cruise Line" }, { text: "Royal Caribbean", value: "Royal Caribbean" },
             { text: "Celebrity", value: "Celebrity Cruises" }, { text: "Disney Cruise Line", value: "Disney Cruise Line" },
@@ -246,7 +295,7 @@
             { text: "Riviera River", value: "Riviera River Cruises" }, { text: "Uniworld", value: "Uniworld Boutique River Cruises" },
             { text: "Lindblad", value: "Lindblad Expeditions" }, { text: "Hurtigruten", value: "Hurtigruten" },
             { text: "UnCruise Adventures", value: "UnCruise Adventures" },
-            { text: "Disney Cruises", value: "Disney Cruises" }, // This is distinct from Disney Cruise Line in App1 data
+            { text: "Disney Cruises", value: "Disney Cruises" }, 
             { text: "DisneyWorld", value: "DisneyWorld" }, { text: "Disneyland", value: "Disneyland" },
             { text: "Aulani", value: "Aulani" }, { text: "Adventures by Disney", value: "Adventures by Disney" },
             { text: "Sandals", value: "Sandals" }, { text: "Beaches Resorts", value: "Beaches Resorts" },
@@ -265,7 +314,7 @@
             { text: "Globus Journeys", value: "Globus Journeys" }, { text: "Rocky Mountaineer", value: "Rocky Mountaineer" },
             { text: "Collette", value: "Collette" }, { text: "CIE Tours", value: "CIE Tours" },
             { text: "Trafalgar", value: "Trafalgar" }
-        ].sort((a, b) => a.text.localeCompare(b.text)); // Sort by display text
+        ].sort((a, b) => a.text.localeCompare(b.text));
 
 
         // --- ROTATOR FUNCTIONALITY ---
@@ -274,22 +323,23 @@
         const computeRotatorBtn = document.getElementById('compute-rotator-btn');
         const rotatorOutputDiv = document.getElementById('rotator-output');
         let selectedLastWeekBrands = []; 
+        let rotatorComputedSuppliers = []; 
 
         function populateRotatorSelectors() {
             featuredBrandSelect.innerHTML = '<option value="">-- Select Main Feature Brand --</option>';
             rotatorBrandDisplayList.forEach(brand => {
                 const option = document.createElement('option');
-                option.value = brand.value; // Full name for logic
-                option.textContent = brand.value; // Display full name in dropdown for clarity
+                option.value = brand.value;
+                option.textContent = brand.value; 
                 featuredBrandSelect.appendChild(option);
             });
 
             lastweekBrandsContainer.innerHTML = '';
             rotatorBrandDisplayList.forEach(brand => {
                 const button = document.createElement('button');
-                button.dataset.brandValue = brand.value; // Full name for logic
-                button.textContent = brand.text; // Short name for display
-                button.title = brand.value; // Show full name on hover
+                button.dataset.brandValue = brand.value;
+                button.textContent = brand.text; 
+                button.title = brand.value; 
                 button.onclick = () => toggleLastWeekBrand(button, brand.value);
                 lastweekBrandsContainer.appendChild(button);
             });
@@ -314,10 +364,16 @@
             
             if (!featured) {
                 rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">Please select This Week’s Main Feature Brand.</p>';
+                rotatorComputedSuppliers = [];
+                clearRotatorFilterLogic(); 
+                updateAndRenderDeals(); 
                 return;
             }
             if (selectedLastWeekBrands.length === 0) {
                  rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">Please select at least one Last Week’s Below-the-Fold Brand.</p>';
+                rotatorComputedSuppliers = [];
+                clearRotatorFilterLogic(); 
+                updateAndRenderDeals();
                 return;
             }
 
@@ -336,42 +392,63 @@
             addFromPriorityList(midPriority);
             addFromPriorityList(leastPriority);
             
-            // Optional: If still less than 4, you could add a mechanism to pick from remaining `rotatorBrandDisplayList`
-            // that are not featured, not in last week, and not already in result.
-            // For now, sticking to App1's logic which primarily pulls from these hardcoded lists.
             if (result.length < 4) {
                  const allPossibleBrandsForRotator = rotatorBrandDisplayList.map(b => b.value);
-                 addFromPriorityList(allPossibleBrandsForRotator); // Try to fill from any available brand
+                 addFromPriorityList(allPossibleBrandsForRotator); 
             }
+            
+            rotatorComputedSuppliers = result.slice(0, 4);
 
-
-            if (result.length === 0) {
+            if (rotatorComputedSuppliers.length === 0) {
                  rotatorOutputDiv.innerHTML = '<p style="color: var(--text-secondary);">No suitable below-the-fold suppliers found based on selections and priority lists.</p>';
+                 clearRotatorFilterLogic();
             } else {
                 rotatorOutputDiv.innerHTML = `<strong>This Week’s Below-the-Fold Suppliers:</strong><br>` +
-                                          result.slice(0, 4).map(b => `– ${b}`).join('<br>'); // Ensure max 4
+                                          rotatorComputedSuppliers.map(b => `– ${b}`).join('<br>');
+                activateRotatorFilterInDealLister(rotatorComputedSuppliers);
             }
+            updateAndRenderDeals(); 
         }
 
-        // --- DEAL LISTER FUNCTIONALITY (Adapted from App 2) ---
+        // --- DEAL LISTER FUNCTIONALITY ---
         let allParsedDeals = [];
-        let displayedDeals = [];
+        let displayedDeals = []; 
+        let selectedDealsForCopy = []; 
         let currentSort = 'supplier';
         let activeSupplierFilter = null;
         let showExclusivesOnly = false;
+        let isRotatorFilterActive = false;
 
-        // IMPORTANT: Paste your FULL SUPPLIER_INFO object here from App 2
-        const SUPPLIER_INFO = { /* --- PASTE YOUR FULL SUPPLIER_INFO OBJECT HERE --- */
-             "norwegian cruise line": { name: "Norwegian Cruise Line" }, "royal caribbean": { name: "Royal Caribbean" }, "celebrity cruises": { name: "Celebrity Cruises" }, "disney cruise line": { name: "Disney Cruise Line" }, "virgin voyages": { name: "Virgin Voyages" }, "holland america line": { name: "Holland America Line" }, "princess": { name: "Princess" }, "princess cruises": { name: "Princess" }, "carnival": { name: "Carnival" }, "carnival cruise line": { name: "Carnival" }, "msc cruises": { name: "MSC Cruises" }, "viking": { name: "Viking" }, "american cruise line": { name: "American Cruise Line" }, "atlas ocean voyages": { name: "Atlas Ocean Voyages" }, "azamara": { name: "Azamara" }, "crystal cruises": { name: "Crystal Cruises" }, "cunard": { name: "Cunard" }, "emerald cruises": { name: "Emerald Cruises" }, "explora journeys": { name: "Explora Journeys" }, "four seasons yachts": { name: "Four Seasons Yachts" }, "oceania cruises": { name: "Oceania Cruises" }, "paul gauguin cruises": { name: "Paul Gauguin Cruises" }, "ponant": { name: "Ponant" }, "regent seven seas cruises": { name: "Regent Seven Seas Cruises" }, "ritz-carlton yacht collection": { name: "Ritz-Carlton Yacht Collection" }, "scenic eclipse ocean voyages": { name: "Scenic Eclipse Ocean Voyages" }, "seabourn": { name: "Seabourn" }, "silversea": { name: "Silversea" }, "star clippers": { name: "Star Clippers" }, "tauck cruises": { name: "Tauck Cruises" }, "windstar": { name: "Windstar" }, "windstar cruises": { name: "Windstar" }, "avalon waterways": { name: "Avalon Waterways" }, "amawaterways": { name: "AmaWaterways" }, "croisieurope": { name: "CroisiEurope" }, "riverside cruises": { name: "Riverside Cruises" }, "riviera river cruises": { name: "Riviera River Cruises" }, "tauck tours": { name: "Tauck Tours" }, "uniworld": { name: "Uniworld" }, "uniworld boutique river cruises": { name: "Uniworld" }, "scenic river": { name: "Scenic River" }, "scenic luxury cruises & tours": { name: "Scenic River" }, "lindblad expeditions & national geographic": { name: "Lindblad Expeditions & National Geographic" }, "lindblad expeditions": { name: "Lindblad Expeditions & National Geographic" }, "hurtigruten": { name: "Hurtigruten" }, "uncruise adventures": { name: "UnCruise Adventures" }, "adventures by disney": { name: "Adventures by Disney" }, "disneyland": { name: "Disneyland" }, "disneyworld": { name: "DisneyWorld" }, "walt disney world": { name: "DisneyWorld" }, "aulani a disney resort & spa": { name: "Aulani, A Disney Resort & Spa" }, "aulani": { name: "Aulani, A Disney Resort & Spa" }, "sandals": { name: "Sandals" }, "beaches": { name: "Beaches" }, "breathless": { name: "Breathless" }, "club med": { name: "Club Med" }, "el dorado spa resorts & hotels": { name: "El Dorado Spa Resorts & Hotels" }, "dreams": { name: "Dreams" }, "excellence resorts": { name: "Excellence Resorts" }, "hard rock hotels": { name: "Hard Rock Hotels" }, "hard rock hotel & casino": { name: "Hard Rock Hotels" }, "iberostar hotels & resorts": { name: "Iberostar Hotels & Resorts" }, "iberostar beachfront resorts": { name: "Iberostar Hotels & Resorts" }, "karisma hotels & resorts": { name: "Karisma Hotels & Resorts" }, "outrigger hotels & resorts": { name: "Outrigger Hotels & Resorts" }, "palace resorts": { name: "Palace Resorts" }, "riu hotels & resorts": { name: "RIU Hotels & Resorts" }, "secrets": { name: "Secrets" }, "american airline vacations": { name: "American Airline Vacations" }, "delta vacations": { name: "Delta Vacations" }, "southwest vacations": { name: "Southwest Vacations" }, "united vacations": { name: "United Vacations" }, "villas of distinction": { name: "Villas of Distinction" }, "zoetry wellness & spa resorts": { name: "Zoëtry Wellness & Spa Resorts" }, "atlantis paradise island bahamas": { name: "Atlantis Paradise Island Bahamas" }, "atlantis": { name: "Atlantis Paradise Island Bahamas" }, "great safaris": { name: "Great Safaris" }, "african travel": { name: "African Travel" }, "abercrombie & kent": { name: "Abercrombie & Kent" }, "g adventures": { name: "G Adventures" }, "globus journeys": { name: "Globus Journeys" }, "globus": { name: "Globus Journeys" }, "trafalgar": { name: "Trafalgar" }, "bluesky tours": { name: "BlueSky Tours" }, "cie tours": { name: "CIE Tours" }, "collette": { name: "Collette" }, "shore excursions group": { name: "Shore Excursions Group" }, "toursalescom": { name: "TourSales.com" }, "viator": { name: "Viator" }, "project expedition": { name: "Project Expedition" }, "rocky mountaineer": { name: "Rocky Mountaineer" }
+        const SUPPLIER_INFO = { 
+             "norwegian cruise line": { name: "Norwegian Cruise Line" }, "royal caribbean": { name: "Royal Caribbean" }, "celebrity cruises": { name: "Celebrity Cruises" }, "disney cruise line": { name: "Disney Cruise Line" }, "virgin voyages": { name: "Virgin Voyages" }, "holland america line": { name: "Holland America Line" }, "princess": { name: "Princess Cruises" }, "princess cruises": { name: "Princess Cruises" }, "carnival": { name: "Carnival Cruise Line" }, "carnival cruise line": { name: "Carnival Cruise Line" }, "msc cruises": { name: "MSC Cruises" }, "viking": { name: "Viking Ocean Cruises" }, "viking ocean cruises": { name: "Viking Ocean Cruises"}, "american cruise line": { name: "American Cruise Line" }, "atlas ocean voyages": { name: "Atlas Ocean Voyages" }, "azamara": { name: "Azamara" }, "crystal cruises": { name: "Crystal Cruises" }, "cunard": { name: "Cunard" }, "emerald cruises": { name: "Emerald Cruises" }, "explora journeys": { name: "Explora Journeys" }, "four seasons yachts": { name: "Four Seasons Yachts" }, "oceania cruises": { name: "Oceania Cruises" }, "paul gauguin cruises": { name: "Paul Gauguin Cruises" }, "ponant": { name: "Ponant" }, "regent seven seas cruises": { name: "Regent Seven Seas Cruises" }, "ritz-carlton yacht collection": { name: "Ritz-Carlton Yacht Collection" }, "scenic eclipse ocean voyages": { name: "Scenic Eclipse" }, "scenic eclipse": { name: "Scenic Eclipse" }, "seabourn": { name: "Seabourn" }, "silversea": { name: "Silversea" }, "star clippers": { name: "Star Clippers" }, "tauck cruises": { name: "Tauck Cruises" }, "windstar": { name: "Windstar Cruises" }, "windstar cruises": { name: "Windstar Cruises" }, "avalon waterways": { name: "Avalon Waterways" }, "amawaterways": { name: "AmaWaterways" }, "croisieurope": { name: "CroisiEurope" }, "riverside cruises": { name: "Riverside Cruises" }, "riviera river cruises": { name: "Riviera River Cruises" }, "tauck tours": { name: "Tauck River Cruising" }, "uniworld": { name: "Uniworld Boutique River Cruises" }, "uniworld boutique river cruises": { name: "Uniworld Boutique River Cruises" }, "scenic river": { name: "Scenic River Cruises" }, "scenic luxury cruises & tours": { name: "Scenic River Cruises" }, "scenic river cruises": { name: "Scenic River Cruises" }, "lindblad expeditions & national geographic": { name: "Lindblad Expeditions" }, "lindblad expeditions": { name: "Lindblad Expeditions" }, "hurtigruten": { name: "Hurtigruten" }, "uncruise adventures": { name: "UnCruise Adventures" }, "adventures by disney": { name: "Adventures by Disney" }, "disneyland": { name: "Disneyland" }, "disneyworld": { name: "DisneyWorld" }, "walt disney world": { name: "DisneyWorld" }, "aulani a disney resort & spa": { name: "Aulani" }, "aulani": { name: "Aulani" }, "sandals": { name: "Sandals" }, "beaches": { name: "Beaches Resorts" }, "beaches resorts": { name: "Beaches Resorts" }, "breathless": { name: "Breathless Resorts" }, "breathless resorts": { name: "Breathless Resorts" }, "club med": { name: "Club Med" }, "el dorado spa resorts & hotels": { name: "El Dorado Spa Resorts" }, "el dorado spa resorts": { name: "El Dorado Spa Resorts" }, "dreams": { name: "Dreams Resorts" }, "dreams resorts": { name: "Dreams Resorts" }, "excellence resorts": { name: "Excellence Resorts" }, "hard rock hotels": { name: "Hard Rock Hotels" }, "hard rock hotel & casino": { name: "Hard Rock Hotels" }, "iberostar hotels & resorts": { name: "Iberostar Hotels & Resorts" }, "iberostar beachfront resorts": { name: "Iberostar Hotels & Resorts" }, "karisma hotels & resorts": { name: "Karisma Hotels & Resorts" }, "outrigger hotels & resorts": { name: "Outrigger Hotels & Resorts" }, "palace resorts": { name: "Palace Resorts" }, "riu hotels & resorts": { name: "RIU Hotels & Resorts" }, "secrets": { name: "Secrets Resorts" }, "secrets resorts": { name: "Secrets Resorts" }, "american airline vacations": { name: "American Airlines Vacations" }, "american airlines vacations": { name: "American Airlines Vacations" }, "delta vacations": { name: "Delta Vacations" }, "southwest vacations": { name: "Southwest Vacations" }, "united vacations": { name: "United Vacations" }, "villas of distinction": { name: "Villas of Distinction" }, "zoetry wellness & spa resorts": { name: "Zoëtry Wellness & Spa Resorts" }, "atlantis paradise island bahamas": { name: "Atlantis Paradise Island" }, "atlantis": { name: "Atlantis Paradise Island" }, "atlantis paradise island": { name: "Atlantis Paradise Island" }, "great safaris": { name: "Great Safaris" }, "african travel": { name: "African Travel" }, "abercrombie & kent": { name: "Abercrombie & Kent" }, "g adventures": { name: "G Adventures" }, "globus journeys": { name: "Globus Journeys" }, "globus": { name: "Globus Journeys" }, "trafalgar": { name: "Trafalgar" }, "bluesky tours": { name: "BlueSky Tours" }, "cie tours": { name: "CIE Tours" }, "collette": { name: "Collette" }, "shore excursions group": { name: "Shore Excursions Group" }, "toursalescom": { name: "TourSales.com" }, "viator": { name: "Viator" }, "project expedition": { name: "Project Expedition" }, "rocky mountaineer": { name: "Rocky Mountaineer" }, "viking river cruises": { name: "Viking River Cruises" }, "disney cruises": {name: "Disney Cruises"}
         };
+
 
         function normalizeSupplier(name) { return name?.toLowerCase().trim().replace(/&/g, '&').replace(/[.,\/#!$%\^&\*;:{}=\-_`~()']/g,"").replace(/\s+/g,' ').trim() || ''; }
         function formatDisplayName(key) { return key ? key.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : '').join(' ') : "Unknown"; }
-        function getDisplayName(key) { return SUPPLIER_INFO[normalizeSupplier(key)]?.name || formatDisplayName(normalizeSupplier(key)); }
+        function getDisplayName(key) { 
+            const normalized = normalizeSupplier(key);
+            return SUPPLIER_INFO[normalized]?.name || formatDisplayName(key); 
+        }
+        
         function formatDate(dateString) {
             if (!dateString) return '';
-            try { const d = new Date(dateString); if (isNaN(d) || d.getFullYear() > 2050) return ''; return `Ends ${d.getMonth() + 1}/${d.getDate()}`; }
-            catch (e) { return ''; }
+            const lowerDateString = String(dateString).toLowerCase().trim(); 
+
+            if (lowerDateString === 'call for details') return 'Call for details';
+            if (lowerDateString === 'contact us') return 'Contact Us';
+            if (lowerDateString === 'ongoing') return 'Ongoing';
+            
+            try { 
+                const d = new Date(dateString); 
+                if (isNaN(d.getTime()) || d.getFullYear() > 2050 || d.getFullYear() < 1990) {
+                    return ''; 
+                }
+                return `Ends ${d.getMonth() + 1}/${d.getDate()}`; 
+            }
+            catch (e) { 
+                return ''; 
+            }
         }
 
         function parseDeals(rawInput) {
@@ -386,66 +463,96 @@
                     if (!shopOverline || !title || !shopListing || !status) return;
                     if (status !== "live") return;
 
-                    const supplierKey = normalizeSupplier(shopOverline); if (!supplierKey) return;
+                    const supplierKey = shopOverline; 
+                    const displayName = getDisplayName(supplierKey);
+                    if (displayName === "Unknown" || !displayName) return; 
+
                     const categories = dealCategory || [];
                     const isExclusive = categories.includes(39542);
-                    const formattedExpiry = formatDate(expiryDateStr);
-                    const expiryDate = new Date(expiryDateStr);
+                    const formattedExpiry = formatDate(expiryDateStr); 
+                    let expiryDateObj = null;
+                    if (expiryDateStr && !['call for details', 'contact us', 'ongoing'].includes(String(expiryDateStr).toLowerCase().trim())) {
+                        const tempDate = new Date(expiryDateStr);
+                        if (!isNaN(tempDate.getTime())) {
+                            expiryDateObj = tempDate;
+                        }
+                    }
 
                     parsed.push({
-                        supplierKey: supplierKey,
-                        displayName: getDisplayName(supplierKey),
+                        displayName: displayName, 
                         title: title,
                         description: shopListing,
                         exclusive: isExclusive,
-                        formattedExpiryDate: formattedExpiry,
-                        expiryDateObject: !isNaN(expiryDate) ? expiryDate : null,
-                        id: crypto.randomUUID()
+                        formattedExpiryDate: formattedExpiry, 
+                        expiryDateObject: expiryDateObj, 
+                        id: crypto.randomUUID() 
                     });
                 } catch (error) { console.error(`Error processing deal object at index ${index}:`, error, deal); }
             });
             return parsed;
         }
 
-        function sortDisplayedDeals() {
-            const fallbackDate = new Date('2099-12-31');
+        function sortDisplayedDeals() { 
+            const fallbackDate = new Date('2099-12-31'); 
+            const veryOldDate = new Date('1970-01-01'); 
+
             displayedDeals.sort((a, b) => {
                 if (currentSort === 'supplier') {
                     const nameCompare = a.displayName.localeCompare(b.displayName);
                     if (nameCompare !== 0) return nameCompare;
-                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateA = a.expiryDateObject || fallbackDate; 
                     const dateB = b.expiryDateObject || fallbackDate;
-                    return dateA - dateB;
+                    return dateA.getTime() - dateB.getTime();
                 } else if (currentSort === 'expiry') {
-                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateA = a.expiryDateObject || fallbackDate; 
                     const dateB = b.expiryDateObject || fallbackDate;
-                    const dateCompare = dateA - dateB;
+                    const dateCompare = dateA.getTime() - dateB.getTime();
+                    if (dateCompare !== 0) return dateCompare;
+                    return a.displayName.localeCompare(b.displayName); 
+                } else if (currentSort === 'exclusive') {
+                    const exclusiveCompare = b.exclusive - a.exclusive; 
+                    if (exclusiveCompare !== 0) return exclusiveCompare;
+                    const dateA = a.expiryDateObject || fallbackDate; 
+                    const dateB = b.expiryDateObject || fallbackDate;
+                    return dateA.getTime() - dateB.getTime();
+                }
+                return 0;
+            });
+        }
+        
+        function renderDealList() {
+            const listElement = document.getElementById('deal-list');
+            listElement.innerHTML = '';
+
+            if (selectedDealsForCopy.length === 0) {
+                const placeholderText = allParsedDeals.length > 0 ?
+                    "No deals match the current filters, or all have been removed." :
+                    "Paste JSON and click \"Show Deals\", or no valid deals were found in the input.";
+                listElement.innerHTML = `<li class="placeholder">${placeholderText}</li>`;
+                return;
+            }
+            
+            const dealsToRender = [...selectedDealsForCopy]; 
+            const fallbackDate = new Date('2099-12-31');
+            dealsToRender.sort((a, b) => {
+                if (currentSort === 'supplier') {
+                    const nameCompare = a.displayName.localeCompare(b.displayName);
+                    if (nameCompare !== 0) return nameCompare;
+                    return (a.expiryDateObject || fallbackDate).getTime() - (b.expiryDateObject || fallbackDate).getTime();
+                } else if (currentSort === 'expiry') {
+                    const dateCompare = (a.expiryDateObject || fallbackDate).getTime() - (b.expiryDateObject || fallbackDate).getTime();
                     if (dateCompare !== 0) return dateCompare;
                     return a.displayName.localeCompare(b.displayName);
                 } else if (currentSort === 'exclusive') {
                     const exclusiveCompare = b.exclusive - a.exclusive;
                     if (exclusiveCompare !== 0) return exclusiveCompare;
-                    const dateA = a.expiryDateObject || fallbackDate;
-                    const dateB = b.expiryDateObject || fallbackDate;
-                    return dateA - dateB;
+                    return (a.expiryDateObject || fallbackDate).getTime() - (b.expiryDateObject || fallbackDate).getTime();
                 }
                 return 0;
             });
-        }
 
-        function renderDealList() {
-            const listElement = document.getElementById('deal-list');
-            listElement.innerHTML = '';
 
-            if (displayedDeals.length === 0) {
-                const placeholderText = allParsedDeals.length > 0 ?
-                    "No deals match the current filters." :
-                    "Paste JSON and click \"Show Deals\", or no valid deals were found in the input.";
-                listElement.innerHTML = `<li class="placeholder">${placeholderText}</li>`;
-                return;
-            }
-
-            displayedDeals.forEach(deal => {
+            dealsToRender.forEach(deal => {
                 const li = document.createElement('li');
                 li.className = 'deal-item';
                 const expiryPillHtml = deal.formattedExpiryDate ? `<span class="expiry-pill">${deal.formattedExpiryDate}</span>` : '';
@@ -458,6 +565,7 @@
                         ${expiryPillHtml}
                     </div>
                     <div class="description">${deal.description}</div>
+                    <button class="remove-deal-btn" data-deal-id="${deal.id}" title="Remove this deal from selection">✖</button>
                 `;
                 listElement.appendChild(li);
             });
@@ -465,26 +573,47 @@
         
         function updateDealListerFilterUIStates() {
             document.querySelectorAll('#supplier-filters button').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.supplier === (activeSupplierFilter || 'ALL'));
+                btn.classList.toggle('active', !isRotatorFilterActive && btn.dataset.supplier === (activeSupplierFilter || 'ALL'));
+                btn.disabled = isRotatorFilterActive; 
             });
+
             const exclusiveBtn = document.getElementById('exclusive-toggle-btn');
             exclusiveBtn.classList.toggle('active', showExclusivesOnly);
             exclusiveBtn.textContent = showExclusivesOnly ? 'Showing Only Exclusives' : 'Show Only Exclusives';
+            
             document.querySelectorAll('.sort-options button').forEach(b => b.classList.remove('active'));
             document.getElementById(`sort-${currentSort}`)?.classList.add('active');
+
+            const rotatorStatusDiv = document.getElementById('rotator-filter-status-container');
+            if (isRotatorFilterActive && rotatorComputedSuppliers.length > 0) {
+                rotatorStatusDiv.style.display = 'block';
+                document.getElementById('rotator-filter-names').textContent = rotatorComputedSuppliers.join(', ');
+            } else {
+                rotatorStatusDiv.style.display = 'none';
+            }
         }
         
         function updateAndRenderDeals() {
             let tempDeals = [...allParsedDeals];
-            if (activeSupplierFilter) {
-                tempDeals = tempDeals.filter(d => d.displayName === activeSupplierFilter);
+
+            if (isRotatorFilterActive && rotatorComputedSuppliers.length > 0) {
+                tempDeals = tempDeals.filter(d => rotatorComputedSuppliers.includes(d.displayName));
+            } else {
+                if (activeSupplierFilter) {
+                    tempDeals = tempDeals.filter(d => d.displayName === activeSupplierFilter);
+                }
             }
+
             if (showExclusivesOnly) {
                 tempDeals = tempDeals.filter(d => d.exclusive);
             }
-            displayedDeals = tempDeals;
-            sortDisplayedDeals();
-            renderDealList();
+
+            displayedDeals = [...tempDeals]; 
+            sortDisplayedDeals(); 
+            
+            selectedDealsForCopy = [...displayedDeals]; 
+
+            renderDealList(); 
             updateDealListerFilterUIStates();
         }
 
@@ -492,11 +621,13 @@
             const container = document.getElementById('supplier-filters');
             container.innerHTML = '';
             const uniqueSuppliers = [...new Set(allParsedDeals.map(d => d.displayName))].sort();
+            
             const allBtn = document.createElement('button');
             allBtn.textContent = 'All Suppliers';
             allBtn.dataset.supplier = 'ALL';
             allBtn.onclick = () => setSupplierFilter(null);
             container.appendChild(allBtn);
+
             uniqueSuppliers.forEach(supplierName => {
                 const btn = document.createElement('button');
                 btn.textContent = supplierName;
@@ -505,9 +636,28 @@
                 container.appendChild(btn);
             });
         }
+
+        function activateRotatorFilterInDealLister(supplierNames) {
+            isRotatorFilterActive = true;
+        }
+
+        function clearRotatorFilterLogic() {
+            isRotatorFilterActive = false;
+            rotatorComputedSuppliers = []; 
+        }
         
-        // Make Deal Lister functions available globally for onclick handlers
+        window.clearRotatorFilterAndRefreshDeals = function() {
+            clearRotatorFilterLogic();
+            updateAndRenderDeals(); 
+        }
+
+        window.handleRemoveDeal = function(dealId) {
+            selectedDealsForCopy = selectedDealsForCopy.filter(d => d.id !== dealId);
+            renderDealList(); 
+        }
+        
         window.setSupplierFilter = function(supplierName) {
+            if (isRotatorFilterActive) return; 
             activeSupplierFilter = supplierName;
             updateAndRenderDeals();
         }
@@ -518,7 +668,7 @@
         window.setSort = function(sortType) {
             if (currentSort !== sortType) {
                 currentSort = sortType;
-                updateAndRenderDeals();
+                updateAndRenderDeals(); 
             }
         }
         window.processJsonInput = function() {
@@ -528,33 +678,100 @@
             const filtersContainer = document.getElementById('filters-and-sorts-container');
             if (allParsedDeals.length > 0) {
                 filtersContainer.style.display = 'block';
-                renderSupplierFilters();
-                activeSupplierFilter = null; // Reset filter
-                // showExclusivesOnly = false; // Retain this filter setting across loads
-                // currentSort = 'supplier'; // Retain sort setting
+                renderSupplierFilters(); 
             } else {
                 filtersContainer.style.display = 'none';
                 document.getElementById('supplier-filters').innerHTML = '';
             }
             updateAndRenderDeals();
         }
-        window.clearAllDealLister = function() { // Renamed from clearAll
-             allParsedDeals = []; displayedDeals = [];
+        window.clearAllDealLister = function() { 
+             allParsedDeals = []; displayedDeals = []; selectedDealsForCopy = [];
              document.getElementById('deals-input').value = '';
              document.getElementById('filters-and-sorts-container').style.display = 'none';
              document.getElementById('supplier-filters').innerHTML = '';
              activeSupplierFilter = null; showExclusivesOnly = false; currentSort = 'supplier';
-             updateAndRenderDeals();
+             clearRotatorFilterLogic(); 
+             updateAndRenderDeals(); 
         }
+
+        window.copySelectedDealsToClipboard = function() {
+            if (selectedDealsForCopy.length === 0) {
+                alert("No deals currently selected/visible to copy.");
+                return;
+            }
+
+            const dealsBySupplier = selectedDealsForCopy.reduce((acc, deal) => {
+                if (!acc[deal.displayName]) {
+                    acc[deal.displayName] = [];
+                }
+                acc[deal.displayName].push(deal);
+                return acc;
+            }, {});
+
+            const sortedSupplierNames = Object.keys(dealsBySupplier).sort((a, b) => a.localeCompare(b));
+
+            let outputText = "";
+            const fallbackDate = new Date('2099-12-31'); 
+
+            sortedSupplierNames.forEach((supplierName, index) => {
+                if (index > 0) {
+                    outputText += "\n"; 
+                }
+                outputText += supplierName + "\n";
+
+                let supplierDeals = dealsBySupplier[supplierName];
+
+                supplierDeals.sort((a, b) => {
+                    if (a.exclusive !== b.exclusive) {
+                        return b.exclusive - a.exclusive; 
+                    }
+                    const dateA = a.expiryDateObject || fallbackDate;
+                    const dateB = b.expiryDateObject || fallbackDate;
+                    if (dateA.getTime() !== dateB.getTime()) {
+                        return dateA.getTime() - dateB.getTime(); 
+                    }
+                    return a.title.localeCompare(b.title); 
+                });
+
+                supplierDeals.forEach(deal => {
+                    let dealTitleForCopy = deal.title;
+                    let prefix = "";
+
+                    if (deal.exclusive) {
+                        // Check if title already starts with "EXCLUSIVE:" (case-insensitive)
+                        // and add the prefix only if it's not already there.
+                        if (!deal.title.toLowerCase().startsWith("exclusive:")) {
+                             prefix = "EXCLUSIVE: ";
+                        }
+                    }
+                    
+                    let dealLine = prefix + dealTitleForCopy;
+
+                    if (deal.formattedExpiryDate) { 
+                        dealLine += " – " + deal.formattedExpiryDate;
+                    }
+                    outputText += dealLine + "\n";
+                });
+            });
+
+            navigator.clipboard.writeText(outputText.trim())
+                .then(() => alert(`${selectedDealsForCopy.length} deal(s) formatted and copied to clipboard!`))
+                .catch(err => alert('Failed to copy deals: ' + err));
+        }
+
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Rotator Init
             populateRotatorSelectors();
             computeRotatorBtn.addEventListener('click', computeRotatorResults);
-
-            // Deal Lister Init (mostly handled by global functions, but ensure initial UI state for sort is okay)
-            updateDealListerFilterUIStates(); // Ensures sort buttons are correctly highlighted on load
+            updateDealListerFilterUIStates(); 
+            document.getElementById('deal-list').addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-deal-btn')) {
+                    const dealId = event.target.dataset.dealId;
+                    window.handleRemoveDeal(dealId);
+                }
+            });
         });
     })();
     </script>
