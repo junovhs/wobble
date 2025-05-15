@@ -1,11 +1,14 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DirAnalyse Matrix v3.0</title>
-    <link rel="icon" href="matrix_icon.png" type="image/png">
+    <title>DirAnalyse Matrix v3.2 - CAPCA Edition</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Import maps to handle modules directly in browser -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Ensure DMP is loaded and available globally before the module script -->
+    <script src="js/lib/diff_match_patch.js"></script>
+    <script src="js/lib/jszip.min.js"></script>
     <script type="importmap">
     {
       "imports": {
@@ -17,25 +20,32 @@
         "combineMode": "./js/combineMode.js",
         "utils": "./js/utils.js",
         "notificationSystem": "./js/notificationSystem.js",
-        "themeManager": "./js/themeManager.js",
-        "errorHandler": "./js/errorHandler.js"
+        "errorHandler": "./js/errorHandler.js",
+        "fileEditor": "./js/fileEditor.js",
+        "aiPatcher": "./js/aiPatcher.js",
+        "zipManager": "./js/zipManager.js"
       }
     }
     </script>
 </head>
-<body class="theme-retro">
+<body>
+    <!-- Initial Page Loader -->
+    <div id="pageLoader">
+        <video autoplay loop muted playsinline>
+            <source src="loading.webm" type="video/webm">
+            Your browser does not support the video tag.
+        </video>
+        <p>Loading DirAnalyse Matrix...</p>
+    </div>
+
     <div id="notification" class="notification"></div>
-    
+
     <header>
-        <h1>DirAnalyse Matrix v3.0</h1>
-        <div class="theme-selector">
-            <button id="retroTheme" class="theme-button active">Retro</button>
-            <button id="modernTheme" class="theme-button">Modern</button>
-            <button id="minimalTheme" class="theme-button">Minimal</button>
-        </div>
+        <h1><img src="logo.png" alt="DirAnalyse Matrix Logo" style="height: 3em; margin-right: 0.5em; vertical-align: middle;">DirAnalyse Matrix v3.2</h1>
     </header>
 
-    <div id="mainAction">
+    <!-- Rest of your existing HTML content starting from <div id="mainAction"> -->
+    <div id="mainAction" style="display:none;"> <!-- Initially hidden -->
         <div id="dropZone">
             <div class="drop-content">
                 <div class="drop-icon">📁</div>
@@ -49,17 +59,13 @@
     </div>
 
     <div id="globalStatsPanel" class="stats-panel" style="display:none;">
-        <div class="panel-header">
-            <h2>OVERALL STATISTICS</h2>
-        </div>
+        <div class="panel-header"><h2>OVERALL STATISTICS</h2></div>
         <div id="selectionSummary" class="selection-summary" style="display:none;"></div>
         <div id="globalStats"></div>
         <div class="file-type-stats">
             <h3>FILE TYPE BREAKDOWN (OF COMMITTED SELECTION)</h3>
             <table id="fileTypeTable">
-                <thead>
-                    <tr><th>Extension</th><th>Count</th><th>Total Size</th></tr>
-                </thead>
+                <thead><tr><th>Extension</th><th>Count</th><th>Total Size</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -74,61 +80,81 @@
         <button id="collapseAllBtn" class="action-button">COLLAPSE ALL</button>
         <div class="separator"></div>
         <button id="viewModeToggleBtn" class="action-button">SWITCH TO COMBINE VIEW</button>
+        <div class="separator"></div>
+        <button id="downloadProjectBtn" class="action-button" disabled>DOWNLOAD PROJECT (ZIP)</button>
     </div>
 
     <div class="main-container" style="display:none;">
         <div id="visualOutputContainer">
-            <div class="panel-header">
-                <h2>VISUAL DIRECTORY TREE</h2>
-            </div>
-            <div id="treeContainer" class="tree"></div> 
+            <div class="panel-header"><h2>VISUAL DIRECTORY TREE</h2></div>
+            <div id="treeContainer" class="tree"></div>
         </div>
-        
         <div id="textOutputContainerOuter">
-            <div class="panel-header">
-                <h2>COMPREHENSIVE TEXT REPORT</h2>
-            </div>
+            <div class="panel-header"><h2>COMPREHENSIVE TEXT REPORT</h2></div>
             <pre id="textOutput"></pre>
-            <div class="button-container">
-                <button id="copyReportButton" class="action-button" disabled>COPY REPORT</button>
-            </div>
+            <div class="button-container"><button id="copyReportButton" class="action-button" disabled>COPY REPORT</button></div>
         </div>
-        
         <div id="combineModePanel">
-            <div class="panel-header">
-                <h2>COMMITTED FILES FOR COMBINING</h2>
-            </div>
-            <div id="selectedFilesContainer">
-                <div class="empty-notice">NO FILES IN COMMITTED SELECTION.<br>USE TREE AND 'COMMIT SELECTIONS'.</div>
-            </div>
-            <div class="button-container">
-                <button id="copySelectedBtn" class="action-button" disabled>COPY COMMITTED FILES</button>
-            </div>
+            <div class="panel-header"><h2>COMMITTED FILES FOR COMBINING</h2></div>
+            <div id="selectedFilesContainer"><div class="empty-notice">NO FILES IN COMMITTED SELECTION.<br>USE TREE AND 'COMMIT SELECTIONS'.</div></div>
+            <div class="button-container"><button id="copySelectedBtn" class="action-button" disabled>COPY COMMITTED FILES</button></div>
         </div>
     </div>
-    
+
+    <div id="aiPatchPanel" class="stats-panel" style="display:none;">
+        <div class="panel-header"><h2>AI CODE PATCHER (Contextual Anchor Patches)</h2></div>
+        <div class="patch-input-area">
+            <p>Paste AI-generated CAPCA patch instructions (JSON format) below:</p>
+            <textarea id="aiPatchInput" rows="10" placeholder='[{"file": "path/file.ext", "operation": "replace_segment_after_anchor", "anchorText": "...", ...}]'></textarea>
+            <button id="applyAiPatchBtn" class="action-button">Review & Apply Patches</button>
+        </div>
+        <div class="patch-results-area">
+            <h3>Patch Application Log:</h3>
+            <pre id="aiPatchOutputLog">Awaiting patch application...</pre>
+        </div>
+    </div>
+
     <div id="errorReport" class="error-panel">
-        <div class="error-header">
-            <h3>ERROR REPORT</h3>
-            <button id="closeErrorBtn">×</button>
-        </div>
+        <div class="error-header"><h3>ERROR REPORT</h3><button id="closeErrorBtn">×</button></div>
         <div class="error-content">
-            <div class="error-title"></div>
-            <div class="error-message"></div>
-            <div class="error-details"></div>
-            <div class="error-suggestions"></div>
+            <div class="error-title"></div><div class="error-message"></div>
+            <div class="error-details"></div><div class="error-suggestions"></div>
         </div>
     </div>
-    
+
     <div id="filePreview">
-        <button id="closePreview">×</button>
-        <h3 id="filePreviewTitle"></h3>
+        <button id="closePreview">×</button><h3 id="filePreviewTitle"></h3>
         <pre id="filePreviewContent"></pre>
     </div>
 
-    <button class="crt-toggle" id="crtToggle">CRT: ON</button>
+    <div id="fileEditor">
+        <div class="editor-header">
+            <h3 id="editorFileTitle">FILE EDITOR</h3><div class="editor-status" id="editorStatus"></div>
+            <div class="editor-actions">
+                <button id="saveEditorBtn" class="editor-button">SAVE (In Browser)</button>
+                <button id="closeEditorBtn" class="editor-button">CLOSE</button>
+            </div>
+        </div>
+        <div class="editor-container"><textarea id="editorContent" spellcheck="false"></textarea></div>
+        <div class="editor-footer"><span id="editorInfo"></span></div>
+    </div>
 
-    <!-- Main script to initialize the application -->
+    <!-- AI Patch Diff Modal -->
+    <div id="aiPatchDiffModal" class="diff-modal">
+        <div class="diff-modal-content">
+            <span class="diff-modal-close" id="closeAiPatchDiffModal">×</span>
+            <h3>Review Changes for: <span id="diffFilePath" style="font-weight:normal;"></span></h3>
+            <div id="diffOutputContainer" style="border:1px solid var(--border-color); padding:10px; max-height: 60vh; overflow-y:auto; background-color: var(--bg-color);">
+                <!-- Diff output will be inserted here by JS -->
+            </div>
+            <div class="diff-modal-actions">
+                <button id="confirmApplyPatchChanges" class="action-button">Apply This Change</button>
+                <button id="skipPatchChanges" class="action-button secondary">Skip This File</button>
+                <button id="cancelAllPatchChanges" class="action-button secondary">Cancel All</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

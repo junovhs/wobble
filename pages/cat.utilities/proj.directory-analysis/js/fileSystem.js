@@ -1,6 +1,8 @@
-import { elements } from './main.js';
+// --- FILE: js/fileSystem.js --- //
+import { elements, appState } from './main.js'; // Added appState to use in readFileContent for new files
 import * as notificationSystem from 'notificationSystem';
 import * as errorHandler from 'errorHandler';
+import * as fileEditor from 'fileEditor';
 
 // Process a directory entry recursively and build directory data structure
 export async function processDirectoryEntryRecursive(dirEntry, currentPath, depth, parentAggregator = null) {
@@ -55,7 +57,7 @@ export async function processDirectoryEntryRecursive(dirEntry, currentPath, dept
                         path: entryPath, 
                         extension: ext, 
                         depth: depth + 1, 
-                        entryHandle: entry 
+                        entryHandle: entry
                     };
                     dirData.children.push(fileInfo);
                     dirData.fileCount++;
@@ -65,14 +67,13 @@ export async function processDirectoryEntryRecursive(dirEntry, currentPath, dept
                         path: entryPath, 
                         size: file.size, 
                         extension: ext, 
-                        entryHandle: entry 
+                        entryHandle: entry
                     });
                     if (!dirData.fileTypes[ext]) dirData.fileTypes[ext] = { count: 0, size: 0 };
                     dirData.fileTypes[ext].count++;
                     dirData.fileTypes[ext].size += file.size;
                 } catch (err) {
                     console.warn(`Skipping file ${entry.name}: ${err.message}`);
-                    // Don't throw here, just skip problematic files
                 }
             } else if (entry.isDirectory) {
                 try {
@@ -89,20 +90,18 @@ export async function processDirectoryEntryRecursive(dirEntry, currentPath, dept
                     });
                 } catch (err) {
                     console.warn(`Skipping directory ${entry.name}: ${err.message}`);
-                    // Don't throw here, just skip problematic directories
                 }
             }
         }
         return depth === 0 ? { directoryData: dirData, ...aggregator } : { directoryData: dirData };
     } catch (err) {
-        // Enhance error with more context for better error reporting
         err.path = currentPath;
         throw err;
     }
 }
 
-// Filter scan data based on selected paths
 export function filterScanData(fullData, selectedPathsSet) {
+    // ... (This function remains the same)
     if (!fullData || !fullData.directoryData) {
         return { directoryData: null, allFilesList: [], allFoldersList: [], maxDepth: 0, deepestPathExample: '', emptyDirCount: 0 };
     }
@@ -112,18 +111,15 @@ export function filterScanData(fullData, selectedPathsSet) {
             return selectedPathsSet.has(node.path) ? { ...node } : null;
         }
 
-        // It's a folder
         const filteredChildren = node.children
             .map(child => filterNodeRecursive(child))
             .filter(child => child !== null);
 
-        // A folder is included if it's directly selected OR if it has any selected children
         if (!selectedPathsSet.has(node.path) && filteredChildren.length === 0) {
             return null;
         }
 
         const filteredFolder = { ...node, children: filteredChildren };
-        // Recalculate stats for this filteredFolder
         filteredFolder.fileCount = 0;
         filteredFolder.dirCount = 0;
         filteredFolder.totalSize = 0;
@@ -135,7 +131,7 @@ export function filterScanData(fullData, selectedPathsSet) {
                 if (!filteredFolder.fileTypes[fc.extension]) filteredFolder.fileTypes[fc.extension] = { count: 0, size: 0 };
                 filteredFolder.fileTypes[fc.extension].count++;
                 filteredFolder.fileTypes[fc.extension].size += fc.size;
-            } else { // folder
+            } else { 
                 filteredFolder.dirCount++;
                 filteredFolder.dirCount += fc.dirCount;
                 filteredFolder.fileCount += fc.fileCount;
@@ -151,11 +147,10 @@ export function filterScanData(fullData, selectedPathsSet) {
     }
 
     const filteredDirectoryData = filterNodeRecursive(fullData.directoryData);
-    if (!filteredDirectoryData) { // Nothing selected
+    if (!filteredDirectoryData) { 
         return { directoryData: null, allFilesList: [], allFoldersList: [], maxDepth: 0, deepestPathExample: '', emptyDirCount: 0 };
     }
     
-    // Rebuild allFilesList and allFoldersList from the filteredDirectoryData
     const filteredAllFiles = [];
     const filteredAllFolders = [];
     function collectFiltered(node, filesArr, foldersArr) {
@@ -173,53 +168,75 @@ export function filterScanData(fullData, selectedPathsSet) {
         directoryData: filteredDirectoryData,
         allFilesList: filteredAllFiles,
         allFoldersList: filteredAllFolders,
-        // Aggregate stats like maxDepth, deepestPath are harder to correctly filter.
-        // We'll use original fullScanData's for these or mark them.
         maxDepth: fullData.maxDepth,
         deepestPathExample: fullData.deepestPathExample,
-        emptyDirCount: fullData.emptyDirCount // This also becomes less meaningful for a filtered view
+        emptyDirCount: fullData.emptyDirCount 
     };
 }
 
-// Read file content for previewing
-export async function readFileContent(fileEntry) { 
+// Read file content for previewing or editing
+export async function readFileContent(fileEntryOrHandle, filePathForEditedCheck = null) {
+    const pathKey = filePathForEditedCheck || fileEntryOrHandle?.path || fileEntryOrHandle?.fullPath || fileEntryOrHandle?.name;
+
     try {
-        if (fileEntry instanceof File) {
-            // For files selected via input[type=file]
-            return await fileEntry.text();
-        } else {
-            // For files from drag and drop webkitGetAsEntry
+        // **HIGHEST PRIORITY**: If content is in fileEditor, always use that.
+        // This includes newly created files (which won't have an entryHandle) and patched/edited files.
+        if (pathKey && fileEditor.hasEditedContent(pathKey)) {
+            return fileEditor.getEditedContent(pathKey);
+        }
+
+        // If not in fileEditor, then it must be an original file from scan, so entryHandle MUST exist.
+        if (!fileEntryOrHandle) {
+            // This case should ideally not be hit if called for a file that was *only* virtual,
+            // as the check above should have caught it. This is a safeguard.
+            throw new Error(`Invalid file entry or handle provided for '${pathKey}' (it's null/undefined and not in editor).`);
+        }
+
+        // Proceed to read from file system using the handle
+        if (fileEntryOrHandle instanceof File) { // From <input type="file">
+            return await fileEntryOrHandle.text();
+        } else if (typeof fileEntryOrHandle.file === 'function') { // FileEntry from drag/drop or FileSystemFileHandle
             return new Promise((resolve, reject) => {
-                fileEntry.file(
-                    async (fileObject) => { 
+                fileEntryOrHandle.file(
+                    async (fileObject) => {
                         try {
                             const text = await fileObject.text();
                             resolve(text);
                         } catch (err) { reject(err); }
-                    }, (err) => { reject(err); }
+                    },
+                    (err) => { reject(err); }
                 );
             });
+        } else {
+            // Should be caught by the !fileEntryOrHandle check above, but as an ultimate fallback.
+            throw new Error("Unsupported file entry or handle type.");
         }
     } catch (err) {
-        err.path = fileEntry.name || fileEntry.fullPath;
-        throw err;
+        console.error(`Error in readFileContent for ${pathKey}:`, err);
+        // Augment error with path if not already there.
+        if (!err.path) err.path = pathKey;
+        throw err; // Re-throw for higher-level handlers
     }
 }
 
 // Preview a file by showing its content in a modal
-export async function previewFile(fileEntry) { 
+export async function previewFile(fileEntryOrHandle, filePathForEditedCheck = null) {
+    const pathKey = filePathForEditedCheck || fileEntryOrHandle?.path || fileEntryOrHandle?.fullPath || fileEntryOrHandle?.name;
+    const displayName = fileEntryOrHandle?.name || pathKey.substring(pathKey.lastIndexOf('/') + 1); // Get file name part for display
     try {
-        const content = await readFileContent(fileEntry); 
-        elements.filePreviewTitle.textContent = `PREVIEW: ${fileEntry.fullPath || fileEntry.name}`;
+        // readFileContent will correctly prioritize fileEditor or use the handle
+        const content = await readFileContent(fileEntryOrHandle, pathKey);
+        elements.filePreviewTitle.textContent = `PREVIEW: ${displayName}`;
         elements.filePreviewContent.textContent = content;
         elements.filePreview.style.display = 'block';
     } catch (err) {
-        console.error(`Error previewing file ${fileEntry.name}:`, err);
+        console.error(`Error previewing file ${displayName}:`, err);
         errorHandler.showError({
-            name: "PreviewError",
-            message: `Failed to preview file: ${fileEntry.name || fileEntry.fullPath}`,
+            name: err.name || "PreviewError",
+            message: `Failed to preview file: ${displayName}. ${err.message}`,
             stack: err.stack,
             cause: err
         });
     }
 }
+// --- ENDFILE: js/fileSystem.js --- //

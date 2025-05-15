@@ -1,5 +1,3 @@
-// Error Handler module to handle and display meaningful error messages
-
 const errorTypes = {
     NoModificationAllowedError: {
         title: "Permission Denied: Cannot Modify Files",
@@ -43,10 +41,19 @@ const errorTypes = {
             "Try again, ensuring you complete all browser prompts."
         ]
     },
+    PatchParseError: {
+        title: "AI Patch Parsing Error",
+        message: "The provided AI patch instructions could not be parsed or are invalid.",
+        suggestions: [
+            "Ensure the patch is valid JSON.",
+            "Check that each instruction has 'file', 'operation', and other required fields.",
+            "Verify line numbers and content are correctly formatted."
+        ]
+    },
     // Default fallback for unknown errors
     default: {
         title: "Unexpected Error",
-        message: "An unexpected error occurred while accessing the file system.",
+        message: "An unexpected error occurred.",
         suggestions: [
             "Try refreshing the page and attempt the operation again.",
             "Check browser console (F12) for more technical details."
@@ -57,34 +64,34 @@ const errorTypes = {
 // Show error details in the error panel
 export function showError(error) {
     const errorPanel = document.getElementById('errorReport');
-    const errorTitle = errorPanel.querySelector('.error-title');
-    const errorMessage = errorPanel.querySelector('.error-message');
-    const errorDetails = errorPanel.querySelector('.error-details');
-    const errorSuggestions = errorPanel.querySelector('.error-suggestions');
+    const errorTitleEl = errorPanel.querySelector('.error-title');
+    const errorMessageEl = errorPanel.querySelector('.error-message');
+    const errorDetailsEl = errorPanel.querySelector('.error-details');
+    const errorSuggestionsEl = errorPanel.querySelector('.error-suggestions');
     
     // Determine error type and get appropriate messages
     const errorInfo = errorTypes[error.name] || errorTypes.default;
     
     // Set error information
-    errorTitle.textContent = errorInfo.title;
-    errorMessage.textContent = errorInfo.message;
-    errorDetails.textContent = `Error Type: ${error.name}\nDetails: ${error.message}\nPath: ${error.path || 'Unknown'}\nStack: ${error.stack || 'Not available'}`;
+    errorTitleEl.textContent = errorInfo.title;
+    errorMessageEl.textContent = error.message || errorInfo.message; // Prefer specific error message
+    errorDetailsEl.textContent = `Error Type: ${error.name}\nDetails: ${error.message}\nPath: ${error.path || 'N/A'}\nStack: ${error.stack || 'Not available'}`;
     
     // Clear previous suggestions
-    errorSuggestions.innerHTML = '<strong>Suggestions:</strong>';
+    errorSuggestionsEl.innerHTML = '<strong>Suggestions:</strong>';
     const list = document.createElement('ul');
     errorInfo.suggestions.forEach(suggestion => {
         const item = document.createElement('li');
         item.textContent = suggestion;
         list.appendChild(item);
     });
-    errorSuggestions.appendChild(list);
+    errorSuggestionsEl.appendChild(list);
     
     // Show the error panel
     errorPanel.style.display = 'block';
     
     // Also log to console for debugging
-    console.error('Detailed error:', error);
+    console.error('Detailed error reported to UI:', error);
 }
 
 // Initialize error handler events
@@ -97,18 +104,19 @@ export function initErrorHandlers() {
     // Global error handler for uncaught exceptions
     window.addEventListener('error', (event) => {
         showError(event.error || {
-            name: 'UnknownError',
-            message: event.message,
-            stack: 'See browser console for details'
+            name: 'GlobalError',
+            message: event.message || "An unknown error occurred in the window.",
+            stack: (event.error && event.error.stack) ? event.error.stack : 'See browser console for details'
         });
     });
     
     // Unhandled promise rejection handler
     window.addEventListener('unhandledrejection', (event) => {
-        showError(event.reason || {
-            name: 'PromiseRejection',
-            message: 'Unhandled Promise rejection',
-            stack: event.reason?.stack || 'No stack trace available'
+        const reason = event.reason || {};
+        showError({
+            name: reason.name || 'PromiseRejection',
+            message: reason.message || 'Unhandled Promise rejection. See console.',
+            stack: reason.stack || (event.reason && typeof event.reason === 'string' ? event.reason : 'No stack trace available')
         });
     });
 }
