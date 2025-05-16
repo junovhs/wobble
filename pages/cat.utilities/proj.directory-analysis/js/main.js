@@ -10,6 +10,7 @@ import * as errorHandler from 'errorHandler';
 import * as fileEditor from 'fileEditor';
 import * as aiPatcher from 'aiPatcher';
 import * as zipManager from 'zipManager';
+import * as utils from 'utils'; // Make sure utils is imported if not already
 
 export const appState = {
     isCombineMode: false,
@@ -18,96 +19,171 @@ export const appState = {
     selectionCommitted: false,
     processingInProgress: false,
     currentEditingFile: null,
-    initialLoadComplete: false // New flag
+    initialLoadComplete: false,
+    editorInstance: null,
+    previewEditorInstance: null,
+    isLoadingFileContent: false,
 };
 
-export const elements = {
-    pageLoader: document.getElementById('pageLoader'), // New page loader element
-    dropZone: document.getElementById('dropZone'),
-    folderInput: document.getElementById('folderInput'),
-    treeContainer: document.getElementById('treeContainer'),
-    globalStatsDiv: document.getElementById('globalStats'),
-    selectionSummaryDiv: document.getElementById('selectionSummary'),
-    fileTypeTableBody: document.querySelector('#fileTypeTable tbody'),
-    mainContainer: document.querySelector('.main-container'),
-    globalStatsPanel: document.getElementById('globalStatsPanel'),
-    toolsContainer: document.getElementById('toolsContainer'),
-    loader: document.getElementById('loader'), // This is the "ANALYSING SECTOR" text loader
-    textOutputEl: document.getElementById('textOutput'),
-    copyReportButton: document.getElementById('copyReportButton'),
-    combineModePanel: document.getElementById('combineModePanel'),
-    selectedFilesContainer: document.getElementById('selectedFilesContainer'),
-    copySelectedBtn: document.getElementById('copySelectedBtn'),
-    selectAllBtn: document.getElementById('selectAllBtn'),
-    deselectAllBtn: document.getElementById('deselectAllBtn'),
-    commitSelectionsBtn: document.getElementById('commitSelectionsBtn'),
-    viewModeToggleBtn: document.getElementById('viewModeToggleBtn'),
-    expandAllBtn: document.getElementById('expandAllBtn'),
-    collapseAllBtn: document.getElementById('collapseAllBtn'),
-    downloadProjectBtn: document.getElementById('downloadProjectBtn'),
-    filePreview: document.getElementById('filePreview'),
-    filePreviewTitle: document.getElementById('filePreviewTitle'),
-    filePreviewContent: document.getElementById('filePreviewContent'),
-    closePreview: document.getElementById('closePreview'),
-    textOutputContainerOuter: document.getElementById('textOutputContainerOuter'),
-    notification: document.getElementById('notification'),
-    errorReport: document.getElementById('errorReport'),
-    fileEditor: document.getElementById('fileEditor'),
-    editorFileTitle: document.getElementById('editorFileTitle'),
-    editorContent: document.getElementById('editorContent'),
-    saveEditorBtn: document.getElementById('saveEditorBtn'),
-    closeEditorBtn: document.getElementById('closeEditorBtn'),
-    editorStatus: document.getElementById('editorStatus'),
-    editorInfo: document.getElementById('editorInfo'),
-    aiPatchPanel: document.getElementById('aiPatchPanel'),
-    aiPatchInput: document.getElementById('aiPatchInput'),
-    applyAiPatchBtn: document.getElementById('applyAiPatchBtn'),
-    aiPatchOutputLog: document.getElementById('aiPatchOutputLog'),
-    aiPatchDiffModal: document.getElementById('aiPatchDiffModal'),
-    diffFilePath: document.getElementById('diffFilePath'),
-    diffOutputContainer: document.getElementById('diffOutputContainer'),
-    closeAiPatchDiffModal: document.getElementById('closeAiPatchDiffModal'),
-    confirmApplyPatchChanges: document.getElementById('confirmApplyPatchChanges'),
-    skipPatchChanges: document.getElementById('skipPatchChanges'),
-    cancelAllPatchChanges: document.getElementById('cancelAllPatchChanges'),
-    mainActionDiv: document.getElementById('mainAction') // Add this for convenience
-};
+export let elements = {}; // Will be populated by populateElements
 
-// --- (setupEventListeners, handleDragOver, handleDragLeave, handleFolderSelect, processSelectedFolderViaInput, createVirtualDirectoryFromFiles, getMaxDepth, getDeepestPath, countEmptyDirs, handleFileDrop remain the same for now) ---
-// Paste the existing functions from your main.js here
+function populateElements() {
+    const elementIds = {
+        pageLoader: 'pageLoader',
+        dropZone: 'dropZone',
+        folderInput: 'folderInput',
+        treeContainer: 'treeContainer',
+        globalStatsDiv: 'globalStats',
+        selectionSummaryDiv: 'selectionSummary',
+        appContainer: 'appContainer',
+        sidebar: 'sidebar',
+        mainContentArea: 'mainContentArea',
+        globalStatsPanel: 'globalStatsPanel',
+        sidebarToolsContainer: 'sidebarToolsContainer',
+        loader: 'loader',
+        textOutputEl: 'textOutput',
+        copyReportButton: 'copyReportButton',
+        combineModePanel: 'combineModePanel',
+        selectedFilesContainer: 'selectedFilesContainer',
+        copySelectedBtn: 'copySelectedBtn',
+        selectAllBtn: 'selectAllBtn',
+        deselectAllBtn: 'deselectAllBtn',
+        commitSelectionsBtn: 'commitSelectionsBtn',
+        viewModeToggleBtn: 'viewModeToggleBtn',
+        expandAllBtn: 'expandAllBtn',
+        collapseAllBtn: 'collapseAllBtn',
+        downloadProjectBtn: 'downloadProjectBtn',
+        clearProjectBtn: 'clearProjectBtn', // This ID should now exist in HTML
+        filePreview: 'filePreview',
+        filePreviewTitle: 'filePreviewTitle',
+        filePreviewContentWrapper: 'filePreviewContentWrapper',
+        filePreviewContent: 'filePreviewContent',
+        closePreview: 'closePreview',
+        textOutputContainerOuter: 'textOutputContainerOuter',
+        visualOutputContainer: 'visualOutputContainer',
+        notification: 'notification',
+        errorReport: 'errorReport',
+        fileEditor: 'fileEditor',
+        editorFileTitle: 'editorFileTitle',
+        editorContent: 'editorContent', // Div for CodeMirror
+        saveEditorBtn: 'saveEditorBtn',
+        closeEditorBtn: 'closeEditorBtn',
+        editorStatus: 'editorStatus',
+        editorInfo: 'editorInfo',
+        aiPatchPanel: 'aiPatchPanel',
+        aiPatchInput: 'aiPatchInput',
+        applyAiPatchBtn: 'applyAiPatchBtn',
+        aiPatchOutputLog: 'aiPatchOutputLog',
+        aiPatchDiffModal: 'aiPatchDiffModal',
+        diffFilePath: 'diffFilePath',
+        diffOutputContainer: 'diffOutputContainer',
+        closeAiPatchDiffModal: 'closeAiPatchDiffModal',
+        confirmApplyPatchChanges: 'confirmApplyPatchChanges',
+        skipPatchChanges: 'skipPatchChanges',
+        cancelAllPatchChanges: 'cancelAllPatchChanges',
+        mainActionDiv: 'mainAction'
+    };
 
-function setupEventListeners() {
-    // Drop zone
-    elements.dropZone.addEventListener('dragover', handleDragOver);
-    elements.dropZone.addEventListener('dragleave', handleDragLeave);
-    elements.dropZone.addEventListener('drop', handleFileDrop);
-    elements.dropZone.addEventListener('click', () => elements.folderInput.click());
-    elements.folderInput.addEventListener('change', handleFolderSelect);
+    for (const key in elementIds) {
+        elements[key] = document.getElementById(elementIds[key]);
+        if (!elements[key]) {
+            console.warn(`[populateElements] Element with ID '${elementIds[key]}' not found for key '${key}'.`);
+        }
+    }
 
-    // Tool buttons
-    elements.selectAllBtn.addEventListener('click', () => treeView.setAllSelections(true));
-    elements.deselectAllBtn.addEventListener('click', () => treeView.setAllSelections(false));
-    elements.commitSelectionsBtn.addEventListener('click', commitSelections);
-    elements.viewModeToggleBtn.addEventListener('click', () => uiManager.setViewModeUI(!appState.isCombineMode));
-    elements.downloadProjectBtn.addEventListener('click', zipManager.downloadProjectAsZip); 
-
-    // Tree manipulation
-    elements.expandAllBtn.addEventListener('click', () => treeView.toggleAllFolders(false));
-    elements.collapseAllBtn.addEventListener('click', () => treeView.toggleAllFolders(true));
-
-    // File preview
-    elements.closePreview.addEventListener('click', () => {
-        elements.filePreview.style.display = 'none';
-        elements.filePreviewContent.textContent = '';
-    });
-
-    // Copy buttons
-    elements.copyReportButton.addEventListener('click', copyReport);
-    elements.copySelectedBtn.addEventListener('click', combineMode.copySelectedFiles);
+    // QuerySelector elements (handle separately as they don't use getElementById)
+    elements.fileTypeTableBody = document.querySelector('#fileTypeTable tbody');
+    if (!elements.fileTypeTableBody) {
+        console.warn("[populateElements] Element '#fileTypeTable tbody' not found.");
+    }
+    // Add any other querySelector-based elements here with similar checks
 }
 
-function handleDragOver(e) { e.preventDefault(); elements.dropZone.classList.add('dragover'); }
-function handleDragLeave() { elements.dropZone.classList.remove('dragover'); }
+
+function setupEventListeners() {
+    // Helper to safely add event listeners
+    const safeAddEventListener = (element, event, handler, elementName) => {
+        if (element) {
+            element.addEventListener(event, handler);
+        } else {
+            console.warn(`[setupEventListeners] Element '${elementName}' not found. Cannot attach '${event}' listener.`);
+        }
+    };
+
+    // Drop zone
+    safeAddEventListener(elements.dropZone, 'dragover', handleDragOver, 'dropZone');
+    safeAddEventListener(elements.dropZone, 'dragleave', handleDragLeave, 'dropZone');
+    safeAddEventListener(elements.dropZone, 'drop', handleFileDrop, 'dropZone');
+    safeAddEventListener(elements.dropZone, 'click', () => { if (elements.folderInput) elements.folderInput.click(); }, 'dropZone (for folderInput click)');
+    safeAddEventListener(elements.folderInput, 'change', handleFolderSelect, 'folderInput');
+
+    // Tool buttons
+    safeAddEventListener(elements.selectAllBtn, 'click', () => treeView.setAllSelections(true), 'selectAllBtn');
+    safeAddEventListener(elements.deselectAllBtn, 'click', () => treeView.setAllSelections(false), 'deselectAllBtn');
+    safeAddEventListener(elements.commitSelectionsBtn, 'click', commitSelections, 'commitSelectionsBtn');
+    safeAddEventListener(elements.viewModeToggleBtn, 'click', () => uiManager.setViewModeUI(!appState.isCombineMode), 'viewModeToggleBtn');
+    safeAddEventListener(elements.downloadProjectBtn, 'click', zipManager.downloadProjectAsZip, 'downloadProjectBtn');
+    safeAddEventListener(elements.clearProjectBtn, 'click', clearProjectData, 'clearProjectBtn'); // Listener for the now existing button
+
+    // Tree manipulation
+    safeAddEventListener(elements.expandAllBtn, 'click', () => treeView.toggleAllFolders(false), 'expandAllBtn');
+    safeAddEventListener(elements.collapseAllBtn, 'click', () => treeView.toggleAllFolders(true), 'collapseAllBtn');
+
+    // File preview
+    safeAddEventListener(elements.closePreview, 'click', () => {
+        if (elements.filePreview) elements.filePreview.style.display = 'none';
+        if (appState.previewEditorInstance) {
+            appState.previewEditorInstance.setValue('');
+        }
+    }, 'closePreview');
+
+    // Copy buttons
+    safeAddEventListener(elements.copyReportButton, 'click', copyReport, 'copyReportButton');
+    safeAddEventListener(elements.copySelectedBtn, 'click', combineMode.copySelectedFiles, 'copySelectedBtn');
+
+    // AI Patcher buttons
+    // These are better initialized within aiPatcher.js's initAiPatcher function if it exists and is called.
+    // For now, assuming they might still be here based on original structure or for directness.
+    safeAddEventListener(elements.applyAiPatchBtn, 'click', () => {
+        const patchJson = elements.aiPatchInput ? elements.aiPatchInput.value : '';
+        if (!patchJson.trim()) {
+            notificationSystem.showNotification("Patch input is empty.", {duration: 3000});
+            if (elements.aiPatchOutputLog) elements.aiPatchOutputLog.textContent = "Patch input empty.";
+            return;
+        }
+        const parsedInstructions = aiPatcher.parsePatchInstructions ? aiPatcher.parsePatchInstructions(patchJson) : JSON.parse(patchJson);
+        if (parsedInstructions && aiPatcher.processPatches) {
+            aiPatcher.processPatches(parsedInstructions);
+        } else {
+             if (elements.aiPatchOutputLog) elements.aiPatchOutputLog.textContent = "Failed to parse or process CAPCA patches.";
+        }
+    }, 'applyAiPatchBtn');
+
+    safeAddEventListener(elements.closeAiPatchDiffModal, 'click', () => {
+        if(aiPatcher.closeDiffModalAndProceed) aiPatcher.closeDiffModalAndProceed(false);
+    }, 'closeAiPatchDiffModal');
+    safeAddEventListener(elements.confirmApplyPatchChanges, 'click', () => {
+        if(aiPatcher.closeDiffModalAndProceed) aiPatcher.closeDiffModalAndProceed(true);
+    }, 'confirmApplyPatchChanges');
+    safeAddEventListener(elements.skipPatchChanges, 'click', () => {
+         if(aiPatcher.closeDiffModalAndProceed) aiPatcher.closeDiffModalAndProceed(false);
+    }, 'skipPatchChanges');
+    safeAddEventListener(elements.cancelAllPatchChanges, 'click', () => {
+        // Assuming aiPatcher might export a function like cancelAllPatches or handle this via closeDiffModalAndProceed
+        if(aiPatcher.patchQueue) aiPatcher.patchQueue = []; // Direct manipulation if no dedicated function
+        if(aiPatcher.closeDiffModalAndProceed) aiPatcher.closeDiffModalAndProceed(false);
+        if(elements.aiPatchOutputLog) elements.aiPatchOutputLog.textContent += "\n\nUser ACTION: Cancelled all remaining patches.\n";
+        notificationSystem.showNotification("All remaining patches cancelled.", { duration: 3000 });
+    }, 'cancelAllPatchChanges');
+
+
+    // File Editor buttons (these should ideally be in fileEditor.js's init function)
+    safeAddEventListener(elements.saveEditorBtn, 'click', () => { if(fileEditor.saveFileChanges) fileEditor.saveFileChanges(); }, 'saveEditorBtn');
+    safeAddEventListener(elements.closeEditorBtn, 'click', () => { if(fileEditor.closeEditor) fileEditor.closeEditor(); }, 'closeEditorBtn');
+}
+
+function handleDragOver(e) { e.preventDefault(); if (elements.dropZone) elements.dropZone.classList.add('dragover'); }
+function handleDragLeave() { if (elements.dropZone) elements.dropZone.classList.remove('dragover'); }
 
 async function handleFolderSelect(event) {
     if (appState.processingInProgress) return;
@@ -116,19 +192,19 @@ async function handleFolderSelect(event) {
     const firstFileRelativePath = files[0].webkitRelativePath;
     const rootDirName = firstFileRelativePath.split('/')[0] || 'selected_folder';
     await processSelectedFolderViaInput(files, rootDirName);
-    elements.folderInput.value = '';
+    if (elements.folderInput) elements.folderInput.value = '';
 }
 
 async function processSelectedFolderViaInput(files, rootDirName) {
-    resetUIForProcessing(`Processing '${rootDirName}'...`); // Updated loader message
+    resetUIForProcessing(`Processing '${rootDirName}'...`);
     appState.processingInProgress = true;
     try {
         const virtualDirData = createVirtualDirectoryFromFiles(files, rootDirName);
         appState.fullScanData = virtualDirData;
-        if (appState.fullScanData.directoryData) {
+        if (appState.fullScanData.directoryData && elements.treeContainer) {
              treeView.renderTree(appState.fullScanData.directoryData, elements.treeContainer);
         } else {
-            throw new Error("Failed to construct directory data from selected files.");
+            throw new Error("Failed to construct directory data from selected files or treeContainer is missing.");
         }
 
         const allInitiallySelectedPaths = new Set();
@@ -140,18 +216,22 @@ async function processSelectedFolderViaInput(files, rootDirName) {
         }
         appState.committedScanData = fileSystem.filterScanData(appState.fullScanData, allInitiallySelectedPaths);
         appState.selectionCommitted = true;
+
+        if(elements.globalStatsPanel) elements.globalStatsPanel.style.display = 'block';
+        if(elements.sidebarToolsContainer) elements.sidebarToolsContainer.style.display = 'flex';
+        if(elements.visualOutputContainer) elements.visualOutputContainer.style.display = 'flex';
+        if(elements.textOutputContainerOuter) elements.textOutputContainerOuter.style.display = 'flex';
+        if(elements.aiPatchPanel) elements.aiPatchPanel.style.display = 'block';
+
         uiManager.refreshAllUI();
         enableUIControls();
-        elements.mainContainer.style.display = 'flex';
-        elements.globalStatsPanel.style.display = 'block';
-        elements.toolsContainer.style.display = 'flex';
-        elements.aiPatchPanel.style.display = 'block';
+
     } catch (err) {
         console.error("ERROR PROCESSING FOLDER INPUT:", err);
         errorHandler.showError(err);
         showFailedUI("Folder processing failed.");
     } finally {
-        elements.loader.classList.remove('visible'); // Hide the text loader
+        if(elements.loader) elements.loader.classList.remove('visible');
         appState.processingInProgress = false;
     }
 }
@@ -173,7 +253,7 @@ function createVirtualDirectoryFromFiles(fileList, rootName) {
 
         for (let i = 0; i < pathParts.length; i++) {
             const folderNamePart = pathParts[i];
-             if (i === 0 && folderNamePart === rootName && pathParts.length > 1) continue; 
+             if (i === 0 && folderNamePart === rootName && pathParts.length > 1) continue;
             if(pathParts.length === 1 && folderNamePart === rootName) { /* file directly in root dir */ }
             else {currentPathForFolderConstruction += '/' + folderNamePart;}
 
@@ -181,7 +261,7 @@ function createVirtualDirectoryFromFiles(fileList, rootName) {
                 const newFolder = {
                     name: folderNamePart, path: currentPathForFolderConstruction, type: 'folder',
                     depth: i + 1, children: [], fileCount: 0, dirCount: 0, totalSize: 0,
-                    fileTypes: {}, entryHandle: null 
+                    fileTypes: {}, entryHandle: null
                 };
                 folderMap.set(currentPathForFolderConstruction, newFolder);
                 if (currentParent.path !== newFolder.path) {
@@ -198,8 +278,8 @@ function createVirtualDirectoryFromFiles(fileList, rootName) {
         const filePath = file.webkitRelativePath;
         const fileInfo = {
             name: fileName, type: 'file', size: file.size, path: filePath,
-            extension: ext, depth: pathParts.length + 1, 
-            entryHandle: file 
+            extension: ext, depth: pathParts.length + 1,
+            entryHandle: file // Keep the File object as the handle for input type=file
         };
         currentParent.children.push(fileInfo);
         allFilesList.push({ ...fileInfo });
@@ -237,7 +317,7 @@ function createVirtualDirectoryFromFiles(fileList, rootName) {
 
 function getMaxDepth(node, currentDepth = 0) {
     if (!node) return currentDepth;
-    node.depth = currentDepth; 
+    node.depth = currentDepth;
     let max = currentDepth;
     if (node.children) {
         for (const child of node.children) {
@@ -256,8 +336,8 @@ function getDeepestPath(node, currentPathStr, maxDepthObj) {
 function countEmptyDirs(node) {
     let count = 0;
     if (node.type === 'folder') {
-        if (node.children.length === 0 && node.name !== appState.fullScanData?.directoryData.name) { 
-            count = 1; 
+        if (node.children.length === 0 && node.name !== appState.fullScanData?.directoryData.name) {
+            count = 1;
         }
         else { for (const child of node.children) { count += countEmptyDirs(child); } }
     } return count;
@@ -266,7 +346,7 @@ function countEmptyDirs(node) {
 async function handleFileDrop(event) {
     event.preventDefault();
     if (appState.processingInProgress) return;
-    elements.dropZone.classList.remove('dragover');
+    if (elements.dropZone) elements.dropZone.classList.remove('dragover');
     resetUIForProcessing("Processing dropped folder...");
     appState.processingInProgress = true;
     const items = event.dataTransfer.items;
@@ -275,64 +355,75 @@ async function handleFileDrop(event) {
         if (entry && entry.isDirectory) {
             try {
                 appState.fullScanData = await fileSystem.processDirectoryEntryRecursive(entry, entry.name, 0);
-                if (appState.fullScanData.directoryData) { 
+                if (appState.fullScanData.directoryData && elements.treeContainer) {
                      treeView.renderTree(appState.fullScanData.directoryData, elements.treeContainer);
                 } else {
-                     throw new Error("processDirectoryEntryRecursive failed to return directoryData.");
+                     throw new Error("processDirectoryEntryRecursive failed to return directoryData or treeContainer missing.");
                 }
                 const allInitiallySelectedPaths = new Set();
                 if(appState.fullScanData.allFilesList) appState.fullScanData.allFilesList.forEach(f => allInitiallySelectedPaths.add(f.path));
                 if(appState.fullScanData.allFoldersList) appState.fullScanData.allFoldersList.forEach(f => allInitiallySelectedPaths.add(f.path));
-                
+
                 appState.committedScanData = fileSystem.filterScanData(appState.fullScanData, allInitiallySelectedPaths);
                 appState.selectionCommitted = true;
-                uiManager.refreshAllUI(); enableUIControls();
-                elements.mainContainer.style.display = 'flex';
-                elements.globalStatsPanel.style.display = 'block';
-                elements.toolsContainer.style.display = 'flex';
-                elements.aiPatchPanel.style.display = 'block';
+
+                if(elements.globalStatsPanel) elements.globalStatsPanel.style.display = 'block';
+                if(elements.sidebarToolsContainer) elements.sidebarToolsContainer.style.display = 'flex';
+                if(elements.visualOutputContainer) elements.visualOutputContainer.style.display = 'flex';
+                if(elements.textOutputContainerOuter) elements.textOutputContainerOuter.style.display = 'flex';
+                if(elements.aiPatchPanel) elements.aiPatchPanel.style.display = 'block';
+
+                uiManager.refreshAllUI();
+                enableUIControls();
+
             } catch (err) {
                 console.error("ERROR PROCESSING DIRECTORY (DROP):", err);
                 errorHandler.showError(err);
                 showFailedUI("Directory processing failed. Check console and error report.");
             } finally {
-                elements.loader.classList.remove('visible'); // Hide text loader
+                if(elements.loader) elements.loader.classList.remove('visible');
                 appState.processingInProgress = false;
             }
         } else {
             errorHandler.showError({ name: "InvalidTargetError", message: "Please drop a folder, not an individual file(s)." });
-            elements.loader.classList.remove('visible'); // Hide text loader
+            if(elements.loader) elements.loader.classList.remove('visible');
             appState.processingInProgress = false;
         }
     } else {
-        elements.loader.classList.remove('visible'); // Hide text loader
+        if(elements.loader) elements.loader.classList.remove('visible');
         appState.processingInProgress = false;
     }
 }
 
-function resetUIForProcessing(loaderMsg = "ANALYSING SECTOR... STAND BY...") {
-    // Show the text loader for folder processing
-    elements.loader.textContent = loaderMsg;
-    elements.loader.classList.add('visible');
+function resetUIForProcessing(loaderMsg = "ANALYSING...") {
+    if (elements.loader) {
+        elements.loader.textContent = loaderMsg;
+        elements.loader.classList.add('visible');
+    }
 
-    // Hide main content areas used after scan
-    elements.mainContainer.style.display = 'none';
-    elements.globalStatsPanel.style.display = 'none';
-    elements.toolsContainer.style.display = 'none';
-    elements.aiPatchPanel.style.display = 'none';
-    
+    const panelsToHide = [
+        elements.globalStatsPanel, elements.visualOutputContainer,
+        elements.textOutputContainerOuter, elements.combineModePanel,
+        elements.aiPatchPanel, elements.sidebarToolsContainer,
+        elements.selectionSummaryDiv, elements.fileEditor
+    ];
+    panelsToHide.forEach(panel => { if (panel) panel.style.display = 'none'; });
+
+
     if(elements.aiPatchInput) elements.aiPatchInput.value = '';
     if(elements.aiPatchOutputLog) elements.aiPatchOutputLog.textContent = 'Awaiting patch application...';
-    if(elements.aiPatchDiffModal) elements.aiPatchDiffModal.style.display = 'none'; 
+    if(elements.aiPatchDiffModal) elements.aiPatchDiffModal.style.display = 'none';
     if(elements.diffOutputContainer) elements.diffOutputContainer.innerHTML = '';
 
-    elements.treeContainer.innerHTML = '';
-    elements.globalStatsDiv.innerHTML = '';
-    elements.fileTypeTableBody.innerHTML = '';
-    elements.textOutputEl.textContent = '';
-    elements.selectionSummaryDiv.style.display = 'none';
-    elements.selectionSummaryDiv.textContent = '';
-    elements.fileEditor.style.display = 'none';
+    if (elements.treeContainer) elements.treeContainer.innerHTML = '<div class="empty-notice">DROP A FOLDER OR SELECT ONE TO BEGIN.</div>';
+    if (elements.globalStatsDiv) elements.globalStatsDiv.innerHTML = '';
+    if (elements.fileTypeTableBody) elements.fileTypeTableBody.innerHTML = '';
+    if (elements.textOutputEl) elements.textOutputEl.textContent = '';
+    if (elements.selectionSummaryDiv) elements.selectionSummaryDiv.textContent = '';
+
+    if(appState.editorInstance) appState.editorInstance.setValue('');
+    if(appState.previewEditorInstance) appState.previewEditorInstance.setValue('');
+
     appState.fullScanData = null; appState.committedScanData = null;
     appState.selectionCommitted = false; appState.currentEditingFile = null;
     if (fileEditor.getAllEditedFiles && typeof fileEditor.getAllEditedFiles === 'function') {
@@ -341,106 +432,174 @@ function resetUIForProcessing(loaderMsg = "ANALYSING SECTOR... STAND BY...") {
             editedFilesMap.clear();
         }
     }
-    uiManager.setViewModeUI(false); // Reset view mode
-    combineMode.updateCombineModeListDisplay(); // Clear combine mode list
-    disableUIControls(); // Disable buttons
+    uiManager.setViewModeUI(false);
+    combineMode.updateCombineModeListDisplay();
+    disableUIControls();
+    if (elements.mainActionDiv) elements.mainActionDiv.style.display = 'flex';
 }
 
 function enableUIControls() {
-    elements.selectAllBtn.disabled = false; elements.deselectAllBtn.disabled = false;
-    elements.commitSelectionsBtn.disabled = false; elements.expandAllBtn.disabled = false;
-    elements.collapseAllBtn.disabled = false; elements.viewModeToggleBtn.disabled = false;
-    elements.copyReportButton.disabled = false;
-    elements.downloadProjectBtn.disabled = false;
-    elements.copySelectedBtn.disabled = !(appState.committedScanData?.allFilesList.length > 0);
-    if (elements.applyAiPatchBtn) elements.applyAiPatchBtn.disabled = false;
+    const buttonsToEnable = [
+        elements.selectAllBtn, elements.deselectAllBtn, elements.commitSelectionsBtn,
+        elements.expandAllBtn, elements.collapseAllBtn, elements.viewModeToggleBtn,
+        elements.downloadProjectBtn, elements.clearProjectBtn, elements.copyReportButton,
+        elements.applyAiPatchBtn
+    ];
+    buttonsToEnable.forEach(btn => { if (btn) btn.disabled = false; });
+
+    if (elements.copySelectedBtn) {
+        // CORRECTED LINE: Use utils.isLikelyTextFile
+        elements.copySelectedBtn.disabled = !(appState.committedScanData?.allFilesList.length > 0 && appState.committedScanData.allFilesList.some(f => utils.isLikelyTextFile(f.path)));
+    }
 }
+
 function disableUIControls() {
-    elements.selectAllBtn.disabled = true; elements.deselectAllBtn.disabled = true;
-    elements.commitSelectionsBtn.disabled = true; elements.expandAllBtn.disabled = true;
-    elements.collapseAllBtn.disabled = true; elements.viewModeToggleBtn.disabled = true;
-    elements.copyReportButton.disabled = true; 
-    elements.downloadProjectBtn.disabled = true;
-    elements.copySelectedBtn.disabled = true;
-    if (elements.applyAiPatchBtn) elements.applyAiPatchBtn.disabled = true;
+     const buttonsToDisable = [
+        elements.selectAllBtn, elements.deselectAllBtn, elements.commitSelectionsBtn,
+        elements.expandAllBtn, elements.collapseAllBtn, elements.viewModeToggleBtn,
+        elements.downloadProjectBtn, elements.clearProjectBtn, elements.copyReportButton,
+        elements.copySelectedBtn, elements.applyAiPatchBtn
+    ];
+    buttonsToDisable.forEach(btn => { if (btn) btn.disabled = true; });
 }
+
 function showFailedUI(message = "SCAN FAILED - SEE ERROR REPORT") {
-    elements.textOutputEl.textContent = message;
-    elements.mainContainer.style.display = 'flex'; // Show the main container for text report
-    if(document.getElementById('visualOutputContainer')) document.getElementById('visualOutputContainer').style.display = 'none'; // Hide tree
-    if(elements.textOutputContainerOuter) elements.textOutputContainerOuter.style.display = 'flex'; // Show text output
-    elements.globalStatsPanel.style.display = 'none';
-    elements.toolsContainer.style.display = 'none';
-    elements.aiPatchPanel.style.display = 'none';
-    elements.loader.classList.remove('visible'); // Hide text loader
+    if(elements.textOutputEl) elements.textOutputEl.textContent = message;
+    if(elements.visualOutputContainer) elements.visualOutputContainer.style.display = 'none';
+    if(elements.textOutputContainerOuter) elements.textOutputContainerOuter.style.display = 'flex';
+    if(elements.globalStatsPanel) elements.globalStatsPanel.style.display = 'none';
+    if(elements.aiPatchPanel) elements.aiPatchPanel.style.display = 'none';
+    if(elements.sidebarToolsContainer) elements.sidebarToolsContainer.style.display = 'none';
+    if(elements.loader) elements.loader.classList.remove('visible');
+    if(elements.mainActionDiv) elements.mainActionDiv.style.display = 'flex';
+    if(elements.clearProjectBtn) elements.clearProjectBtn.disabled = true; // Ensure clear is disabled on fail
 }
+
 
 function commitSelections() {
-    if (!appState.fullScanData) { errorHandler.showError({ name: "NoDataError", message: "No directory scanned yet."}); return; }
-    const currentSelectedPaths = new Set();
-    elements.treeContainer.querySelectorAll('li').forEach(li => { if (li.dataset.selected === "true") { currentSelectedPaths.add(li.dataset.path); } });
-    
-    appState.committedScanData = fileSystem.filterScanData(appState.fullScanData, currentSelectedPaths);
+    if (!appState.fullScanData) {
+        errorHandler.showError({ name: "NoDataError", message: "No directory scanned yet." });
+        return;
+    }
 
-    if (appState.fullScanData && appState.fullScanData.allFilesList && appState.committedScanData) {
-        appState.fullScanData.allFilesList.forEach(fileFromFullScan => {
-            if (fileEditor.hasEditedContent(fileFromFullScan.path) && !fileFromFullScan.entryHandle) { 
-                if (!appState.committedScanData.allFilesList.find(committedFile => committedFile.path === fileFromFullScan.path)) {
-                    appState.committedScanData.allFilesList.push({...fileFromFullScan, content: fileEditor.getEditedContent(fileFromFullScan.path)});
-                }
+    const currentSelectedPaths = new Set();
+    if (elements.treeContainer) {
+        elements.treeContainer.querySelectorAll('li').forEach(li => {
+            if (li.dataset.selected === "true") {
+                currentSelectedPaths.add(li.dataset.path);
             }
         });
     }
 
+
+    if (currentSelectedPaths.size === 0 && appState.fullScanData.allFilesList && appState.fullScanData.allFilesList.length > 0) {
+        notificationSystem.showNotification("Cannot commit: No files or folders are selected in the tree.", { duration: 3500 });
+        return;
+    }
+
+    appState.committedScanData = fileSystem.filterScanData(appState.fullScanData, currentSelectedPaths);
+
+    if (appState.fullScanData && appState.fullScanData.allFilesList && appState.committedScanData && appState.fullScanData.directoryData) {
+        const editedFileMap = fileEditor.getAllEditedFiles();
+        editedFileMap.forEach((fileState, filePath) => {
+            const originalFileFromFullScan = appState.fullScanData.allFilesList.find(f => f.path === filePath);
+            if ((!originalFileFromFullScan || !originalFileFromFullScan.entryHandle) && currentSelectedPaths.has(filePath)) {
+                if (!appState.committedScanData.allFilesList.find(committedFile => committedFile.path === filePath)) {
+                    const name = filePath.substring(filePath.lastIndexOf('/') + 1);
+                    const extension = name.includes('.') ? name.substring(name.lastIndexOf('.')).toLowerCase() : '(no ext)';
+
+                    let depth = 0;
+                    const rootPath = appState.fullScanData.directoryData.path;
+                    if (filePath.startsWith(rootPath + '/')) {
+                        depth = (filePath.substring(rootPath.length + 1).match(/\//g) || []).length +1;
+                    } else if (filePath.startsWith(rootPath) && !filePath.includes('/')) {
+                         depth = 1;
+                    } else {
+                        const rootPartsCount = (rootPath.match(/\//g) || []).length;
+                        const filePartsCount = (filePath.match(/\//g) || []).length;
+                        depth = Math.max(1, filePartsCount - rootPartsCount + (rootPath.includes('/') ? 0:1) );
+                    }
+
+
+                    appState.committedScanData.allFilesList.push({
+                        name: name,
+                        path: filePath,
+                        size: fileState.content.length,
+                        extension: extension,
+                        type: 'file',
+                        depth: depth,
+                        entryHandle: null
+                    });
+                }
+            }
+        });
+        if (appState.committedScanData.allFilesList) {
+           appState.committedScanData.allFilesList.sort((a,b) => a.path.localeCompare(b.path));
+        }
+    }
+
     appState.selectionCommitted = true;
     uiManager.refreshAllUI();
-    notificationSystem.showNotification("Selections committed successfully");
+    if(currentSelectedPaths.size > 0) {
+        notificationSystem.showNotification("Selections committed successfully");
+    } else if (appState.fullScanData.allFilesList && appState.fullScanData.allFilesList.length === 0) {
+        notificationSystem.showNotification("No items to commit from empty scan.");
+    }
 }
+
+function clearProjectData() {
+    notificationSystem.showNotification("Project data cleared.", {duration: 2000});
+    resetUIForProcessing("DROP A FOLDER OR SELECT ONE TO BEGIN.");
+    if(elements.loader) elements.loader.classList.remove('visible');
+    if(elements.mainActionDiv) elements.mainActionDiv.style.display = 'flex';
+    if(elements.sidebarToolsContainer) elements.sidebarToolsContainer.style.display = 'none';
+    disableUIControls();
+    if(elements.clearProjectBtn) elements.clearProjectBtn.disabled = true;
+}
+
 function copyReport() {
-    if (elements.textOutputEl.textContent) {
+    if (elements.textOutputEl && elements.textOutputEl.textContent && elements.textOutputEl.textContent.trim() !== "" && !elements.textOutputEl.textContent.startsWith("// NO DATA AVAILABLE") && !elements.textOutputEl.textContent.startsWith("// NO ITEMS IN CURRENT VIEW")) {
         navigator.clipboard.writeText(elements.textOutputEl.textContent)
             .then(() => notificationSystem.showNotification('Report copied to clipboard!'))
             .catch(err => { console.error('Failed to copy report: ', err); errorHandler.showError({ name: "ClipboardError", message: "Failed to copy to clipboard.", stack: err.stack }); });
-    } else { notificationSystem.showNotification('No report generated to copy.'); }
+    } else { notificationSystem.showNotification('No report generated or report is empty.'); }
 }
 
+
 function initApp() {
-    // Ensure pageLoader is visible initially (CSS should handle this by default)
-    // elements.pageLoader.classList.remove('hidden'); // Not strictly needed if default is visible
+    populateElements();
 
     notificationSystem.initNotificationSystem();
     errorHandler.initErrorHandlers();
     fileEditor.initFileEditor();
-    aiPatcher.initAiPatcher(); 
-    document.body.className = ''; // Clear any theme classes if set initially
+    aiPatcher.initAiPatcher();
+    document.body.className = '';
 
-    // Initially hide all main content sections until loader is done
-    elements.mainActionDiv.style.display = 'none'; // Drop zone area
-    elements.globalStatsPanel.style.display = 'none';
-    elements.toolsContainer.style.display = 'none';
-    elements.mainContainer.style.display = 'none'; // Contains tree, report, combine panels
-    elements.aiPatchPanel.style.display = 'none';
-    elements.selectionSummaryDiv.style.display = 'none';
-    elements.fileEditor.style.display = 'none';
-    if(elements.aiPatchDiffModal) elements.aiPatchDiffModal.style.display = 'none'; 
-    
-    disableUIControls(); // Keep controls disabled until content is ready
-    uiManager.setViewModeUI(false); // Set to standard view initially
+    if (elements.sidebar) elements.sidebar.style.display = 'flex';
+    if (elements.mainActionDiv) elements.mainActionDiv.style.display = 'flex';
+    if (elements.loader) elements.loader.classList.remove('visible');
+
+    const panelsToHideOnInit = [
+        elements.globalStatsPanel, elements.visualOutputContainer,
+        elements.textOutputContainerOuter, elements.combineModePanel,
+        elements.aiPatchPanel, elements.sidebarToolsContainer,
+        elements.selectionSummaryDiv, elements.fileEditor, elements.aiPatchDiffModal
+    ];
+    panelsToHideOnInit.forEach(panel => { if (panel) panel.style.display = 'none'; });
+
+    if (elements.treeContainer) elements.treeContainer.innerHTML = '<div class="empty-notice">DROP A FOLDER OR SELECT ONE TO BEGIN.</div>';
+
+    disableUIControls();
+    uiManager.setViewModeUI(false);
     setupEventListeners();
 
-    // Simulate some loading time for demonstration or if init has async parts.
-    // In a real app, this would be at the end of all truly asynchronous setup.
-    setTimeout(() => {
-        elements.pageLoader.classList.add('hidden');
-        document.body.classList.add('loaded'); // Signal body that loading is done
-        
-        // Now make the main action area (drop zone) visible
-        elements.mainActionDiv.style.display = 'flex'; // Or 'block' based on its intended layout
-        
-        appState.initialLoadComplete = true;
-        // Other elements (#globalStatsPanel, #toolsContainer, etc.) will be shown
-        // by resetUIForProcessing or after a scan.
-    }, 500); // Adjust timeout as needed, or remove if init is purely synchronous
+    if (elements.pageLoader) elements.pageLoader.classList.add('hidden');
+    document.body.classList.add('loaded');
+
+    appState.initialLoadComplete = true;
+    console.log("DirAnalyse Matrix Initialized. Element population deferred. CodeMirror integration started.");
+    console.info("CodeMirror library is loaded via CDN. Internet connection required for syntax highlighting.");
+    console.info("Performance Profiling: Please use your browser's developer tools to profile initial load and identify any specific bottlenecks for further optimization.");
 }
 document.addEventListener('DOMContentLoaded', initApp);
 // --- ENDFILE: js/main.js --- //

@@ -1,8 +1,9 @@
 // --- FILE: js/fileSystem.js --- //
-import { elements, appState } from './main.js'; // Added appState to use in readFileContent for new files
+import { elements, appState } from './main.js';
 import * as notificationSystem from 'notificationSystem';
 import * as errorHandler from 'errorHandler';
 import * as fileEditor from 'fileEditor';
+import { getFileExtension } from './utils.js'; // For CodeMirror mode
 
 // Process a directory entry recursively and build directory data structure
 export async function processDirectoryEntryRecursive(dirEntry, currentPath, depth, parentAggregator = null) {
@@ -101,7 +102,6 @@ export async function processDirectoryEntryRecursive(dirEntry, currentPath, dept
 }
 
 export function filterScanData(fullData, selectedPathsSet) {
-    // ... (This function remains the same)
     if (!fullData || !fullData.directoryData) {
         return { directoryData: null, allFilesList: [], allFoldersList: [], maxDepth: 0, deepestPathExample: '', emptyDirCount: 0 };
     }
@@ -174,28 +174,24 @@ export function filterScanData(fullData, selectedPathsSet) {
     };
 }
 
-// Read file content for previewing or editing
-export async function readFileContent(fileEntryOrHandle, filePathForEditedCheck = null) {
+// Read file content.
+// Pass `forceOriginal = true` to bypass edited content and read from handle,
+// used when needing the true original for comparison or reset.
+export async function readFileContent(fileEntryOrHandle, filePathForEditedCheck = null, forceOriginal = false) {
     const pathKey = filePathForEditedCheck || fileEntryOrHandle?.path || fileEntryOrHandle?.fullPath || fileEntryOrHandle?.name;
 
     try {
-        // **HIGHEST PRIORITY**: If content is in fileEditor, always use that.
-        // This includes newly created files (which won't have an entryHandle) and patched/edited files.
-        if (pathKey && fileEditor.hasEditedContent(pathKey)) {
+        if (!forceOriginal && pathKey && fileEditor.hasEditedContent(pathKey)) {
             return fileEditor.getEditedContent(pathKey);
         }
 
-        // If not in fileEditor, then it must be an original file from scan, so entryHandle MUST exist.
         if (!fileEntryOrHandle) {
-            // This case should ideally not be hit if called for a file that was *only* virtual,
-            // as the check above should have caught it. This is a safeguard.
-            throw new Error(`Invalid file entry or handle provided for '${pathKey}' (it's null/undefined and not in editor).`);
+            throw new Error(`Invalid file entry or handle provided for '${pathKey}' (it's null/undefined and not in editor, or original read forced).`);
         }
 
-        // Proceed to read from file system using the handle
-        if (fileEntryOrHandle instanceof File) { // From <input type="file">
+        if (fileEntryOrHandle instanceof File) { 
             return await fileEntryOrHandle.text();
-        } else if (typeof fileEntryOrHandle.file === 'function') { // FileEntry from drag/drop or FileSystemFileHandle
+        } else if (typeof fileEntryOrHandle.file === 'function') { 
             return new Promise((resolve, reject) => {
                 fileEntryOrHandle.file(
                     async (fileObject) => {
@@ -208,29 +204,69 @@ export async function readFileContent(fileEntryOrHandle, filePathForEditedCheck 
                 );
             });
         } else {
-            // Should be caught by the !fileEntryOrHandle check above, but as an ultimate fallback.
             throw new Error("Unsupported file entry or handle type.");
         }
     } catch (err) {
         console.error(`Error in readFileContent for ${pathKey}:`, err);
-        // Augment error with path if not already there.
         if (!err.path) err.path = pathKey;
-        throw err; // Re-throw for higher-level handlers
+        throw err; 
     }
 }
 
-// Preview a file by showing its content in a modal
+// Helper to get CodeMirror mode from file extension for preview
+function getCodeMirrorModeForPreview(filePath) {
+    const extension = getFileExtension(filePath);
+     switch (extension) {
+        case '.js': case '.mjs': case '.json': return { name: "javascript", json: extension === '.json' };
+        case '.ts': case '.tsx': return "text/typescript";
+        case '.css': return "text/css";
+        case '.html': case '.htm': case '.xml': return "htmlmixed";
+        case '.md': return "text/markdown";
+        case '.py': return "text/x-python";
+        case '.java': return "text/x-java";
+        case '.c': case '.h': case '.cpp': case '.hpp': return "text/x-c++src";
+        case '.cs': return "text/x-csharp";
+        default: return "text/plain"; // Fallback for unknown types
+    }
+}
+
+
+// Preview a file by showing its content in a modal with CodeMirror
 export async function previewFile(fileEntryOrHandle, filePathForEditedCheck = null) {
     const pathKey = filePathForEditedCheck || fileEntryOrHandle?.path || fileEntryOrHandle?.fullPath || fileEntryOrHandle?.name;
-    const displayName = fileEntryOrHandle?.name || pathKey.substring(pathKey.lastIndexOf('/') + 1); // Get file name part for display
+    const displayName = fileEntryOrHandle?.name || (pathKey ? pathKey.substring(pathKey.lastIndexOf('/') + 1) : "File");
+    
     try {
-        // readFileContent will correctly prioritize fileEditor or use the handle
         const content = await readFileContent(fileEntryOrHandle, pathKey);
         elements.filePreviewTitle.textContent = `PREVIEW: ${displayName}`;
-        elements.filePreviewContent.textContent = content;
         elements.filePreview.style.display = 'block';
+
+        if (typeof CodeMirror !== 'undefined') {
+            if (!appState.previewEditorInstance) {
+                appState.previewEditorInstance = CodeMirror(elements.filePreviewContent, { // Attach to the div
+                    value: content,
+                    mode: getCodeMirrorModeForPreview(pathKey),
+                    lineNumbers: true,
+                    theme: "material-darker", // Match editor theme or choose another
+                    readOnly: true, // Important for preview
+                    lineWrapping: true,
+                });
+            } else {
+                appState.previewEditorInstance.setValue(content);
+                appState.previewEditorInstance.setOption("mode", getCodeMirrorModeForPreview(pathKey));
+            }
+            // Ensure CodeMirror refreshes if the modal was hidden
+            setTimeout(() => {
+                if (appState.previewEditorInstance) appState.previewEditorInstance.refresh();
+            }, 50);
+        } else {
+            // Fallback if CodeMirror is not loaded
+            elements.filePreviewContent.innerHTML = `<pre>${content.replace(/</g, "<").replace(/>/g, ">")}</pre>`;
+        }
+
     } catch (err) {
         console.error(`Error previewing file ${displayName}:`, err);
+        elements.filePreviewContent.textContent = `Error previewing file: ${err.message}`;
         errorHandler.showError({
             name: err.name || "PreviewError",
             message: `Failed to preview file: ${displayName}. ${err.message}`,
