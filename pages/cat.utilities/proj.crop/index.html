@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ultimate Crop Tool</title>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Title */
+    h1 {
+      font-size: 36px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    /* Initially only the drop zone is visible */
+    #controls, #preview-container, #batchControls { display: none; }
+    
+    /* Drop Zone Styles */
+    .drop-zone {
+      width: 600px;
+      height: 200px;
+      border: 3px dashed #2196F3;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(33,150,243,0.1);
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+    .drop-zone.drag-over {
+      background: rgba(33,150,243,0.2);
+      border-color: #1976D2;
+      transform: scale(1.02);
+    }
+    .drop-zone svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 15px;
+      fill: #2196F3;
+    }
+    .drop-zone p {
+      font-size: 18px;
+      margin: 0;
+    }
+    
+    /* Preview Container: fixed 800×800; no background or border */
+    #preview-container {
+      width: 800px;
+      height: 800px;
+      position: relative;
+      margin-bottom: 20px;
+      background: transparent;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    /* Add visual feedback for drag-over on the preview container */
+    #preview-container.drag-over {
+      background: rgba(33,150,243,0.1);
+      border: 3px dashed #1976D2;
+    }
+    /* Crop Area: centered with a thick 4px dashed border */
+    #crop-area {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border: 4px dashed #2196F3;
+      border-radius: 8px;
+    }
+    #crop-area img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: center center;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    
+    /* Controls Styles */
+    #controls {
+      width: 900px;
+      text-align: center;
+      color: #444;
+    }
+    #controls > div { margin: 10px 0; }
+    label { margin-right: 10px; font-size: 16px; }
+    input[type="number"],
+    input[type="text"],
+    select {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 100px;
+    }
+    input[type="range"] {
+      width: 300px;
+      vertical-align: middle;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background 0.3s ease;
+    }
+    button:hover { background: #1976D2; }
+    /* Keystone Aspect Ratio Buttons */
+    .ratio-btns button {
+      padding: 5px 10px;
+      font-size: 14px;
+      margin: 2px;
+    }
+    /* Zoom Label */
+    .zoom-label {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #555;
+    }
+    /* Batch Controls */
+    #batchControls {
+      width: 900px;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Title -->
+  <h1>Ultimate Crop Tool</h1>
+  
+  <!-- Drop Zone (visible on page load) -->
+  <div class="drop-zone" id="dropZone">
+    <svg viewBox="0 0 24 24">
+      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04ZM14 13V17H10V13H7L12 8L17 13H14Z"/>
+    </svg>
+    <p>Drag your images here from Chrome's download history</p>
+  </div>
+  
+  <!-- Preview/Crop Area (appears after an image is loaded) -->
+  <div id="preview-container">
+    <div id="crop-area"></div>
+  </div>
+  
+  <!-- Controls (appear beneath preview) -->
+  <div id="controls">
+    <!-- Aspect Ratio Slider -->
+    <div>
+      <label for="aspectRatioSlider">Aspect Ratio:</label>
+      <input type="range" id="aspectRatioSlider" min="0.3333" max="3" step="0.01" value="1">
+      <span id="ratioDisplay">1:1</span>
+    </div>
+    <!-- Keystone Aspect Ratio Buttons -->
+    <div class="ratio-btns" id="keystoneButtons"></div>
+    <!-- Rotation Slider -->
+    <div>
+      <label for="rotationSlider">Rotation (°):</label>
+      <input type="range" id="rotationSlider" min="-180" max="180" step="1" value="0">
+      <span id="rotationDisplay">0°</span>
+    </div>
+    <!-- Zoom Slider -->
+    <div>
+      <label for="zoomSlider">Zoom:</label>
+      <input type="range" id="zoomSlider" step="0.01">
+      <span id="zoomDisplay">1.00</span>
+      <div class="zoom-label">Left = Fit to Canvas | Middle = 100% native | Right = 200%</div>
+    </div>
+    <!-- Export Options -->
+    <div>
+      <label for="canvasWidthInput">Export Width (px):</label>
+      <input type="number" id="canvasWidthInput" value="968">
+      &nbsp;&nbsp;
+      <label for="canvasHeightInput">Export Height (px):</label>
+      <input type="number" id="canvasHeightInput" value="600">
+    </div>
+    <div>
+      <label for="filenameInput">Filename:</label>
+      <input type="text" id="filenameInput" placeholder="Enter a word">
+    </div>
+    <!-- In single mode -->
+    <div id="singleDownloadContainer">
+      <button id="downloadBtn">Download Cropped Image</button>
+    </div>
+  </div>
+  
+  <!-- Batch Controls -->
+  <div id="batchControls">
+    <button id="doneNextBtn">Done & Next</button>
+    <button id="downloadZipBtn" style="display:none;">Download ZIP</button>
+  </div>
+  
+  <!-- Include JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    /***********************
+     * Global Variables & Setup
+     ***********************/
+    const dropZone = document.getElementById('dropZone');
+    const previewContainer = document.getElementById('preview-container');
+    const cropArea = document.getElementById('crop-area');
+    const controls = document.getElementById('controls');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const filenameInput = document.getElementById('filenameInput');
+    const canvasWidthInput = document.getElementById('canvasWidthInput');
+    const canvasHeightInput = document.getElementById('canvasHeightInput');
+    const doneNextBtn = document.getElementById('doneNextBtn');
+    const downloadZipBtn = document.getElementById('downloadZipBtn');
+    const singleDownloadContainer = document.getElementById('singleDownloadContainer');
+    
+    const aspectRatioSlider = document.getElementById('aspectRatioSlider');
+    const ratioDisplay = document.getElementById('ratioDisplay');
+    const keystoneButtonsContainer = document.getElementById('keystoneButtons');
+    
+    const rotationSlider = document.getElementById('rotationSlider');
+    const rotationDisplay = document.getElementById('rotationDisplay');
+    
+    const zoomSlider = document.getElementById('zoomSlider');
+    const zoomDisplay = document.getElementById('zoomDisplay');
+    
+    // For preview, the container is fixed at 800×800.
+    const previewSize = 800;
+    
+    // The displayed crop area dimensions (for preview) are computed from the current aspect ratio.
+    let aspectRatio = parseFloat(aspectRatioSlider.value); // default 1:1
+    let displayTargetWidth = previewSize;
+    let displayTargetHeight = previewSize;
+    
+    // Image transformation state.
+    let currentImage = null;
+    let currentFileType = 'image/jpeg';
+    let sourceDomain = "";
+    let offsetX = 0, offsetY = 0;
+    let currentRotation = 0; // in degrees (from rotation slider)
+    let userZoom = 1;        // from zoom slider
+    
+    // For dragging.
+    let isDragging = false, dragStartX = 0, dragStartY = 0;
+    
+    // Computed cover scale for the preview.
+    let coverScale = 1;
+    
+    // Flag for manual export dimensions override.
+    let useCustomExportDims = false;
+    
+    // Batch mode variables.
+    let batchQueue = [];
+    let croppedResults = []; // Array of {filename, dataURL}
+    let isBatchMode = false;
+    
+    /***********************
+     * Keystone Aspect Ratio Buttons
+     ***********************/
+    const keystoneRatios = [
+      { label: "1:3", value: 0.3333 },
+      { label: "1:2", value: 0.5 },
+      { label: "9:16", value: 0.5625 },
+      { label: "10:16", value: 0.625 },
+      { label: "2:3", value: 0.6667 },
+      { label: "3:4", value: 0.75 },
+      { label: "4:5", value: 0.8 },
+      { label: "1:1", value: 1 },
+      { label: "5:4", value: 1.25 },
+      { label: "4:3", value: 1.3333 },
+      { label: "3:2", value: 1.5 },
+      { label: "16:10", value: 1.6 },
+      { label: "16:9", value: 1.7778 },
+      { label: "2:1", value: 2 },
+      { label: "3:1", value: 3 }
+    ];
+    keystoneButtonsContainer.innerHTML = "";
+    keystoneRatios.forEach(ratioObj => {
+      const btn = document.createElement('button');
+      btn.textContent = ratioObj.label;
+      btn.addEventListener('click', () => {
+        useCustomExportDims = false;
+        canvasWidthInput.value = ""; // Clear custom dimensions
+        canvasHeightInput.value = ""; // Clear custom dimensions
+        aspectRatio = ratioObj.value;
+        aspectRatioSlider.value = ratioObj.value;
+        updateCropAreaDimensions();
+        updateRatioDisplay();
+        updatePreview(); // Ensure preview updates after ratio change
+      });
+      keystoneButtonsContainer.appendChild(btn);
+    });
+    
+    /***********************
+     * Aspect Ratio Slider & Display
+     ***********************/
+    function updateRatioDisplay() {
+      let displayText;
+      if (aspectRatio >= 1) {
+        displayText = `${aspectRatio.toFixed(2)}:1`;
+      } else {
+        displayText = `1:${(1 / aspectRatio).toFixed(2)}`;
+      }
+      ratioDisplay.textContent = displayText;
+    }
+    aspectRatioSlider.addEventListener('input', () => {
+      canvasWidthInput.value = "";
+      canvasHeightInput.value = "";
+      useCustomExportDims = false;
+      aspectRatio = parseFloat(aspectRatioSlider.value);
+      updateCropAreaDimensions();
+      updateRatioDisplay();
+      updatePreview();
+    });
+    updateRatioDisplay();
+    
+    /***********************
+     * Update Crop Area Dimensions (Display Only)
+     ***********************/
+    function updateCropAreaDimensions() {
+      if (aspectRatio < 1) {
+        displayTargetHeight = previewSize;
+        displayTargetWidth = Math.round(previewSize * aspectRatio);
+      } else if (aspectRatio > 1) {
+        displayTargetWidth = previewSize;
+        displayTargetHeight = Math.round(previewSize / aspectRatio);
+      } else {
+        displayTargetWidth = previewSize;
+        displayTargetHeight = previewSize;
+      }
+      cropArea.style.width = displayTargetWidth + "px";
+      cropArea.style.height = displayTargetHeight + "px";
+      offsetX = 0;
+      offsetY = 0;
+      // updatePreview() is called directly after this in loadNextImage and other places.
+      // Calling it here again would be redundant.
+    }
+    // Initial call (before any image is loaded, based on default aspect ratio)
+    updateCropAreaDimensions();
+    
+    /***********************
+     * Custom Export Dimensions Override
+     ***********************/
+    function handleCustomExportDims() {
+      const cw = parseFloat(canvasWidthInput.value);
+      const ch = parseFloat(canvasHeightInput.value);
+      if (cw > 0 && ch > 0) {
+        useCustomExportDims = true;
+        aspectRatio = cw / ch;
+        aspectRatioSlider.value = aspectRatio;
+        updateRatioDisplay();
+        updateCropAreaDimensions(); // This will recalculate displayTargetWidth/Height and reset offsets.
+        offsetX = 0; // Reset offsets when custom dims change
+        offsetY = 0;
+        updatePreview(); // Update preview with new aspect ratio and reset zoom
+      }
+    }
+    canvasWidthInput.addEventListener('input', handleCustomExportDims);
+    canvasHeightInput.addEventListener('input', handleCustomExportDims);
+    
+    // Initial setup for custom export dimensions if values are present on load
+    handleCustomExportDims();
+
+    /***********************
+     * Drop Zone & File Loading (with fallback to dt.files)
+     ***********************/
+    // Add event listeners to both dropZone and previewContainer
+    [dropZone, previewContainer].forEach(zone => {
+      ['dragenter','dragover','dragleave','drop'].forEach(eventName => {
+        zone.addEventListener(eventName, preventDefaults, false);
+      });
+    });
+    // Add global event listeners to prevent browser default drag/drop behavior
+    document.body.addEventListener('dragenter', preventDefaults, false);
+    document.body.addEventListener('dragover', preventDefaults, false);
+    document.body.addEventListener('dragleave', preventDefaults, false);
+    document.body.addEventListener('drop', preventDefaults, false); 
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Add highlight for both drop zones based on current visibility
+    [dropZone, previewContainer].forEach(zone => {
+      ['dragenter','dragover'].forEach(eventName => {
+        zone.addEventListener(eventName, () => {
+          if (previewContainer.style.display !== 'none') {
+            previewContainer.classList.add('drag-over');
+          } else {
+            dropZone.classList.add('drag-over');
+          }
+        }, false);
+      });
+      ['dragleave','drop'].forEach(eventName => {
+        zone.addEventListener(eventName, () => {
+          dropZone.classList.remove('drag-over');
+          previewContainer.classList.remove('drag-over');
+        }, false);
+      });
+    });
+
+    // Add drop listener to both drop zones
+    [dropZone, previewContainer].forEach(zone => {
+      zone.addEventListener('drop', handleDrop, false);
+    });
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      let files = [];
+      if (dt.items) {
+        for (let i = 0; i < dt.items.length; i++) {
+          if (dt.items[i].kind === 'file') {
+            let file = dt.items[i].getAsFile();
+            if (file && file.type.startsWith("image/")) { // Check for null file as well
+              files.push(file);
+            }
+          }
+        }
+      } else if (dt.files) {
+        for (let i = 0; i < dt.files.length; i++) {
+          if (dt.files[i].type.startsWith("image/")) {
+            files.push(dt.files[i]);
+          }
+        }
+      }
+      if (files.length > 0) {
+        // When new files are dropped, reset the batch state completely
+        batchQueue = files;
+        croppedResults = [];
+        isBatchMode = files.length > 1; // It's batch mode if more than one file was dropped
+
+        loadNextImage();
+        
+        // Update display based on mode
+        dropZone.style.display = "none";
+        previewContainer.style.display = "block";
+        controls.style.display = "block";
+        if (isBatchMode) {
+          singleDownloadContainer.style.display = "none";
+          document.getElementById("batchControls").style.display = "block";
+        } else {
+          singleDownloadContainer.style.display = "block";
+          document.getElementById("batchControls").style.display = "none";
+        }
+      }
+    }
+    
+    function loadNextImage() {
+      if (batchQueue.length === 0) {
+        doneNextBtn.style.display = "none";
+        downloadZipBtn.style.display = "block";
+        return;
+      }
+      const file = batchQueue.shift();
+      currentFileType = file.type; // Update current file type
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          currentImage = img;
+          offsetX = 0;
+          offsetY = 0;
+          currentRotation = 0;
+          rotationSlider.value = 0;
+          rotationDisplay.textContent = "0°";
+          
+          updateCropAreaDimensions(); // Recalculates displayTargetWidth/Height, resets offsets
+          
+          let preview = document.getElementById('preview');
+          if (!preview) {
+            preview = document.createElement('img');
+            preview.id = 'preview';
+            preview.alt = "Cropped preview";
+            cropArea.innerHTML = "";
+            cropArea.appendChild(preview);
+          }
+          preview.src = e.target.result;
+          
+          // After updateCropAreaDimensions, updatePreview calculates coverScale.
+          // Then set userZoom to coverScale to fit the image.
+          updatePreview(); 
+          userZoom = coverScale; // Set initial zoom to "fit to canvas"
+          zoomSlider.min = coverScale; // Update min range based on current image/ratio
+          zoomSlider.value = userZoom; // Set slider to initial userZoom
+          updatePreview(); // Re-render with new userZoom
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    /***********************
+     * Rotation Slider (Live)
+     ***********************/
+    rotationSlider.addEventListener('input', () => {
+      currentRotation = parseInt(rotationSlider.value);
+      rotationDisplay.textContent = rotationSlider.value + "°";
+      updatePreview();
+      constrainOffsets();
+      updatePreview();
+    });
+    
+    /***********************
+     * Zoom Controls (Live with Snapping)
+     ***********************/
+    zoomSlider.addEventListener('input', () => {
+      userZoom = parseFloat(zoomSlider.value);
+      // Snap to 100% native zoom (1.0)
+      if (Math.abs(userZoom - 1) < 0.03) {
+        userZoom = 1;
+        zoomSlider.value = 1;
+      }
+      // Ensure userZoom doesn't go below coverScale after input
+      if (userZoom < coverScale) {
+        userZoom = coverScale;
+        zoomSlider.value = coverScale;
+      }
+      updatePreview();
+      constrainOffsets();
+      updatePreview();
+    });
+    cropArea.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const step = 0.05;
+      if (e.deltaY < 0) { // Zoom in
+        userZoom = Math.min(userZoom + step, parseFloat(zoomSlider.max));
+      } else { // Zoom out
+        userZoom = Math.max(userZoom - step, parseFloat(zoomSlider.min));
+      }
+      // Snap to 100% native zoom
+      if (Math.abs(userZoom - 1) < 0.03) {
+        userZoom = 1;
+      }
+      zoomSlider.value = userZoom;
+      updatePreview();
+      constrainOffsets();
+      updatePreview();
+    });
+    
+    /***********************
+     * Update Preview (Live Drag, Zoom & Rotation)
+     ***********************/
+    function updatePreview() {
+      if (!currentImage) return;
+      const preview = document.getElementById('preview');
+      if (!preview) return;
+
+      // Calculate the minimum scale needed for the (potentially rotated) image to COVER the crop area
+      const rad = Math.abs(currentRotation * Math.PI / 180);
+      const rotatedImgWidth = currentImage.naturalWidth * Math.cos(rad) + currentImage.naturalHeight * Math.sin(rad);
+      const rotatedImgHeight = currentImage.naturalWidth * Math.sin(rad) + currentImage.naturalHeight * Math.cos(rad);
+      
+      // Determine coverScale based on the rotated image dimensions and crop area dimensions
+      coverScale = Math.max(displayTargetWidth / rotatedImgWidth, displayTargetHeight / rotatedImgHeight);
+
+      // Set zoom slider range: min is the 'fit to canvas' (coverScale), max is 2 (200% native).
+      zoomSlider.min = coverScale;
+      zoomSlider.max = 2; // 200% native zoom as the max
+      
+      // Ensure userZoom is always within the valid range after any property change (like rotation)
+      userZoom = clamp(userZoom, zoomSlider.min, zoomSlider.max);
+      zoomSlider.value = userZoom; // Update the slider visually
+      
+      // The final scale applied to the image is the userZoom
+      const finalScale = userZoom;
+      
+      // Update preview transform.
+      preview.style.transition = isDragging ? "none" : "transform 0.1s ease";
+      preview.style.width = currentImage.naturalWidth + "px";
+      preview.style.height = currentImage.naturalHeight + "px";
+      preview.style.transform = `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px) scale(${finalScale}) rotate(${currentRotation}deg)`;
+      zoomDisplay.textContent = finalScale.toFixed(2);
+    }
+    
+    /***********************
+     * Dragging (Immediate, then Constrain on Mouseup)
+     ***********************/
+    cropArea.addEventListener('mousedown', (e) => {
+      if (!currentImage) return;
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      const preview = document.getElementById('preview');
+      if (preview) preview.style.cursor = "grabbing";
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      offsetX += dx;
+      offsetY += dy;
+      updatePreview();
+    });
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        constrainOffsets();
+        updatePreview();
+        isDragging = false;
+        const preview = document.getElementById('preview');
+        if (preview) preview.style.cursor = "grab";
+      }
+    });
+    document.addEventListener('mouseleave', () => {
+      if (isDragging) {
+        constrainOffsets();
+        updatePreview();
+        isDragging = false;
+      }
+    });
+    function constrainOffsets() {
+      if (!currentImage) return;
+      const finalScale = userZoom; 
+      const w = currentImage.naturalWidth * finalScale;
+      const h = currentImage.naturalHeight * finalScale;
+      const rad = currentRotation * Math.PI / 180;
+      const cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
+      const bbWidth = w * cos + h * sin;
+      const bbHeight = w * sin + h * cos;
+      const minOffsetX = (displayTargetWidth - bbWidth) / 2;
+      const maxOffsetX = (bbWidth - displayTargetWidth) / 2;
+      const minOffsetY = (displayTargetHeight - bbHeight) / 2;
+      const maxOffsetY = (bbHeight - displayTargetHeight) / 2;
+      offsetX = clamp(offsetX, minOffsetX, maxOffsetX);
+      offsetY = clamp(offsetY, minOffsetY, maxOffsetY);
+    }
+    
+    /***********************
+     * Download / Export (Single Mode)
+     ***********************/
+    downloadBtn.addEventListener('click', () => {
+      if (!currentImage) return;
+      const userWord = filenameInput.value.trim() || 'cropped_image'; // Default to 'cropped_image'
+      const randomString = Math.floor(1000 + Math.random() * 9000);
+      let exportWidth, exportHeight;
+      if (canvasWidthInput.value && canvasHeightInput.value) {
+        exportWidth = parseInt(canvasWidthInput.value);
+        exportHeight = parseInt(canvasHeightInput.value);
+      } else {
+        exportWidth = displayTargetWidth;
+        exportHeight = displayTargetHeight;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = exportWidth;
+      canvas.height = exportHeight;
+      const ctx = canvas.getContext('2d');
+      const finalScale = userZoom;
+      ctx.save();
+      ctx.translate(exportWidth / 2, exportHeight / 2);
+      const exportRatioX = exportWidth / displayTargetWidth;
+      const exportRatioY = exportHeight / displayTargetHeight;
+      ctx.translate(offsetX * exportRatioX, offsetY * exportRatioY);
+      ctx.rotate((currentRotation * Math.PI) / 180);
+      ctx.scale(finalScale * exportRatioX, finalScale * exportRatioY);
+      ctx.drawImage(currentImage, -currentImage.naturalWidth / 2, -currentImage.naturalHeight / 2);
+      ctx.restore();
+      const mimeType = currentFileType === 'image/webp' ? 'image/webp' : 'image/jpeg';
+      const extension = mimeType.split('/')[1];
+      const linkFilename = `${userWord}_${randomString}.${extension}`;
+      const link = document.createElement('a');
+      link.download = linkFilename;
+      link.href = canvas.toDataURL(mimeType, 0.9);
+      link.click();
+    });
+    
+    /***********************
+     * Batch Mode Controls
+     ***********************/
+    doneNextBtn.addEventListener('click', () => {
+      if (!currentImage) return;
+      const userWord = filenameInput.value.trim() || 'cropped_image'; // Default to 'cropped_image'
+      const randomString = Math.floor(1000 + Math.random() * 9000);
+      let exportWidth, exportHeight;
+      if (canvasWidthInput.value && canvasHeightInput.value) {
+        exportWidth = parseInt(canvasWidthInput.value);
+        exportHeight = parseInt(canvasHeightInput.value);
+      } else {
+        exportWidth = displayTargetWidth;
+        exportHeight = displayTargetHeight;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = exportWidth;
+      canvas.height = exportHeight;
+      const ctx = canvas.getContext('2d');
+      const finalScale = userZoom;
+      ctx.save();
+      ctx.translate(exportWidth / 2, exportHeight / 2);
+      const exportRatioX = exportWidth / displayTargetWidth;
+      const exportRatioY = exportHeight / displayTargetHeight;
+      ctx.translate(offsetX * exportRatioX, offsetY * exportRatioY);
+      ctx.rotate((currentRotation * Math.PI) / 180);
+      ctx.scale(finalScale * exportRatioX, finalScale * exportRatioY);
+      ctx.drawImage(currentImage, -currentImage.naturalWidth / 2, -currentImage.naturalHeight / 2);
+      ctx.restore();
+      const dataURL = canvas.toDataURL(currentFileType === 'image/webp' ? 'image/webp' : 'image/jpeg', 0.9);
+      croppedResults.push({ filename: `${userWord}_${randomString}.${currentFileType.split('/')[1]}`, dataURL });
+      if (batchQueue.length > 0) {
+        loadNextImage();
+      } else {
+        doneNextBtn.style.display = "none";
+        downloadZipBtn.style.display = "block";
+      }
+    });
+    
+    downloadZipBtn.addEventListener('click', () => {
+      if (croppedResults.length === 0) return;
+      const zip = new JSZip();
+      croppedResults.forEach(item => {
+        const base64Data = item.dataURL.split(',')[1];
+        zip.file(item.filename, base64Data, { base64: true });
+      });
+      zip.generateAsync({ type: "blob" }).then(function(content) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(content);
+        a.download = "cropped_images.zip";
+        a.click();
+      });
+    });
+    
+    /***********************
+     * Helper: Clamp a Value
+     ***********************/
+    function clamp(val, min, max) {
+      return Math.min(Math.max(val, min), max);
+    }
+
+    /***********************
+     * Keyboard Shortcuts
+     ***********************/
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent default Enter key behavior (e.g., submitting forms)
+        if (currentImage) { // Only trigger if an image is loaded
+          if (isBatchMode) {
+            // If in batch mode, check which button is visible to trigger
+            if (doneNextBtn.style.display !== 'none') {
+              doneNextBtn.click();
+            } else if (downloadZipBtn.style.display !== 'none') {
+              downloadZipBtn.click();
+            }
+          } else {
+            // If in single image mode
+            downloadBtn.click();
+          }
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
